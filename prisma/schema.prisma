@@ -6,13 +6,14 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
 }
 
 model Area {
-  id   BigInt @id @default(autoincrement())
-  name String
+  id      BigInt @id @default(autoincrement())
+  name    String
+  careers Career[]
 
   @@map("area")
   @@index([id])
@@ -33,9 +34,11 @@ model Institution {
 }
 
 model Career {
-  id   BigInt @id
-  name String
+  id      BigInt @id
+  name    String
+  area_id BigInt
 
+  area  Area  @relation(fields: [area_id], references: [id])
   institutionCareers InstitutionCareer[]
 
   @@map("career")
@@ -43,25 +46,29 @@ model Career {
 }
 
 model InstitutionCareer {
-  id             BigInt      @id
   institution_id BigInt
   career_id      BigInt
 
   institution Institution @relation(fields: [institution_id], references: [id])
   career      Career      @relation(fields: [career_id], references: [id])
+  users       User[]
 
+  @@id([institution_id, career_id])
   @@map("institution_career")
-  @@index([id])
   @@index([institution_id])
   @@index([career_id])
 }
 
 model User {
-  id   String @id @db.Uuid
-  name String
-  email    String   @unique
-  birthday Date
+  id                String @id @db.Uuid
+  authId            String    @unique // user id in supabase auth.users
+  name              String
+  email             String   @unique
+  birthday          DateTime @db.Date
+  institution_id    BigInt?
+  career_id         BigInt?
 
+  institutionCareer InstitutionCareer? @relation(fields: [institution_id, career_id], references: [institution_id, career_id])
   interviews Interview[]
 
   @@map("user")
@@ -69,10 +76,10 @@ model User {
 }
 
 model Interview {
-  id              BigInt  @id @default(autoincrement())
-  user_id         String  @db.Uuid
-  job_description String  @db.Text
-  resume          String  @db.Text
+  id                  BigInt  @id @default(autoincrement())
+  user_id             String  @db.Uuid
+  job_description     String  @db.Text
+  resume_url          String  @db.Text
   created_at DateTime @default(now())
 
   user         User          @relation(fields: [user_id], references: [id])
