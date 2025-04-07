@@ -40,3 +40,12 @@ export interface Conversation {
   interview_id: bigint;
   //details: JSON
 }
+
+export interface SignUpData {
+  email: string;
+  password: string;
+  name: string;
+  birthday: Date;
+  institution_id?: bigint; // Opcional
+  career_id?: bigint; // Opcional
+}
