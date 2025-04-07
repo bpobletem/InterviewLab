@@ -1,0 +1,94 @@
+// This is your Prisma schema file
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Area {
+  id   BigInt @id @default(autoincrement())
+  name String
+
+  @@map("area")
+  @@index([id])
+}
+
+model Institution {
+  id         BigInt   @id
+  name       String
+  email      String
+  phone      String
+  is_active  Boolean
+  created_at DateTime @default(now())
+
+  institutionCareers InstitutionCareer[]
+
+  @@map("institution")
+  @@index([id])
+}
+
+model Career {
+  id   BigInt @id
+  name String
+
+  institutionCareers InstitutionCareer[]
+
+  @@map("career")
+  @@index([id])
+}
+
+model InstitutionCareer {
+  id             BigInt      @id
+  institution_id BigInt
+  career_id      BigInt
+
+  institution Institution @relation(fields: [institution_id], references: [id])
+  career      Career      @relation(fields: [career_id], references: [id])
+
+  @@map("institution_career")
+  @@index([id])
+  @@index([institution_id])
+  @@index([career_id])
+}
+
+model User {
+  id   String @id @db.Uuid
+  name String
+  email    String   @unique
+  birthday Date
+
+  interviews Interview[]
+
+  @@map("user")
+  @@index([id])
+}
+
+model Interview {
+  id              BigInt  @id @default(autoincrement())
+  user_id         String  @db.Uuid
+  job_description String  @db.Text
+  resume          String  @db.Text
+  created_at DateTime @default(now())
+
+  user         User          @relation(fields: [user_id], references: [id])
+  conversation Conversation?
+
+  @@map("interview")
+  @@index([id])
+}
+
+model Conversation {
+  id           BigInt @id @default(autoincrement())
+  interview_id BigInt @unique
+  details      Json   @db.JsonB
+
+  interview Interview @relation(fields: [interview_id], references: [id])
+
+  @@map("conversation")
+  @@index([id])
+}
