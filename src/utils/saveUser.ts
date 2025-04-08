@@ -1,18 +1,18 @@
 import { supabase } from '@/lib/supabase';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma'
 import { SignUpData } from '@/types/types';
 import { randomUUID } from 'crypto';
 import { validateInstitutionEmail } from './validateInstitutionEmail';
-
-const prisma = new PrismaClient();
 
 /**
  * Registra un usuario nuevo en el sistema
  * 
  * Esta función se encarga de:
- * 1. Registrar al usuario en Supabase Authentication
- * 2. Crear o actualizar el registro del usuario en la base de datos usando Prisma
- * 3. Eliminar el usuario de Supabase Auth en caso de error al guardar en la base de datos
+ * 1. Verificar que el correo electrónico no esté ya registrado
+ * 2. Validar el dominio del correo si se proporciona una institución
+ * 3. Registrar al usuario en Supabase Authentication
+ * 4. Crear o actualizar el registro del usuario en la base de datos usando Prisma
+ * 5. Eliminar el usuario de Supabase Auth en caso de error al guardar en la base de datos
  * 
  * @param {SignUpData} data - Datos del usuario para registro (email, contraseña, nombre, etc.)
  * @param {string} data.email - Correo electrónico del usuario
@@ -23,13 +23,24 @@ const prisma = new PrismaClient();
  * @param {BigInt|null} data.career_id - ID de la carrera (opcional)
  * 
  * @returns {Promise<User>} El registro de usuario creado en la base de datos
+ * @throws {Error} Si el correo ya está registrado o hay otros errores
  */
 export async function saveUser(data: SignUpData) {
   const { email, password, name, birthday, institution_id, career_id } = data;
 
+  // Verificar que el correo no esté ya registrado
+  const existingUser = await prisma.user.findUnique({
+    where: { email },
+    select: { id: true }
+  });
+
+  if (existingUser) {
+    throw new Error('Este correo electrónico ya está registrado');
+  }
+
   // Verificar el dominio del correo si institution_id está presente
   if (!institution_id) {
-    throw new Error('Institution ID is required');
+    throw new Error('Institution requerida');
   }
   
   if (institution_id) {
@@ -40,7 +51,7 @@ export async function saveUser(data: SignUpData) {
 
     if (!isValid) {
       throw new Error(
-        emailError || 'Dominio invalido'
+        emailError || 'Dominio inválido'
       );
     }
   }
