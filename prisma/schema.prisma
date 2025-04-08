@@ -16,15 +16,27 @@ model Area {
   @@map("area")
 }
 
+model InstitutionEmailDomain {
+  id             BigInt      @id @default(autoincrement())
+  institution_id BigInt
+  email_domain   String
+
+  institution    Institution @relation(fields: [institution_id], references: [id])
+
+  @@unique([institution_id, email_domain])
+  @@map("institution_email_domains")
+}
+
 model Institution {
-  id         BigInt   @id @default(autoincrement())
-  name       String
-  email      String
-  phone      String
-  is_active  Boolean
-  created_at DateTime @default(now())
-  users      User[]
-  careers    Career[]
+  id            BigInt   @id @default(autoincrement())
+  name          String
+  email         String
+  phone         String
+  is_active     Boolean
+  created_at    DateTime @default(now())
+  users         User[]
+  careers       Career[]
+  email_domains InstitutionEmailDomain[]
 
   @@map("institution")
   @@index([email])
@@ -44,15 +56,15 @@ model Career {
 }
 
 model User {
-  id             String      @id @db.Uuid
-  authId         String      @unique
+  id             String        @id @db.Uuid
+  authId         String       @unique
   name           String
-  email          String      @unique
-  birthday       DateTime    @db.Date
-  institution_id BigInt?
-  career_id      BigInt?
+  email          String       @unique
+  birthday       DateTime     @db.Date
+  institution_id BigInt
+  career_id      BigInt
   institution    Institution? @relation(fields: [institution_id], references: [id])
-  career         Career?     @relation(fields: [career_id], references: [id])
+  career         Career       @relation(fields: [career_id], references: [id])
   interviews     Interview[]
 
   @@map("user")
@@ -77,7 +89,7 @@ model JobType {
 model Interview {
   id              BigInt    @id @default(autoincrement())
   user_id         String    @db.Uuid
-  job_description String?   @db.Text
+  job_description String    @db.Text
   job_type_id     BigInt?
   resume_url      String    @db.Text
   created_at      DateTime  @default(now())
@@ -95,6 +107,7 @@ model Conversation {
   id           BigInt    @id @default(autoincrement())
   interview_id BigInt    @unique
   details      Json      @db.JsonB
+
   interview    Interview @relation(fields: [interview_id], references: [id])
 
   @@map("conversation")
