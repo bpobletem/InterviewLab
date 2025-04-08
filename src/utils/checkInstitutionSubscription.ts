@@ -1,7 +1,4 @@
-import { PrismaClient } from '@prisma/client';
-
-// Inicializar Prisma
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
 
 // Interfaz para el resultado de la verificación
 interface InstitutionCheckResult {
@@ -13,7 +10,7 @@ interface InstitutionCheckResult {
  * Verifica si una institución está activa.
  * @param institutionId - El ID de la institución a verificar.
  * @returns Un objeto con `isActive` (true si la institución está activa) y un `error` opcional.
-*/
+ */
 export async function checkInstitutionSubscription(institutionId: bigint): Promise<InstitutionCheckResult> {
   try {
     // Buscar la institución en la base de datos
@@ -32,7 +29,5 @@ export async function checkInstitutionSubscription(institutionId: bigint): Promi
   } catch (error) {
     console.error('Error checking institution status:', error);
     return { isActive: false, error: 'Failed to check institution status' };
-  } finally {
-    await prisma.$disconnect();
   }
 }
