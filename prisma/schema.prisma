@@ -1,6 +1,3 @@
-// This is your Prisma schema file
-// Learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,91 +8,95 @@ datasource db {
 }
 
 model Area {
-  id      BigInt @id @default(autoincrement())
-  name    String
-  careers Career[]
+  id        BigInt      @id @default(autoincrement())
+  name      String
+  careers   Career[]
+  job_types JobType[]
 
   @@map("area")
-  @@index([id])
 }
 
 model Institution {
-  id         BigInt   @id
+  id         BigInt   @id @default(autoincrement())
   name       String
   email      String
   phone      String
   is_active  Boolean
   created_at DateTime @default(now())
-
-  institutionCareers InstitutionCareer[]
+  users      User[]
+  careers    Career[]
 
   @@map("institution")
-  @@index([id])
+  @@index([email])
 }
 
 model Career {
-  id      BigInt @id
-  name    String
-  area_id BigInt
-
-  area  Area  @relation(fields: [area_id], references: [id])
-  institutionCareers InstitutionCareer[]
+  id             BigInt      @id @default(autoincrement())
+  institution_id BigInt
+  area_id        BigInt
+  institution    Institution @relation(fields: [institution_id], references: [id])
+  area           Area        @relation(fields: [area_id], references: [id])
+  users          User[]
 
   @@map("career")
-  @@index([id])
+  @@index([institution_id])
+  @@index([area_id])
 }
 
-model InstitutionCareer {
-  institution_id BigInt
-  career_id      BigInt
+model User {
+  id             String      @id @db.Uuid
+  authId         String      @unique
+  name           String
+  email          String      @unique
+  birthday       DateTime    @db.Date
+  institution_id BigInt?
+  career_id      BigInt?
+  institution    Institution? @relation(fields: [institution_id], references: [id])
+  career         Career?     @relation(fields: [career_id], references: [id])
+  interviews     Interview[]
 
-  institution Institution @relation(fields: [institution_id], references: [id])
-  career      Career      @relation(fields: [career_id], references: [id])
-  users       User[]
-
-  @@id([institution_id, career_id])
-  @@map("institution_career")
+  @@map("user")
   @@index([institution_id])
   @@index([career_id])
 }
 
-model User {
-  id                String @id @db.Uuid
-  authId            String    @unique // user id in supabase auth.users
-  name              String
-  email             String   @unique
-  birthday          DateTime @db.Date
-  institution_id    BigInt?
-  career_id         BigInt?
+model JobType {
+  id          BigInt    @id @default(autoincrement())
+  name        String    @unique
+  description String    @db.Text
+  area_id     BigInt
+  created_at  DateTime  @default(now())
+  area        Area      @relation(fields: [area_id], references: [id])
+  interviews  Interview[]
 
-  institutionCareer InstitutionCareer? @relation(fields: [institution_id, career_id], references: [institution_id, career_id])
-  interviews Interview[]
-
-  @@map("user")
-  @@index([id])
+  @@map("job_types")
+  @@index([name])
+  @@index([area_id])
 }
 
 model Interview {
-  id                  BigInt  @id @default(autoincrement())
-  user_id             String  @db.Uuid
-  job_description     String  @db.Text
-  resume_url          String  @db.Text
-  created_at DateTime @default(now())
-
-  user         User          @relation(fields: [user_id], references: [id])
-  conversation Conversation?
+  id              BigInt    @id @default(autoincrement())
+  user_id         String    @db.Uuid
+  job_description String?   @db.Text
+  job_type_id     BigInt?
+  resume_url      String    @db.Text
+  created_at      DateTime  @default(now())
+  
+  user            User      @relation(fields: [user_id], references: [id])
+  job_type        JobType?  @relation(fields: [job_type_id], references: [id])
+  conversation    Conversation?
 
   @@map("interview")
-  @@index([id])
+  @@index([user_id])
+  @@index([job_type_id])
 }
 
 model Conversation {
-  id           BigInt @id @default(autoincrement())
-  interview_id BigInt @unique
-  details      Json   @db.JsonB
-
-  interview Interview @relation(fields: [interview_id], references: [id])
+  id           BigInt    @id @default(autoincrement())
+  interview_id BigInt    @unique
+  details      Json      @db.JsonB
+  interview    Interview @relation(fields: [interview_id], references: [id])
 
   @@map("conversation")
-  @@index([id])
+  @@index([interview_id])
 }
