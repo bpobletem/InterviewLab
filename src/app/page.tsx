@@ -6,7 +6,7 @@ export default function Home() {
     <div className="flex flex-col items-center justify-center min-h-screen p-8 font-[family-name:var(--font-geist-sans)]">
       <main className="flex flex-col items-center justify-center flex-1 w-full max-w-4xl px-4 py-16 text-center gap-8">
         <h1 className="text-5xl font-bold tracking-tight sm:text-6xl">
-          IntervAI
+          InterviewLab
         </h1>
         <p className="mt-4 text-xl text-foreground/70 max-w-2xl">
           Mejora tus habilidades para entrevistas de trabajo con nuestro simulador de entrevistas impulsado por IA
@@ -33,7 +33,7 @@ export default function Home() {
             <p className="mt-2 text-foreground/70">Practica con simulaciones de entrevistas que se sienten reales</p>
           </div>
           <div className="p-6 border border-foreground/10 rounded-xl">
-            <h3 className="text-xl font-bold">Feedback Instantáneo</h3>
+            <h3 className="text-xl font-bold">Feedback</h3>
             <p className="mt-2 text-foreground/70">Recibe retroalimentación detallada para mejorar tus respuestas</p>
           </div>
           <div className="p-6 border border-foreground/10 rounded-xl">
