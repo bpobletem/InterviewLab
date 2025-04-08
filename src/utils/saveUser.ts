@@ -5,6 +5,24 @@ import { randomUUID } from 'crypto';
 
 const prisma = new PrismaClient();
 
+/**
+ * Registra un usuario nuevo en el sistema
+ * 
+ * Esta función se encarga de:
+ * 1. Registrar al usuario en Supabase Authentication
+ * 2. Crear o actualizar el registro del usuario en la base de datos usando Prisma
+ * 3. Eliminar el usuario de Supabase Auth en caso de error al guardar en la base de datos
+ * 
+ * @param {SignUpData} data - Datos del usuario para registro (email, contraseña, nombre, etc.)
+ * @param {string} data.email - Correo electrónico del usuario
+ * @param {string} data.password - Contraseña del usuario
+ * @param {string} data.name - Nombre completo del usuario
+ * @param {Date} data.birthday - Fecha de nacimiento
+ * @param {BigInt|null} data.institution_id - ID de la institución (opcional)
+ * @param {BigInt|null} data.career_id - ID de la carrera (opcional)
+ * 
+ * @returns {Promise<User>} El registro de usuario creado en la base de datos
+ */
 export async function saveUser(data: SignUpData) {
   const { email, password, name, birthday, institution_id, career_id } = data;
 
