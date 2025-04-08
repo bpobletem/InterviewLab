@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabase';
 import { PrismaClient } from '@prisma/client';
 import { SignUpData } from '@/types/types';
 import { randomUUID } from 'crypto';
+import { validateInstitutionEmail } from './validateInstitutionEmail';
 
 const prisma = new PrismaClient();
 
@@ -25,6 +26,24 @@ const prisma = new PrismaClient();
  */
 export async function saveUser(data: SignUpData) {
   const { email, password, name, birthday, institution_id, career_id } = data;
+
+  // Verificar el dominio del correo si institution_id está presente
+  if (!institution_id) {
+    throw new Error('Institution ID is required');
+  }
+  
+  if (institution_id) {
+    const { isValid, error: emailError } = await validateInstitutionEmail(
+      email,
+      institution_id
+    );
+
+    if (!isValid) {
+      throw new Error(
+        emailError || 'Dominio invalido'
+      );
+    }
+  }
 
   // Registrar usuario en Supabase Auth
   const { data: authData, error: authError } = await supabase.auth.signUp({
