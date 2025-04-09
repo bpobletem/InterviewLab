@@ -46,6 +46,6 @@ export interface SignUpData {
   password: string;
   name: string;
   birthday: Date;
-  institution_id?: bigint; // Opcional
-  career_id?: bigint; // Opcional
+  institution_id: bigint;
+  career_id: bigint;
 }
