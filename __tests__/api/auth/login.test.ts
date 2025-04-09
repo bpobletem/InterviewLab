@@ -52,7 +52,7 @@ describe('POST /api/auth/login', () => {
 
   // --- Tests de Validación de Entrada ---
 
-  it('should return 400 if email is missing', async () => {
+  it('debería retornar 400 si falta el correo', async () => {
     const mockRequest = createMockRequest({ password: 'password123' });
     const response = await POST(mockRequest);
     const body = await response.json();
@@ -63,7 +63,7 @@ describe('POST /api/auth/login', () => {
     expect(prisma.user.findUnique).not.toHaveBeenCalled();
   });
 
-  it('should return 400 if password is missing', async () => {
+  it('debería retornar 400 si falta la contraseña', async () => {
     const mockRequest = createMockRequest({ email: 'test@example.com' });
     const response = await POST(mockRequest);
     const body = await response.json();
@@ -76,7 +76,7 @@ describe('POST /api/auth/login', () => {
 
   // --- Test de Credenciales Inválidas (Error de Supabase) ---
 
-  it('should return 401 if Supabase authentication fails', async () => {
+  it('debería retornar 401 si la autenticación de Supabase falla', async () => {
     const mockRequest = createMockRequest({ email: 'test@example.com', password: 'wrongpassword' });
     const supabaseError = { message: 'Invalid login credentials', status: 400 }; // Ejemplo de error Supabase
     (supabase.auth.signInWithPassword as jest.Mock).mockResolvedValue({ data: null, error: supabaseError });
@@ -95,7 +95,7 @@ describe('POST /api/auth/login', () => {
 
   // --- Test de Usuario No Encontrado en DB (Prisma) ---
 
-  it('should return 404 if user is authenticated by Supabase but not found in Prisma DB', async () => {
+  it('debería retornar 404 si el usuario está autenticado por Supabase pero no se encuentra en la BD de Prisma', async () => {
     const mockRequest = createMockRequest({ email: 'test@example.com', password: 'password123' });
     const mockSupabaseUser = { id: 'user-id-123', email: 'test@example.com' };
     const mockSupabaseSession = { access_token: 'token', refresh_token: 'refresh' };
@@ -124,7 +124,7 @@ describe('POST /api/auth/login', () => {
 
   // --- Tests de Login Exitoso ---
 
-  it('should return 200 with user and session data if login is successful (no institution)', async () => {
+  it('debería retornar 200 con datos de usuario y sesión si el login es exitoso (sin institución)', async () => {
     const mockRequest = createMockRequest({ email: 'test@example.com', password: 'password123' });
     const mockSupabaseUser = { id: 'user-id-123', email: 'test@example.com', /* otros campos */ };
     const mockSupabaseSession = { access_token: 'token', refresh_token: 'refresh', /* otros campos */ };
@@ -156,7 +156,7 @@ describe('POST /api/auth/login', () => {
     expect(checkInstitutionSubscription).not.toHaveBeenCalled();
   });
 
-  it('should return 200 with user and session data if login is successful (with active institution)', async () => {
+  it('debería retornar 200 con datos de usuario y sesión si el login es exitoso (con institución activa)', async () => {
     const mockRequest = createMockRequest({ email: 'inst_user@example.com', password: 'password123' });
     const mockSupabaseUser = { id: 'user-id-456', email: 'inst_user@example.com' };
     const mockSupabaseSession = { access_token: 'token2', refresh_token: 'refresh2' };
@@ -191,7 +191,7 @@ describe('POST /api/auth/login', () => {
 
   // --- Tests de Lógica de Institución ---
 
-  it('should return 403 if the institution subscription is not active', async () => {
+  it('debería retornar 403 si la suscripción de la institución no está activa', async () => {
     const mockRequest = createMockRequest({ email: 'inactive_inst_user@example.com', password: 'password123' });
     const mockSupabaseUser = { id: 'user-id-789', email: 'inactive_inst_user@example.com' };
     const mockSupabaseSession = { access_token: 'token3', refresh_token: 'refresh3' };
@@ -213,7 +213,7 @@ describe('POST /api/auth/login', () => {
     expect(checkInstitutionSubscription).toHaveBeenCalledWith(mockDbUser.institution_id);
   });
 
-  it('should return 404 if checkInstitutionSubscription returns "Institución no encontrada"', async () => {
+  it('debería retornar 404 si checkInstitutionSubscription devuelve "Institución no encontrada"', async () => {
     const mockRequest = createMockRequest({ email: 'ghost_inst_user@example.com', password: 'password123' });
     const mockSupabaseUser = { id: 'user-id-101', email: 'ghost_inst_user@example.com' };
     const mockSupabaseSession = { access_token: 'token4', refresh_token: 'refresh4' };
@@ -235,7 +235,7 @@ describe('POST /api/auth/login', () => {
     expect(checkInstitutionSubscription).toHaveBeenCalledWith(mockDbUser.institution_id);
   });
 
-  it('should return 500 if checkInstitutionSubscription returns a generic error', async () => {
+  it('debería retornar 500 si checkInstitutionSubscription devuelve un error genérico', async () => {
     const mockRequest = createMockRequest({ email: 'error_inst_user@example.com', password: 'password123' });
     const mockSupabaseUser = { id: 'user-id-202', email: 'error_inst_user@example.com' };
     const mockSupabaseSession = { access_token: 'token5', refresh_token: 'refresh5' };
@@ -260,7 +260,7 @@ describe('POST /api/auth/login', () => {
 
   // --- Test de Error Genérico (catch block) ---
 
-  it('should return 500 if request.json() throws an error', async () => {
+  it('debería retornar 500 si request.json() lanza un error', async () => {
     const mockRequest = {
       json: jest.fn().mockRejectedValue(new Error('Failed to parse JSON')),
     } as unknown as NextRequest;
@@ -280,7 +280,7 @@ describe('POST /api/auth/login', () => {
     consoleErrorSpy.mockRestore(); // Restaura console.error
   });
 
-   it('should return 500 if supabase throws an unexpected error', async () => {
+   it('debería retornar 500 si supabase lanza un error inesperado', async () => {
     const mockRequest = createMockRequest({ email: 'test@example.com', password: 'password123' });
     (supabase.auth.signInWithPassword as jest.Mock).mockRejectedValue(new Error('Supabase network error'));
 
