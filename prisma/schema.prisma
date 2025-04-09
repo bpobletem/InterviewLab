@@ -56,14 +56,14 @@ model Career {
 }
 
 model User {
-  id             String        @id @db.Uuid
+  id             String       @id @db.Uuid
   authId         String       @unique
   name           String
   email          String       @unique
   birthday       DateTime     @db.Date
   institution_id BigInt
   career_id      BigInt
-  institution    Institution? @relation(fields: [institution_id], references: [id])
+  institution    Institution  @relation(fields: [institution_id], references: [id])
   career         Career       @relation(fields: [career_id], references: [id])
   interviews     Interview[]
 
