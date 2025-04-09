@@ -1,58 +1,60 @@
-import Image from "next/image";
-import Link from "next/link";
-
-export default function Home() {
+export default function LandingPage() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-8 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col items-center justify-center flex-1 w-full max-w-4xl px-4 py-16 text-center gap-8">
-        <h1 className="text-5xl font-bold tracking-tight sm:text-6xl">
-          InterviewLab
-        </h1>
-        <p className="mt-4 text-xl text-foreground/70 max-w-2xl">
-          Mejora tus habilidades para entrevistas de trabajo con nuestro simulador de entrevistas impulsado por IA
+    <main className="min-h-screen bg-white text-gray-900 flex flex-col items-center justify-center px-4">
+      <div className="text-center space-y-4 max-w-2xl">
+        <h1 className="text-5xl font-bold">InterviewLab</h1>
+        <p className="text-gray-600 text-lg">
+          Mejora tus habilidades para entrevistas de trabajo con nuestro simulador de entrevistas impulsado por IA.
         </p>
-        
-        <div className="flex flex-col sm:flex-row gap-4 mt-8">
-          <Link
+
+        <div className="flex gap-4 justify-center mt-6">
+          <a
             href="/login"
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-foreground/90 font-medium text-base h-12 px-8"
+            className="bg-gray-900 text-white px-6 py-2 rounded-md font-medium hover:bg-black transition"
           >
             Iniciar sesión
-          </Link>
-          <Link
+          </a>
+          <a
             href="/register"
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-base h-12 px-8"
+            className="border border-gray-300 px-6 py-2 rounded-md font-medium hover:bg-gray-100 transition"
           >
             Registrarse
-          </Link>
+          </a>
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 mt-16 w-full">
-          <div className="p-6 border border-foreground/10 rounded-xl">
-            <h3 className="text-xl font-bold">Entrevistas Realistas</h3>
-            <p className="mt-2 text-foreground/70">Practica con simulaciones de entrevistas que se sienten reales</p>
-          </div>
-          <div className="p-6 border border-foreground/10 rounded-xl">
-            <h3 className="text-xl font-bold">Feedback</h3>
-            <p className="mt-2 text-foreground/70">Recibe retroalimentación detallada para mejorar tus respuestas</p>
-          </div>
-          <div className="p-6 border border-foreground/10 rounded-xl">
-            <h3 className="text-xl font-bold">Personalizado</h3>
-            <p className="mt-2 text-foreground/70">Entrevistas adaptadas a tu industria y nivel de experiencia</p>
-          </div>
-        </div>
-      </main>
+      <div className="mt-20 grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-5xl w-full px-4">
+        <Feature
+          title="Entrevistas Realistas"
+          description="Practica con simulaciones de entrevistas que se sienten reales."
+        />
+        <Feature
+          title="Feedback"
+          description="Recibe retroalimentación detallada para mejorar tus respuestas."
+        />
+        <Feature
+          title="Personalizado"
+          description="Entrevistas adaptadas a tu industria y nivel de experiencia."
+        />
+      </div>
 
-      <footer className="w-full max-w-4xl py-8 border-t border-foreground/10 mt-auto">
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-foreground/70">IntervAI</p>
-          <div className="flex gap-4">
-            <Link href="#" className="text-foreground/70 hover:text-foreground">Términos</Link>
-            <Link href="#" className="text-foreground/70 hover:text-foreground">Privacidad</Link>
-            <Link href="#" className="text-foreground/70 hover:text-foreground">Contacto</Link>
-          </div>
+      <footer className="mt-16 text-sm text-gray-500 flex flex-col items-center gap-1">
+        <span>InterviewLab</span>
+        <div className="flex gap-4">
+          <a href="#">Términos</a>
+          <a href="#">Privacidad</a>
+          <a href="#">Contacto</a>
         </div>
       </footer>
+    </main>
+  )
+}
+
+function Feature({ title, description }: { title: string; description: string }) {
+  return (
+    <div className="border border-gray-200 bg-white p-6 rounded-xl text-center shadow-sm">
+      <h2 className="font-semibold mb-2">{title}</h2>
+      <p className="text-sm text-gray-500">{description}</p>
     </div>
-  );
+  )
 }

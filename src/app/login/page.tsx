@@ -1,106 +1,65 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { supabase } from '@/lib/supabase';
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { supabase } from '@/lib/supabase'
 
-export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
+export default function LoginPage() {
+  const router = useRouter()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
-
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) throw error;
-      router.push('/');
-      router.refresh();
-    } catch (error: any) {
-      setError(error.message || 'An error occurred during login');
-    } finally {
-      setLoading(false);
+    e.preventDefault()
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) {
+      setError(error.message)
+    } else {
+      router.push('/home')
     }
-  };
+  }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-8">
-      <div className="w-full max-w-md space-y-8 rounded-xl border border-foreground/10 bg-background p-8 shadow-md">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold tracking-tight">Login to IntervAI</h2>
-          <p className="mt-2 text-foreground/70">Sign in to your account</p>
-        </div>
-
-        {error && (
-          <div className="rounded-md bg-red-50 p-4 text-sm text-red-700">
-            {error}
-          </div>
-        )}
-
-        <form className="mt-8 space-y-6" onSubmit={handleLogin}>
-          <div className="space-y-4 rounded-md">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium">
-                Email address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-foreground/20 px-3 py-2 shadow-sm focus:border-foreground/50 focus:outline-none focus:ring-1 focus:ring-foreground/50"
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-foreground/20 px-3 py-2 shadow-sm focus:border-foreground/50 focus:outline-none focus:ring-1 focus:ring-foreground/50"
-              />
-            </div>
-          </div>
-
+    <main className="min-h-screen flex items-center justify-center bg-white text-gray-800">
+      <div className="w-full max-w-sm p-6 border border-gray-200 rounded-xl shadow-sm">
+        <h1 className="text-xl font-semibold text-center mb-1">Iniciar sesión en <span className="font-bold text-gray-900">InterviewLab</span></h1>
+        <p className="text-sm text-center text-gray-500 mb-6">Ingresa tus credenciales</p>
+        <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative flex w-full justify-center rounded-md bg-foreground px-3 py-2 text-sm font-medium text-background hover:bg-foreground/90 focus:outline-none focus:ring-2 focus:ring-foreground/50 focus:ring-offset-2 disabled:opacity-70"
-            >
-              {loading ? 'Signing in...' : 'Sign in'}
-            </button>
+            <label htmlFor="email" className="text-sm block mb-1">Correo electrónico</label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-gray-300 text-sm"
+              required
+            />
           </div>
-
-          <div className="flex items-center justify-center text-sm">
-            <p className="text-foreground/70">
-              Don&apos;t have an account?
-              <Link href="/register" className="font-medium text-foreground hover:underline ms-1">
-                Register
-              </Link>
-            </p>
+          <div>
+            <label htmlFor="password" className="text-sm block mb-1">Contraseña</label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-gray-300 text-sm"
+              required
+            />
           </div>
+          {error && <p className="text-red-500 text-sm">{error}</p>}
+          <button
+            type="submit"
+            className="w-full py-2 text-sm bg-gray-900 text-white rounded-md hover:bg-black transition"
+          >
+            Ingresar
+          </button>
         </form>
+        <p className="text-xs text-center text-gray-500 mt-6">
+          ¿No tienes cuenta? <a href="/register" className="text-gray-800 underline">Regístrate</a>
+        </p>
       </div>
-    </div>
-  );
+    </main>
+  )
 }
