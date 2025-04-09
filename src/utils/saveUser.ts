@@ -38,11 +38,11 @@ export async function saveUser(data: SignUpData) {
     throw new Error('Este correo electrónico ya está registrado');
   }
 
-  // Verificar el dominio del correo si institution_id está presente
-  if (!institution_id) {
-    throw new Error('Institution requerida');
+  if (!email || !password || !name || !birthday || !career_id || !institution_id) {
+    throw new Error('Todos los campos son requeridos');
   }
   
+  // Verificar el dominio del correo si institution_id está presente
   if (institution_id) {
     const { isValid, error: emailError } = await validateInstitutionEmail(
       email,

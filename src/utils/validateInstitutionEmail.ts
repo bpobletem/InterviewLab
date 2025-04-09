@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 
-// Inicializar Prisma
-const prisma = new PrismaClient();
 
 // Interfaz para el resultado de la verificación
 interface EmailRestrictionResult {
@@ -58,7 +56,5 @@ export async function validateInstitutionEmail(
   } catch (error) {
     console.error('Error restricting email by institution:', error);
     return { isValid: false, error: 'Failed to verify email domain' };
-  } finally {
-    await prisma.$disconnect();
   }
 }
