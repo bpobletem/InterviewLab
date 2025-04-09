@@ -27,8 +27,8 @@ export async function POST(req: NextRequest) {
       password,
       name,
       birthday: new Date(birthday), // Asegúrate de que sea un Date
-      institution_id: institution_id ? BigInt(institution_id) : undefined,
-      career_id: career_id ? BigInt(career_id) : undefined,
+      institution_id: BigInt(institution_id),
+      career_id: BigInt(career_id),
     });
     return new Response(JSON.stringify({ user }), { status: 201 });
   } catch (error) {
