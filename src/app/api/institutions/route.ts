@@ -36,13 +36,12 @@ export async function GET() {
         name: 'asc'
       }
     });
-
-    const serializedInstitutions = institutions.map(institution => ({
+    const serializedInstitutions = institutions.map((institution: { id: bigint, name: string }) => ({
       ...institution,
       id: institution.id.toString()
     }));
 
-    return NextResponse.json({ serializedInstitutions }, { status: 200 });
+    return NextResponse.json({ institutions: serializedInstitutions }, { status: 200 });
   } catch (error) {
     console.error('Error fetching institutions:', error);
     return NextResponse.json(
