@@ -44,6 +44,7 @@ model Institution {
 
 model Career {
   id             BigInt      @id @default(autoincrement())
+  name           String
   institution_id BigInt
   area_id        BigInt
   institution    Institution @relation(fields: [institution_id], references: [id])
