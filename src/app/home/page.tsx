@@ -17,7 +17,6 @@ export default function HomePage() {
                 return
             }
 
-            // Puedes personalizar esto si tu usuario tiene un campo personalizado como `name`
             const name = data.user.user_metadata?.name || data.user.email
             setUserName(name)
         }
