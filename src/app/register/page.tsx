@@ -74,14 +74,16 @@ export default function RegisterPage() {
       method: 'POST',
       body: JSON.stringify({
         id: data.user?.id,
-        name,
-        birthdate: new Date(birthdate), // Enviar la fecha de nacimiento como Date
-        careerId: selectedCareer
+        email,
+        birthdate: new Date(birthdate),
+        careerId: selectedCareer,
+        institutionId: selectedInstitution
       }),
       headers: {
         'Content-Type': 'application/json'
       }
     })
+    
 
     router.push('/login')
   }
