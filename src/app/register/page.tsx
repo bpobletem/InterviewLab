@@ -9,14 +9,14 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
-  const [birthdate, setBirthdate] = useState('') // Nuevo estado para la fecha de nacimiento
+  const [birthdate, setBirthdate] = useState('')
+  const [birthdateError, setBirthdateError] = useState('')
   const [institutions, setInstitutions] = useState([])
   const [careers, setCareers] = useState([])
   const [selectedInstitution, setSelectedInstitution] = useState('')
   const [selectedCareer, setSelectedCareer] = useState('')
   const [error, setError] = useState<string | null>(null)
 
-  // Cargar las instituciones al montar el componente
   useEffect(() => {
     const fetchInstitutions = async () => {
       try {
@@ -32,7 +32,6 @@ export default function RegisterPage() {
     fetchInstitutions()
   }, [])
 
-  // Cargar las carreras cuando se seleccione una institución
   useEffect(() => {
     const fetchCareers = async () => {
       if (!selectedInstitution) return
@@ -50,12 +49,25 @@ export default function RegisterPage() {
     fetchCareers()
   }, [selectedInstitution])
 
-  // Manejar el registro de usuario
+  const isValidBirthdate = (date: string) => {
+    const birth = new Date(date)
+    const today = new Date()
+    const age = today.getFullYear() - birth.getFullYear()
+    const m = today.getMonth() - birth.getMonth()
+    const d = today.getDate() - birth.getDate()
+    return age > 16 || (age === 16 && (m > 0 || (m === 0 && d >= 0)))
+  }
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!selectedCareer) {
       setError('Por favor selecciona una carrera.')
+      return
+    }
+
+    if (!isValidBirthdate(birthdate)) {
+      setBirthdateError('Debes tener al menos 16 años')
       return
     }
 
@@ -69,21 +81,18 @@ export default function RegisterPage() {
       return
     }
 
-    // Enviar los datos del nuevo usuario a la API
     await fetch('/api/users', {
       method: 'POST',
       body: JSON.stringify({
         id: data.user?.id,
-        email,
+        name,
         birthdate: new Date(birthdate),
-        careerId: selectedCareer,
-        institutionId: selectedInstitution
+        careerId: selectedCareer
       }),
       headers: {
         'Content-Type': 'application/json'
       }
     })
-    
 
     router.push('/login')
   }
@@ -128,10 +137,21 @@ export default function RegisterPage() {
             <input
               type="date"
               value={birthdate}
-              onChange={(e) => setBirthdate(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value
+                setBirthdate(value)
+                if (!isValidBirthdate(value)) {
+                  setBirthdateError('Debes tener al menos 16 años')
+                } else {
+                  setBirthdateError('')
+                }
+              }}
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
             />
+            {birthdateError && (
+              <p className="text-sm text-red-500 mt-1">{birthdateError}</p>
+            )}
           </div>
           <div>
             <label className="text-sm block mb-1">Institución</label>
