@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -71,30 +70,34 @@ export default function RegisterPage() {
       return
     }
 
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password
-    })
+    try {
+      const res = await fetch('/api/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          name,
+          birthday: new Date(birthdate),
+          institution_id: selectedInstitution,
+          career_id: selectedCareer
+        })
+      })
 
-    if (error) {
-      setError(error.message)
-      return
-    }
+      const result = await res.json()
 
-    await fetch('/api/users', {
-      method: 'POST',
-      body: JSON.stringify({
-        id: data.user?.id,
-        name,
-        birthdate: new Date(birthdate),
-        careerId: selectedCareer
-      }),
-      headers: {
-        'Content-Type': 'application/json'
+      if (!res.ok) {
+        setError(result.message || 'Error al registrar usuario')
+        return
       }
-    })
 
-    router.push('/login')
+      router.push('/login')
+    } catch (err) {
+      console.error('Error en el registro:', err)
+      setError('Hubo un error al registrar el usuario.')
+    }
   }
 
   return (

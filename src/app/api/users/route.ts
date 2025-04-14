@@ -30,7 +30,16 @@ export async function POST(req: NextRequest) {
       institution_id: BigInt(institution_id),
       career_id: BigInt(career_id),
     });
-    return new Response(JSON.stringify({ user }), { status: 201 });
+
+    // Convierte los BigInt a string para poder serializarlos correctamente
+    const safeUser = {
+      ...user,
+      id: user.id?.toString?.(),               // Por si id es BigInt
+      institution_id: user.institution_id?.toString?.(),
+      career_id: user.career_id?.toString?.(),
+    };
+
+    return new Response(JSON.stringify({ user: safeUser }), { status: 201 });
   } catch (error) {
     console.error('Error saving user:', error);
     return NextResponse.json(

@@ -39,7 +39,7 @@ export async function GET(
   try {
     // Intentamos convertir el ID de la URL a BigInt.
     // Si params.id no es un número entero válido (ej: "abc", "1.5"), esto lanzará un error.
-    institutionId = BigInt(params.id);
+    institutionId = await BigInt(params.id);
   } catch (error) {
     console.error('Invalid institution ID format:', params.id, error);
     return NextResponse.json(

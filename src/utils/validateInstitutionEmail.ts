@@ -24,7 +24,7 @@ export async function validateInstitutionEmail(
     }
 
     // Extraer el dominio del correo
-    const emailDomain = email.substring(email.lastIndexOf('@')).toLowerCase();
+    const emailDomain = email.substring(email.lastIndexOf('@') + 1).toLowerCase();
     if (!emailDomain) {
       return { isValid: false, error: 'Formato incorrecto' };
     }
