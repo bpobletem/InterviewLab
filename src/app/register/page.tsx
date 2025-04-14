@@ -1,139 +1,205 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { supabase } from '@/lib/supabase';
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 
-export default function Register() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
+export default function RegisterPage() {
+  const router = useRouter()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [name, setName] = useState('')
+  const [birthdate, setBirthdate] = useState('')
+  const [birthdateError, setBirthdateError] = useState('')
+  const [institutions, setInstitutions] = useState([])
+  const [careers, setCareers] = useState([])
+  const [selectedInstitution, setSelectedInstitution] = useState('')
+  const [selectedCareer, setSelectedCareer] = useState('')
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchInstitutions = async () => {
+      try {
+        const res = await fetch('/api/institutions')
+        const data = await res.json()
+        setInstitutions(data.institutions)
+      } catch (err) {
+        console.error('Error al cargar instituciones', err)
+        setError('Error al cargar las instituciones.')
+      }
+    }
+
+    fetchInstitutions()
+  }, [])
+
+  useEffect(() => {
+    const fetchCareers = async () => {
+      if (!selectedInstitution) return
+
+      try {
+        const res = await fetch(`/api/institutions/${selectedInstitution}/careers`)
+        const data = await res.json()
+        setCareers(data.careers)
+      } catch (err) {
+        console.error('Error al cargar carreras', err)
+        setError('Error al cargar las carreras.')
+      }
+    }
+
+    fetchCareers()
+  }, [selectedInstitution])
+
+  const isValidBirthdate = (date: string) => {
+    const birth = new Date(date)
+    const today = new Date()
+    const age = today.getFullYear() - birth.getFullYear()
+    const m = today.getMonth() - birth.getMonth()
+    const d = today.getDate() - birth.getDate()
+    return age > 16 || (age === 16 && (m > 0 || (m === 0 && d >= 0)))
+  }
 
   const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
+    e.preventDefault()
+
+    if (!selectedCareer) {
+      setError('Por favor selecciona una carrera.')
+      return
+    }
+
+    if (!isValidBirthdate(birthdate)) {
+      setBirthdateError('Debes tener al menos 16 años')
+      return
+    }
 
     try {
-      // Register with Supabase Auth
-      const { data, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-      });
-
-      if (authError) throw authError;
-      if (!data.user) throw new Error('User registration failed');
-
-      // Create user in our database
-      const response = await fetch('/api/users', {
+      const res = await fetch('/api/users', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          id: data.user.id,
+          email,
+          password,
           name,
-        }),
-      });
+          birthday: new Date(birthdate),
+          institution_id: selectedInstitution,
+          career_id: selectedCareer
+        })
+      })
 
-      if (!response.ok) {
-        throw new Error('Failed to create user profile');
+      const result = await res.json()
+
+      if (!res.ok) {
+        setError(result.message || 'Error al registrar usuario')
+        return
       }
 
-      router.push('/login');
-    } catch (error: any) {
-      setError(error.message || 'An error occurred during registration');
-    } finally {
-      setLoading(false);
+      router.push('/login')
+    } catch (err) {
+      console.error('Error en el registro:', err)
+      setError('Hubo un error al registrar el usuario.')
     }
-  };
+  }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-8">
-      <div className="w-full max-w-md space-y-8 rounded-xl border border-foreground/10 bg-background p-8 shadow-md">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold tracking-tight">Register for IntervAI</h2>
-          <p className="mt-2 text-foreground/70">Create your account</p>
-        </div>
-
-        {error && (
-          <div className="rounded-md bg-red-50 p-4 text-sm text-red-700">
-            {error}
-          </div>
-        )}
-
-        <form className="mt-8 space-y-6" onSubmit={handleRegister}>
-          <div className="space-y-4 rounded-md">
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium">
-                Full Name
-              </label>
-              <input
-                id="name"
-                name="name"
-                type="text"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-foreground/20 px-3 py-2 shadow-sm focus:border-foreground/50 focus:outline-none focus:ring-1 focus:ring-foreground/50"
-              />
-            </div>
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium">
-                Email address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-foreground/20 px-3 py-2 shadow-sm focus:border-foreground/50 focus:outline-none focus:ring-1 focus:ring-foreground/50"
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-foreground/20 px-3 py-2 shadow-sm focus:border-foreground/50 focus:outline-none focus:ring-1 focus:ring-foreground/50"
-              />
-            </div>
-          </div>
-
+    <main className="min-h-screen flex items-center justify-center bg-white text-gray-800">
+      <div className="w-full max-w-sm p-6 border border-gray-200 rounded-xl shadow-sm">
+        <h1 className="text-xl font-semibold text-center mb-1">Regístrate en <span className="font-bold text-gray-900">InterviewLab</span></h1>
+        <form onSubmit={handleRegister} className="space-y-4">
           <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative flex w-full justify-center rounded-md bg-foreground px-3 py-2 text-sm font-medium text-background hover:bg-foreground/90 focus:outline-none focus:ring-2 focus:ring-foreground/50 focus:ring-offset-2 disabled:opacity-70"
+            <label className="text-sm block mb-1">Nombre</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+            />
+          </div>
+          <div>
+            <label className="text-sm block mb-1">Correo electrónico</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+            />
+          </div>
+          <div>
+            <label className="text-sm block mb-1">Contraseña</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+            />
+          </div>
+          <div>
+            <label className="text-sm block mb-1">Fecha de Nacimiento</label>
+            <input
+              type="date"
+              value={birthdate}
+              onChange={(e) => {
+                const value = e.target.value
+                setBirthdate(value)
+                if (!isValidBirthdate(value)) {
+                  setBirthdateError('Debes tener al menos 16 años')
+                } else {
+                  setBirthdateError('')
+                }
+              }}
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+            />
+            {birthdateError && (
+              <p className="text-sm text-red-500 mt-1">{birthdateError}</p>
+            )}
+          </div>
+          <div>
+            <label className="text-sm block mb-1">Institución</label>
+            <select
+              value={selectedInstitution}
+              onChange={(e) => setSelectedInstitution(e.target.value)}
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
             >
-              {loading ? 'Registering...' : 'Register'}
-            </button>
+              <option value="">Selecciona una institución</option>
+              {institutions.map((institution: any) => (
+                <option key={institution.id} value={institution.id}>
+                  {institution.name}
+                </option>
+              ))}
+            </select>
           </div>
-
-          <div className="flex items-center justify-center text-sm">
-            <p className="text-foreground/70">
-              Already have an account?{' '}
-              <Link href="/login" className="font-medium text-foreground hover:underline">
-                Login
-              </Link>
-            </p>
+          <div>
+            <label className="text-sm block mb-1">Carrera</label>
+            <select
+              value={selectedCareer}
+              onChange={(e) => setSelectedCareer(e.target.value)}
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+            >
+              <option value="">Selecciona una carrera</option>
+              {careers.map((career: any) => (
+                <option key={career.id} value={career.id}>
+                  {career.area.name} - {career.name}
+                </option>
+              ))}
+            </select>
           </div>
+          {error && <p className="text-red-500 text-sm">{error}</p>}
+          <button
+            type="submit"
+            className="w-full py-2 text-sm bg-gray-900 text-white rounded-md hover:bg-black transition"
+          >
+            Registrarse
+          </button>
         </form>
+        <p className="text-xs text-center text-gray-500 mt-6">
+          ¿Ya tienes cuenta? <a href="/login" className="text-gray-800 underline">Inicia sesión</a>
+        </p>
       </div>
-    </div>
-  );
+    </main>
+  )
 }
