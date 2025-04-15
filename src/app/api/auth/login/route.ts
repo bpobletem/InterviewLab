@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
 
     // Buscar el institution_id del usuario usando Prisma
     const dbUser = await prisma.user.findUnique({
-      where: { id: user.id },
+      where: { authId: user.id },
       select: { institution_id: true },
     });
 
@@ -45,14 +45,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Si el usuario no tiene una institución asociada, permitir el login
+    // Si el usuario no tiene una institución asociada, no permitir el login
     if (!dbUser.institution_id) {
       return NextResponse.json(
-        {
-          user: data.user,
-          session: data.session,
-        },
-        { status: 200 }
+        { error: "No hay institucion asociada" },
+        { status: 400 }
       );
     }
 

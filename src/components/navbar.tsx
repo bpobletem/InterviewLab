@@ -19,7 +19,7 @@ export default function Navbar() {
                 <Link href="/home" className="text-gray-600 hover:text-black transition">Inicio</Link>
                 <button
                     onClick={handleLogout}
-                    className="text-gray-500 hover:text-black transition"
+                    className="text-gray-500 hover:text-black transition hover:cursor-pointer"
                 >
                     Cerrar sesión
                 </button>
