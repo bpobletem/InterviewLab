@@ -49,9 +49,6 @@ export function Conversation({ resume, jobDescription }: ConversationProps) {
           `,
         },
       },
-      tts: {
-        voiceId: process.env.NEXT_PUBLIC_VOICE_ID as string,
-      },
     },
   });
 
