@@ -1,5 +1,5 @@
 'use client'
-
+import Navbar from '@/components/navbar'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
@@ -25,8 +25,11 @@ export default function HomePage() {
     }, [router])
 
     return (
-        <main className="flex items-center justify-center min-h-screen bg-white text-gray-800">
-            <h1 className="text-2xl font-semibold">Hola, {userName ?? 'cargando...'}</h1>
-        </main>
+        <>
+            <Navbar />
+            <main className="flex items-center justify-center min-h-[calc(100vh-60px)] bg-white text-gray-800">
+                <h1 className="text-2xl font-semibold">Hola, {userName ?? 'cargando...'}</h1>
+            </main>
+        </>
     )
 }
