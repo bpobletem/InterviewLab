@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Career, Institution } from '@prisma/client'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -80,7 +81,7 @@ export default function RegisterPage() {
           email,
           password,
           name,
-          birthday: new Date(birthdate),
+          birthday: birthdate,
           institution_id: selectedInstitution,
           career_id: selectedCareer
         })
@@ -165,8 +166,8 @@ export default function RegisterPage() {
               className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
             >
               <option value="">Selecciona una institución</option>
-              {institutions.map((institution: any) => (
-                <option key={institution.id} value={institution.id}>
+              {institutions.map((institution: Institution) => (
+                <option key={institution.id} value={institution.id.toString()}>
                   {institution.name}
                 </option>
               ))}
@@ -181,9 +182,9 @@ export default function RegisterPage() {
               className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
             >
               <option value="">Selecciona una carrera</option>
-              {careers.map((career: any) => (
-                <option key={career.id} value={career.id}>
-                  {career.area.name} - {career.name}
+              {careers.map((career: Career) => (
+                <option key={career.id} value={career.id.toString()}>
+                  {career.name}
                 </option>
               ))}
             </select>
