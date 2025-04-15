@@ -3,9 +3,12 @@
 import { useConversation } from '@11labs/react';
 import { useCallback } from 'react';
 
-export function Conversation() {
-  const resume = process.env.NEXT_PUBLIC_RESUME;
-  const jobDescription = process.env.NEXT_PUBLIC_JOB_DESCRIPTION;
+interface ConversationProps {
+  resume: string;
+  jobDescription: string;
+}
+
+export function Conversation({ resume, jobDescription }: ConversationProps) {
   const conversation = useConversation({
     overrides: {
       agent: {
@@ -73,15 +76,15 @@ export function Conversation() {
       <div className="flex gap-2">
         <button
           onClick={startConversation}
-          disabled={conversation.status === 'connected'}
-          className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
+          disabled={conversation.status === 'connected' || !resume || !jobDescription}
+          className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300 hover:cursor-pointer"
         >
           Start Conversation
         </button>
         <button
           onClick={stopConversation}
           disabled={conversation.status !== 'connected'}
-          className="px-4 py-2 bg-red-500 text-white rounded disabled:bg-gray-300"
+          className="px-4 py-2 bg-red-500 text-white rounded disabled:bg-gray-300 hover:cursor-pointer"
         >
           Stop Conversation
         </button>
@@ -89,6 +92,11 @@ export function Conversation() {
 
       <div className="flex flex-col items-center">
         <p>Status: {conversation.status}</p>
+        {!resume && !jobDescription && (
+          <p className="text-sm text-amber-600">
+            Sube un currículum y una descripción del trabajo para comenzar
+          </p>
+        )}
       </div>
     </div>
   );
