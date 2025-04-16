@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
     // const interview = await prisma.interview.create({
     //   data: {
     //     user_id: userId,
-    //     resume_url: resumeText,
+    //     resume: resumeText,
     //     job_description: text,
     //     created_at: new Date(),
     //   },

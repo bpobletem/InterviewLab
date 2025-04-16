@@ -92,7 +92,7 @@ model Interview {
   user_id         String    @db.Uuid
   job_description String    @db.Text
   job_type_id     BigInt?
-  resume_url      String    @db.Text
+  resume          String    @db.Text
   created_at      DateTime  @default(now())
   
   user            User      @relation(fields: [user_id], references: [id])
