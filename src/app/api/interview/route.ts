@@ -3,21 +3,10 @@ import { supabase } from '@/lib/supabase';
 import { prisma } from '@/lib/prisma';
 import pdf from 'pdf-parse';
 
-// GET handler (unchanged)
-export async function GET(request: NextRequest) {
-  try {
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    
-    const userId = session.user.id;
-    
+// GET all interviews
+export async function GET() {
+  try { 
     const interviews = await prisma.interview.findMany({
-      where: {
-        user_id: userId
-      },
       orderBy: {
         created_at: 'desc'
       }
