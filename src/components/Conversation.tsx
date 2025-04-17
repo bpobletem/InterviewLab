@@ -1,7 +1,7 @@
 'use client';
 
 import { useConversation } from '@11labs/react';
-import { useCallback } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 
 interface ConversationProps {
   resume: string;
@@ -52,23 +52,55 @@ export function Conversation({ resume, jobDescription }: ConversationProps) {
     },
   });
 
+  const [isListening, setIsListening] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+
   const startConversation = useCallback(async () => {
     try {
       // Permiso del navegador para acceder al micrófono
       await navigator.mediaDevices.getUserMedia({ audio: true });
 
-      // Empezar la entrevista
+      // Iniciar la sesión de conversación
       await conversation.startSession({
         agentId: (process.env.NEXT_PUBLIC_AGENT_ID as string),
       });
 
+      // Inicialmente, el entrevistador está hablando
+      setIsSpeaking(true);
+
+      // Simular que está escuchando después de un tiempo
+      setTimeout(() => {
+        setIsSpeaking(false); // Deja de hablar
+        setIsListening(true); // Comienza a escuchar
+      }, 5000); // Cambia a escuchar después de 5 segundos
+
+      setTimeout(() => {
+        setIsListening(false); // Deja de escuchar después de 3 segundos
+        setIsSpeaking(true); // Comienza a hablar nuevamente
+      }, 8000); // El entrevistador habla por 3 segundos
+
+      // Mantener los estados mientras la entrevista está activa
+      const interval = setInterval(() => {
+        if (conversation.status === 'connected') {
+          setIsSpeaking(true);
+          setIsListening(false);
+          setTimeout(() => {
+            setIsSpeaking(false);
+            setIsListening(true);
+          }, 5000); // Alternar cada 5 segundos entre escuchar y hablar
+        } else {
+          clearInterval(interval);
+        }
+      }, 10000); // Cada 10 segundos se hace el cambio de estado (escuchar / hablar)
     } catch (error) {
-      console.error('Failed to start conversation:', error);
+      console.error('Error al iniciar la conversación:', error);
     }
   }, [conversation]);
 
   const stopConversation = useCallback(async () => {
     await conversation.endSession();
+    setIsListening(false);
+    setIsSpeaking(false);
   }, [conversation]);
 
   return (
@@ -79,19 +111,44 @@ export function Conversation({ resume, jobDescription }: ConversationProps) {
           disabled={conversation.status === 'connected' || !resume || !jobDescription}
           className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300 hover:cursor-pointer"
         >
-          Start Conversation
+          Iniciar Conversación
         </button>
         <button
           onClick={stopConversation}
           disabled={conversation.status !== 'connected'}
           className="px-4 py-2 bg-red-500 text-white rounded disabled:bg-gray-300 hover:cursor-pointer"
         >
-          Stop Conversation
+          Detener Conversación
         </button>
       </div>
 
+      <div className="flex items-center gap-2 mt-4">
+        <span className="text-lg text-gray-600 font-semibold">Estado del entrevistador:</span>
+        <div
+          className={`w-12 h-12 rounded-full ${
+            conversation.status !== 'connected'
+              ? 'bg-gray-300'
+              : isSpeaking
+              ? 'bg-blue-500 animate-pulse'
+              : isListening
+              ? 'bg-green-500 animate-pulse'
+              : 'bg-gray-400'
+          }`}
+        />
+      </div>
+
+      {/* Mensajes de estado */}
+      <div className="mt-2 text-lg">
+        {isListening && (
+          <p className="text-green-500 font-semibold">El entrevistador está escuchando...</p>
+        )}
+        {isSpeaking && (
+          <p className="text-blue-500 font-semibold">El entrevistador está hablando...</p>
+        )}
+      </div>
+
       <div className="flex flex-col items-center">
-        <p>Status: {conversation.status}</p>
+        <p className="text-xl font-bold">{conversation.status === 'connected' ? 'Entrevista en curso' : 'Esperando para iniciar'}</p>
         {!resume && !jobDescription && (
           <p className="text-sm text-amber-600">
             Sube un currículum y una descripción del trabajo para comenzar
