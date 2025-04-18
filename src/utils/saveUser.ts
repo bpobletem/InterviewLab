@@ -41,7 +41,7 @@ export async function saveUser(data: SignUpData) {
   if (!email || !password || !name || !birthday || !career_id || !institution_id) {
     throw new Error('Todos los campos son requeridos');
   }
-  
+
   // Verificar el dominio del correo si institution_id está presente
   if (institution_id) {
     const { isValid, error: emailError } = await validateInstitutionEmail(
@@ -78,7 +78,7 @@ export async function saveUser(data: SignUpData) {
       update: {
         email,
         name,
-        birthday, 
+        birthday,
         institution_id,
         career_id,
       },

@@ -1,35 +1,36 @@
-'use client'
-import Navbar from '@/components/navbar'
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
+import { cookies } from 'next/headers'
+import { createServerClient } from '@supabase/ssr'
+import { redirect } from 'next/navigation'
 
-export default function HomePage() {
-    const [userName, setUserName] = useState<string | null>(null)
-    const router = useRouter()
+export default async function HomePage() {
+    const cookieStore = cookies()
 
-    useEffect(() => {
-        const getUser = async () => {
-            const { data, error } = await supabase.auth.getUser()
-
-            if (error || !data.user) {
-                router.push('/login') // Si no hay usuario, lo manda al login
-                return
+    const supabase = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+            cookies: {
+                get(name: string) {
+                    return cookieStore.get(name)?.value
+                },
+                set() { }, // App Router aún no permite modificar cookies aquí
+                remove() { }
             }
-
-            const name = data.user.user_metadata?.name || data.user.email
-            setUserName(name)
         }
+    )
 
-        getUser()
-    }, [router])
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        redirect('/login')
+    }
 
     return (
-        <>
-            <Navbar />
-            <main className="flex items-center justify-center min-h-[calc(100vh-60px)] bg-white text-gray-800">
-                <h1 className="text-2xl font-semibold">Hola, {userName ?? 'cargando...'}</h1>
-            </main>
-        </>
+        <main className="min-h-screen flex items-center justify-center bg-white text-gray-800 px-4">
+            <div className="text-center space-y-4">
+                <h1 className="text-3xl font-bold">Hola, {user.email}</h1>
+                <p className="text-gray-600">Bienvenido a InterviewLab</p>
+            </div>
+        </main>
     )
 }
