@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/utils/supabase/server';
 import { prisma } from '@/lib/prisma'
 import { SignUpData } from '@/types/types';
 import { randomUUID } from 'crypto';
@@ -26,6 +26,7 @@ import { validateInstitutionEmail } from './validateInstitutionEmail';
  * @throws {Error} Si el correo ya está registrado o hay otros errores
  */
 export async function saveUser(data: SignUpData) {
+  const supabase = await createClient();
   const { email, password, name, birthday, institution_id, career_id } = data;
 
   // Verificar que el correo no esté ya registrado
