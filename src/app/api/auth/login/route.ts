@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase'; // Usar la instancia singleton de Supabase
+import { createClient } from '@/utils/supabase/server'; // Importar la función para crear el cliente de Supabase
 import { prisma } from '@/lib/prisma'; // Usar la instancia singleton de Prisma
 import { checkInstitutionSubscription } from '@/utils/checkInstitutionSubscription';
 
 // POST /api/auth/login - Validate login credentials
 export async function POST(request: NextRequest) {
   try {
+    const supabase = await createClient();
+
     const { email, password } = await request.json();
 
     // Validar que se proporcionen email y contraseña
