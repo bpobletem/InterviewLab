@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/utils/supabase/server';
 import { prisma } from '@/lib/prisma'
 import { SignUpData } from '@/types/types';
 import { randomUUID } from 'crypto';
@@ -26,6 +26,7 @@ import { validateInstitutionEmail } from './validateInstitutionEmail';
  * @throws {Error} Si el correo ya está registrado o hay otros errores
  */
 export async function saveUser(data: SignUpData) {
+  const supabase = await createClient();
   const { email, password, name, birthday, institution_id, career_id } = data;
 
   // Verificar que el correo no esté ya registrado
@@ -41,7 +42,7 @@ export async function saveUser(data: SignUpData) {
   if (!email || !password || !name || !birthday || !career_id || !institution_id) {
     throw new Error('Todos los campos son requeridos');
   }
-  
+
   // Verificar el dominio del correo si institution_id está presente
   if (institution_id) {
     const { isValid, error: emailError } = await validateInstitutionEmail(
@@ -78,7 +79,7 @@ export async function saveUser(data: SignUpData) {
       update: {
         email,
         name,
-        birthday, 
+        birthday,
         institution_id,
         career_id,
       },
