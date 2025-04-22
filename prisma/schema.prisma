@@ -105,9 +105,9 @@ model Interview {
 }
 
 model Conversation {
-  id           BigInt    @id @default(autoincrement())
+  id           String    @id
   interview_id BigInt    @unique
-  details      Json      @db.JsonB
+  details      Json?      @db.JsonB
 
   interview    Interview @relation(fields: [interview_id], references: [id])
 
