@@ -79,7 +79,7 @@ export function ResumeForm({ setResume, setJobDescription }: ResumeFormProps) {
             type="file"
             id="file"
             onChange={handleFileChange}
-            className="w-full px-3 py-2 border text-gray-700 border-gray-300 rounded-md"
+            className="w-full px-3 py-2 border text-gray-700 border-gray-300 rounded-md cursor-pointer"
             accept="application/pdf"
           />
           {file && (
@@ -106,7 +106,7 @@ export function ResumeForm({ setResume, setJobDescription }: ResumeFormProps) {
           <button
             type="submit"
             disabled={isLoading || !isFormComplete}
-            className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md disabled:opacity-50 hover:cursor-pointer"
+            className="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-black transition cursor-pointer disabled:bg-gray-300"
           >
             {isLoading ? 'Subiendo...' : 'Enviar'}
           </button>

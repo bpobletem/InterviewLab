@@ -106,20 +106,20 @@ export function Conversation({ resume, jobDescription }: ConversationProps) {
   return (
     <div className="flex flex-col items-center gap-4">
       <div className="flex gap-2">
-        <button
-          onClick={startConversation}
-          disabled={conversation.status === 'connected' || !resume || !jobDescription}
-          className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300 hover:cursor-pointer"
-        >
-          Iniciar Conversación
-        </button>
-        <button
-          onClick={stopConversation}
-          disabled={conversation.status !== 'connected'}
-          className="px-4 py-2 bg-red-500 text-white rounded disabled:bg-gray-300 hover:cursor-pointer"
-        >
-          Detener Conversación
-        </button>
+      <button
+       onClick={startConversation}
+       disabled={conversation.status === 'connected' || !resume || !jobDescription}
+      className="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-black transition cursor-pointer disabled:bg-gray-300"
+      >
+        Iniciar Conversación
+      </button>
+      <button
+        onClick={stopConversation}
+        disabled={conversation.status !== 'connected'}
+        className="px-4 py-2 bg-red-700 text-white rounded-md hover:bg-red-800 transition cursor-pointer disabled:bg-gray-300"
+      >
+        Detener Conversación
+      </button>
       </div>
 
       <div className="flex items-center gap-2 mt-4">
