@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/utils/supabase/server';
 import { prisma } from '@/lib/prisma';
 import pdf from 'pdf-parse';
 
@@ -22,14 +22,23 @@ export async function GET() {
 // POST handler
 export async function POST(request: NextRequest) {
   try {
+    const supabase = await createClient();
     // Obtener usuario
-    // const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await supabase.auth.getSession();
 
-    // if (!session) {
-    //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    // }
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-    // const userId = session.user.id;
+    const userAuthId = session.user.id;
+    const user = await prisma.user.findUnique({
+      where: { authId: userAuthId },
+      select: { id: true }
+    });
+
+    if (!user) { 
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     // Procesar el formulario multipart
     const formData = await request.formData();
@@ -57,14 +66,14 @@ export async function POST(request: NextRequest) {
     const resumeText = pdfData.text;
 
     // Guardar en la base de datos
-    // const interview = await prisma.interview.create({
-    //   data: {
-    //     user_id: userId,
-    //     resume: resumeText,
-    //     job_description: text,
-    //     created_at: new Date(),
-    //   },
-    // });
+    await prisma.interview.create({
+      data: {
+        user_id: user.id,
+        resume: resumeText,
+        job_description: text,
+        created_at: new Date(),
+      },
+    });
 
     // Devolver los datos procesados
     return NextResponse.json({
