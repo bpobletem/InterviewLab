@@ -1,7 +1,7 @@
 'use client';
 
 import { useConversation } from '@11labs/react';
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 
 interface ConversationProps {
   resume: string;
@@ -60,9 +60,6 @@ export function Conversation({ resume, jobDescription, interviewId }: Conversati
     },
   });
 
-  const [isListening, setIsListening] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
-
   const startConversation = useCallback(async () => {
     try {
       // Permiso del navegador para acceder al micrófono
@@ -85,35 +82,6 @@ export function Conversation({ resume, jobDescription, interviewId }: Conversati
         }),
       });
 
-      console.log(conversationid, interviewId)
-
-      // Inicialmente, el entrevistador está hablando
-      setIsSpeaking(true);
-
-      // Simular que está escuchando después de un tiempo
-      setTimeout(() => {
-        setIsSpeaking(false); // Deja de hablar
-        setIsListening(true); // Comienza a escuchar
-      }, 5000); // Cambia a escuchar después de 5 segundos
-
-      setTimeout(() => {
-        setIsListening(false); // Deja de escuchar después de 3 segundos
-        setIsSpeaking(true); // Comienza a hablar nuevamente
-      }, 8000); // El entrevistador habla por 3 segundos
-
-      // Mantener los estados mientras la entrevista está activa
-      const interval = setInterval(() => {
-        if (conversation.status === 'connected') {
-          setIsSpeaking(true);
-          setIsListening(false);
-          setTimeout(() => {
-            setIsSpeaking(false);
-            setIsListening(true);
-          }, 5000); // Alternar cada 5 segundos entre escuchar y hablar
-        } else {
-          clearInterval(interval);
-        }
-      }, 10000); // Cada 10 segundos se hace el cambio de estado (escuchar / hablar)
     } catch (error) {
       console.error('Error al iniciar la conversación:', error);
     }
@@ -121,51 +89,32 @@ export function Conversation({ resume, jobDescription, interviewId }: Conversati
 
   const stopConversation = useCallback(async () => {
     await conversation.endSession();
-    setIsListening(false);
-    setIsSpeaking(false);
   }, [conversation]);
 
   return (
     <div className="flex flex-col items-center gap-4">
       <div className="flex gap-2">
-      <button
-       onClick={startConversation}
-       disabled={conversation.status === 'connected' || !resume || !jobDescription}
-      className="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-black transition cursor-pointer disabled:bg-gray-300"
-      >
-        Iniciar Conversación
-      </button>
-      <button
-        onClick={stopConversation}
-        disabled={conversation.status !== 'connected'}
-        className="px-4 py-2 bg-red-700 text-white rounded-md hover:bg-red-800 transition cursor-pointer disabled:bg-gray-300"
-      >
-        Detener Conversación
-      </button>
+        <button
+          onClick={startConversation}
+          disabled={conversation.status === 'connected' || !resume || !jobDescription}
+          className="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-black transition cursor-pointer disabled:bg-gray-300"
+        >
+          Iniciar Conversación
+        </button>
+        <button
+          onClick={stopConversation}
+          disabled={conversation.status !== 'connected'}
+          className="px-4 py-2 bg-red-700 text-white rounded-md hover:bg-red-800 transition cursor-pointer disabled:bg-gray-300"
+        >
+          Detener Conversación
+        </button>
       </div>
-
-      <div className="flex items-center gap-2 mt-4">
-        <span className="text-lg text-gray-600 font-semibold">Estado del entrevistador:</span>
-        <div
-          className={`w-12 h-12 rounded-full ${
-            conversation.status !== 'connected'
-              ? 'bg-gray-300'
-              : isSpeaking
-              ? 'bg-blue-500 animate-pulse'
-              : isListening
-              ? 'bg-green-500 animate-pulse'
-              : 'bg-gray-400'
-          }`}
-        />
-      </div>
-
       {/* Mensajes de estado */}
       <div className="mt-2 text-lg">
-        {isListening && (
-          <p className="text-green-500 font-semibold">El entrevistador está escuchando...</p>
-        )}
-        {isSpeaking && (
-          <p className="text-blue-500 font-semibold">El entrevistador está hablando...</p>
+        {conversation.isSpeaking ? (
+          <p className="text-green-500 font-semibold">El entrevistador está hablando...</p>
+        ) : (
+          <p className="text-blue-500 font-semibold">El entrevistador está escuchando...</p>
         )}
       </div>
 
