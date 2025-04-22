@@ -5,9 +5,10 @@ import { useState, useEffect } from 'react';
 interface ResumeFormProps {
   setResume: (resume: string) => void;
   setJobDescription: (jobDescription: string) => void;
+  setInterviewId: (interviewId: string) => void;
 }
 
-export function ResumeForm({ setResume, setJobDescription }: ResumeFormProps) {
+export function ResumeForm({ setResume, setJobDescription, setInterviewId }: ResumeFormProps) {
   const [file, setFile] = useState<File | null>(null);
   const [text, setText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -56,6 +57,7 @@ export function ResumeForm({ setResume, setJobDescription }: ResumeFormProps) {
         setResume(data.resume || '');
         setJobDescription(text);
         setFile(null);
+        setInterviewId(data.id.toString());
         setText('');
       } else {
         setMessage(`Error: ${data.error || 'Algo salió mal'}`);

@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
     const resumeText = pdfData.text;
 
     // Guardar en la base de datos
-    await prisma.interview.create({
+    const interview = await prisma.interview.create({
       data: {
         user_id: user.id,
         resume: resumeText,
@@ -77,6 +77,7 @@ export async function POST(request: NextRequest) {
 
     // Devolver los datos procesados
     return NextResponse.json({
+      id: interview.id.toString(),
       resume: resumeText,
       jobDescription: text,
     }, { status: 200 });

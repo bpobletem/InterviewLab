@@ -7,6 +7,7 @@ import { ResumeForm } from '@/components/ResumeForm';
 export default function Home() {
   const [resume, setResume] = useState<string>('');
   const [jobDescription, setJobDescription] = useState<string>('');
+  const [interviewId, setInterviewId] = useState<string>('');
 
   return (
     <main className="min-h-screen bg-gray-100 flex items-center justify-center py-10 px-4 font-sans">
@@ -15,9 +16,9 @@ export default function Home() {
           Simulador de Entrevistas
         </h1>
 
-        <ResumeForm setResume={setResume} setJobDescription={setJobDescription} />
+        <ResumeForm setResume={setResume} setJobDescription={setJobDescription} setInterviewId={setInterviewId} />
 
-        <Conversation resume={resume} jobDescription={jobDescription} />
+        <Conversation resume={resume} jobDescription={jobDescription} interviewId={interviewId} />
       </div>
     </main>
   );

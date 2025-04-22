@@ -6,9 +6,11 @@ import { useCallback, useState } from 'react';
 interface ConversationProps {
   resume: string;
   jobDescription: string;
+  interviewId: string;
+
 }
 
-export function Conversation({ resume, jobDescription }: ConversationProps) {
+export function Conversation({ resume, jobDescription, interviewId }: ConversationProps) {
   const conversation = useConversation({
     overrides: {
       agent: {
@@ -48,10 +50,6 @@ export function Conversation({ resume, jobDescription }: ConversationProps) {
             - LIT: "El Eye Tee" (individual letters: L-I-T).
             - HTMX: "Eich Tee Em Ex" (individual letters: H-T-M-X).
 
-            If a term is not listed, pronounce it literally according to standard Spanish phonetic rules. Do not modify or interpret the terms. Example:
-            User: "What do you know about TransVIP?"
-            Response: "TransVIP is a transportation company known for its efficient service."
-
             Avoid breaking down or varying the terms and maintain a professional tone.
 
             This is the candidate's resume: ${resume}.
@@ -70,10 +68,24 @@ export function Conversation({ resume, jobDescription }: ConversationProps) {
       // Permiso del navegador para acceder al micrófono
       await navigator.mediaDevices.getUserMedia({ audio: true });
 
-      // Iniciar la sesión de conversación
-      await conversation.startSession({
+      // Iniciar la sesión de conversación y esperar el ID de la conversación
+      const conversationid = await conversation.startSession({
         agentId: (process.env.NEXT_PUBLIC_AGENT_ID as string),
       });
+
+      // Guardar el ID de la conversacion y entrevista en la base de datos
+      await fetch('/api/conversation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          conversationId: conversationid,
+          interviewId: interviewId,
+        }),
+      });
+
+      console.log(conversationid, interviewId)
 
       // Inicialmente, el entrevistador está hablando
       setIsSpeaking(true);
@@ -105,7 +117,7 @@ export function Conversation({ resume, jobDescription }: ConversationProps) {
     } catch (error) {
       console.error('Error al iniciar la conversación:', error);
     }
-  }, [conversation]);
+  }, [conversation, interviewId]);
 
   const stopConversation = useCallback(async () => {
     await conversation.endSession();
