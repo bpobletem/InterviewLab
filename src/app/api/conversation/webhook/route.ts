@@ -77,7 +77,9 @@ export async function POST(request: Request) {
       },
     });
 
-    console.log(`Conversación ${conversationId} actualizada con éxito`);
+    // Aqui debemos triggerear un llamado a la API de Gemini para pedirle que procese la conversacion y devuelva un feedback para mostrar al usuario.
+    // Cuando devuelva el feedback debemos hacer un redirect a otra pagina que lo muestre.
+
     return NextResponse.json(
       { message: "Conversation updated successfully" },
       { status: 200, headers }
