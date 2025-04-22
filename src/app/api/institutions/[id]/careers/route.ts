@@ -35,7 +35,6 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   let institutionId: bigint;
-
   try {
     // Intentamos convertir el ID de la URL a BigInt.
     // Si params.id no es un número entero válido (ej: "abc", "1.5"), esto lanzará un error.
@@ -50,13 +49,12 @@ export async function GET(
 
   try {
     // Verificar si la institución existe y está activa
-    // Seleccionamos solo 'id' porque solo necesitamos saber si existe.
     const institution = await prisma.institution.findUnique({
       where: {
         id: institutionId,
         is_active: true,
       },
-      select: { id: true }, // Solo necesitamos confirmar existencia
+      select: { id: true },
     });
 
     // Si no se encuentra la institución, devolvemos 404
@@ -75,25 +73,15 @@ export async function GET(
       select: {
         id: true,
         name: true,
-        area: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
       },
       orderBy: {
-        name: 'asc', // Cambiado a ordenar por nombre como ejemplo
+        name: 'asc',
       },
     });
 
     const careersForJson = careersFromDb.map((career) => ({
-      id: career.id.toString(),        // Convertir ID de carrera a string
-      name: career.name,              // Mantener el nombre
-      area: {
-        id: career.area.id.toString(), // Convertir ID de área a string
-        name: career.area.name,        // Mantener nombre de área
-      },
+      id: career.id.toString(),         // Convertir ID de carrera a string
+      name: career.name,
     }));
 
     return NextResponse.json({ careers: careersForJson }, { status: 200 });
