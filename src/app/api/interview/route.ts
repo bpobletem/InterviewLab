@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
 
     if (!file || !text) {
       return NextResponse.json(
-        { error: 'Both resume file and job description are required' },
+        { error: 'CV y descripción del trabajo son requeridas' },
         { status: 400 }
       );
     }
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     // Validar tipo de archivo
     if (file.type !== 'application/pdf') {
       return NextResponse.json(
-        { error: 'Only PDF files are allowed' },
+        { error: 'Solo se aceptan archivos PDF' },
         { status: 400 }
       );
     }
