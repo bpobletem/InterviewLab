@@ -81,6 +81,8 @@ export function Conversation({ resume, jobDescription, interviewId }: Conversati
           interviewId: interviewId,
         }),
       });
+      console.log('Conversación iniciada con ID:', conversationid);
+      console.log('Interview ID:', interviewId);
 
     } catch (error) {
       console.error('Error al iniciar la conversación:', error);

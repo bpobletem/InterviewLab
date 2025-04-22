@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { saveUser } from '@/utils/saveUser';
+import { saveUser } from '@/utils/functions/saveUser';
 
 // GET /api/users - Get all users
 export async function GET() {

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server'; // Importar la función para crear el cliente de Supabase
 import { prisma } from '@/lib/prisma'; // Usar la instancia singleton de Prisma
-import { checkInstitutionSubscription } from '@/utils/checkInstitutionSubscription';
+import { checkInstitutionSubscription } from '@/utils/validations/checkInstitutionSubscription';
 
 // POST /api/auth/login - Validate login credentials
 export async function POST(request: NextRequest) {
