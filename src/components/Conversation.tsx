@@ -1,7 +1,7 @@
 'use client';
 
 import { useConversation } from '@11labs/react';
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback, useState } from 'react';
 
 interface ConversationProps {
   resume: string;
@@ -43,6 +43,16 @@ export function Conversation({ resume, jobDescription }: ConversationProps) {
             - If insufficient information is available, state that more details are needed instead of making assumptions.
             - Ensure questions are concise, clear, and aligned with the role.
             - Maintain consistency as Alejandro, reflecting the defined voice and personality.
+            - You speak with a clear, professional, and natural voice in standard English. Your goal is to answer questions accurately without hallucinating or generating unsolicited information. When encountering technical terms,    acronyms, or proper nouns, pronounce them exactly as written, following these pronunciation guidelines:
+            - TransVIP: "Trans-Vip" (as a single word, with emphasis on "Vip").
+            - LIT: "El Eye Tee" (individual letters: L-I-T).
+            - HTMX: "Eich Tee Em Ex" (individual letters: H-T-M-X).
+
+            If a term is not listed, pronounce it literally according to standard Spanish phonetic rules. Do not modify or interpret the terms. Example:
+            User: "What do you know about TransVIP?"
+            Response: "TransVIP is a transportation company known for its efficient service."
+
+            Avoid breaking down or varying the terms and maintain a professional tone.
 
             This is the candidate's resume: ${resume}.
             This is the candidate's job description or role: ${jobDescription}.
