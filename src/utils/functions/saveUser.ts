@@ -2,7 +2,7 @@ import { createClient } from '@/utils/supabase/server';
 import { prisma } from '@/lib/prisma'
 import { SignUpData } from '@/types/types';
 import { randomUUID } from 'crypto';
-import { validateInstitutionEmail } from './validateInstitutionEmail';
+import { validateInstitutionEmail } from 'src/utils/validations/validateInstitutionEmail';
 
 /**
  * Registra un usuario nuevo en el sistema
