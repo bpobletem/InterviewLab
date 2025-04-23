@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { createClient } from '@/utils/supabase/client';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -10,6 +11,7 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const supabase = createClient();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,19 +19,38 @@ export default function Login() {
     setLoading(true);
 
     try {
+      // First, call your custom authentication endpoint
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
-      })
+      });
 
       const data = await res.json();
+      
       if (!res.ok) {
         setError(data.error || 'Error al iniciar sesión');
+        return;
       }
-      router.push('/home');
-    } catch (error: any) {
-      setError(error.message || 'An error occurred during login');
+      
+      // If the custom endpoint authentication was successful, update Supabase's auth state
+      // This ensures the navbar and other components that rely on Supabase auth state are updated
+      if (data.session) {
+        // Set the session in Supabase client
+        await supabase.auth.setSession({
+          access_token: data.session.access_token,
+          refresh_token: data.session.refresh_token
+        });
+        
+        // Navigate to home page
+        router.push('/home');
+      } else {
+        // If no session was returned, show an error
+        setError('Error al iniciar sesión: No se recibió una sesión válida');
+      }
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred during login';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
