@@ -23,7 +23,6 @@ export default function Navbar() {
         setUser(user);
       }
     };
-
     getUser();
 
     // Escuchar cambios en el estado de autenticación
@@ -45,7 +44,6 @@ export default function Navbar() {
       if (error) {
         console.error('[Navbar] Error signing out:', error);
       } else {
-        setUser(null);
         router.push('/');
         router.refresh(); // Sincronizar con el middleware
       }
