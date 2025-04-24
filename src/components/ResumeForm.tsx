@@ -77,7 +77,7 @@ export function ResumeForm({ onComplete }: ResumeFormProps) {
             value={text}
             onChange={(e) => setText(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md h-32 text-gray-800"
-            placeholder="Ingresa la descripción del trabajo..."
+            placeholder="Describe el puesto con el mayor detalle posible para una entrevista más precisa..."
           />
         </div>
 
