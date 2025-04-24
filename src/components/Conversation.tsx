@@ -7,10 +7,10 @@ interface ConversationProps {
   resume: string;
   jobDescription: string;
   interviewId: string;
-
+  onBack: () => void;
 }
 
-export function Conversation({ resume, jobDescription, interviewId }: ConversationProps) {
+export function Conversation({ resume, jobDescription, interviewId, onBack }: ConversationProps) {
   const conversation = useConversation({
     overrides: {
       agent: {
@@ -98,20 +98,20 @@ export function Conversation({ resume, jobDescription, interviewId }: Conversati
       <div className="flex gap-2">
         <button
           onClick={startConversation}
-          disabled={conversation.status === 'connected' || !resume || !jobDescription}
-          className="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-black transition cursor-pointer disabled:bg-gray-300"
+          disabled={conversation.status === 'connected'}
+          className="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-black transition disabled:bg-gray-300"
         >
           Iniciar Conversación
         </button>
         <button
           onClick={stopConversation}
           disabled={conversation.status !== 'connected'}
-          className="px-4 py-2 bg-red-700 text-white rounded-md hover:bg-red-800 transition cursor-pointer disabled:bg-gray-300"
+          className="px-4 py-2 bg-red-700 text-white rounded-md hover:bg-red-800 transition disabled:bg-gray-300"
         >
           Detener Conversación
         </button>
       </div>
-      {/* Mensajes de estado */}
+
       <div className="mt-2 text-lg">
         {conversation.isSpeaking ? (
           <p className="text-green-500 font-semibold">El entrevistador está hablando...</p>
@@ -120,14 +120,17 @@ export function Conversation({ resume, jobDescription, interviewId }: Conversati
         )}
       </div>
 
-      <div className="flex flex-col items-center">
-        <p className="text-xl font-bold">{conversation.status === 'connected' ? 'Entrevista en curso' : 'Esperando para iniciar'}</p>
-        {!resume && !jobDescription && (
-          <p className="text-sm text-amber-600">
-            Sube un currículum y una descripción del trabajo para comenzar
-          </p>
-        )}
-      </div>
+      <p className="text-xl font-bold">
+        {conversation.status === 'connected' ? 'Entrevista en curso' : 'Esperando para iniciar'}
+      </p>
+
+      {/* Botón volver atrás */}
+      <button
+        onClick={onBack}
+        className="mt-4 px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition"
+      >
+        Volver al Formulario
+      </button>
     </div>
   );
 }

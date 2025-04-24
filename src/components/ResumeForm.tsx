@@ -3,31 +3,16 @@
 import { useState, useEffect } from 'react';
 
 interface ResumeFormProps {
-  setResume: (resume: string) => void;
-  setJobDescription: (jobDescription: string) => void;
-  setInterviewId: (interviewId: string) => void;
+  onComplete: (data: { resume: string; jobDescription: string; interviewId: string }) => void;
 }
 
-export function ResumeForm({ setResume, setJobDescription, setInterviewId }: ResumeFormProps) {
+export function ResumeForm({ onComplete }: ResumeFormProps) {
   const [file, setFile] = useState<File | null>(null);
   const [text, setText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
-  const [isFormComplete, setIsFormComplete] = useState(false);
 
-  useEffect(() => {
-    setIsFormComplete(!!file && text.trim().length > 0);
-  }, [file, text]);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setFile(e.target.files[0]);
-    }
-  };
-
-  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setText(e.target.value);
-  };
+  const isFormComplete = !!file && text.trim().length > 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,11 +39,7 @@ export function ResumeForm({ setResume, setJobDescription, setInterviewId }: Res
 
       if (response.ok) {
         setMessage('Currículum y descripción del trabajo subidos exitosamente');
-        setResume(data.resume || '');
-        setJobDescription(text);
-        setFile(null);
-        setInterviewId(data.id.toString());
-        setText('');
+        onComplete({ resume: data.resume || '', jobDescription: text, interviewId: data.id.toString() });
       } else {
         setMessage(`Error: ${data.error || 'Algo salió mal'}`);
       }
@@ -71,35 +52,31 @@ export function ResumeForm({ setResume, setJobDescription, setInterviewId }: Res
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md mb-8 w-full">
-      <h2 className="text-xl font-bold mb-4 text-gray-700">Subir Archivos</h2>
+      <h2 className="text-xl font-bold mb-4 text-gray-900">Subir Archivos</h2>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
-          <label htmlFor="file" className="block text-gray-700 mb-2">
-            Subir Currículum <span className="text-red-500">*</span>
+          <label htmlFor="file" className="block text-gray-900 mb-2">
+            Subir Currículum <span className="text-red-600">*</span>
           </label>
           <input
             type="file"
             id="file"
-            onChange={handleFileChange}
-            className="w-full px-3 py-2 border text-gray-700 border-gray-300 rounded-md cursor-pointer"
+            onChange={(e) => e.target.files && setFile(e.target.files[0])}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-800"
             accept="application/pdf"
           />
-          {file && (
-            <p className="mt-2 text-sm text-gray-600">
-              Archivo seleccionado: {file.name}
-            </p>
-          )}
+          {file && <p className="mt-2 text-sm text-gray-700">Archivo seleccionado: {file.name}</p>}
         </div>
 
         <div className="mb-4">
-          <label htmlFor="text" className="block text-gray-700 mb-2">
-            Descripción del trabajo <span className="text-red-500">*</span>
+          <label htmlFor="text" className="block text-gray-900 mb-2">
+            Descripción del trabajo <span className="text-red-600">*</span>
           </label>
           <textarea
             id="text"
             value={text}
-            onChange={handleTextChange}
-            className="w-full px-3 py-2 border text-gray-700 border-gray-300 rounded-md h-32"
+            onChange={(e) => setText(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md h-32 text-gray-800"
             placeholder="Ingresa la descripción del trabajo..."
           />
         </div>
@@ -108,19 +85,13 @@ export function ResumeForm({ setResume, setJobDescription, setInterviewId }: Res
           <button
             type="submit"
             disabled={isLoading || !isFormComplete}
-            className="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-black transition cursor-pointer disabled:bg-gray-300"
+            className="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-black transition disabled:bg-gray-300"
           >
             {isLoading ? 'Subiendo...' : 'Enviar'}
           </button>
 
-          {!isFormComplete && (
-            <p className="text-sm text-amber-600">
-              Se requiere tanto el currículum como la descripción del trabajo para iniciar una conversación
-            </p>
-          )}
-
           {message && (
-            <p className={`text-sm ${message.includes('Error') ? 'text-red-500' : 'text-green-500'}`}>
+            <p className={`text-sm ${message.includes('Error') ? 'text-red-600' : 'text-green-600'}`}>
               {message}
             </p>
           )}
