@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 interface ResumeFormProps {
   onComplete: (data: { resume: string; jobDescription: string; interviewId: string }) => void;
@@ -85,7 +85,7 @@ export function ResumeForm({ onComplete }: ResumeFormProps) {
           <button
             type="submit"
             disabled={isLoading || !isFormComplete}
-            className="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-black transition disabled:bg-gray-300"
+            className="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-black transition disabled:bg-gray-300 hover:cursor-pointer"
           >
             {isLoading ? 'Subiendo...' : 'Enviar'}
           </button>

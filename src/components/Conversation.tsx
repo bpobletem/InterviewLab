@@ -45,11 +45,7 @@ export function Conversation({ resume, jobDescription, interviewId, onBack }: Co
             - If insufficient information is available, state that more details are needed instead of making assumptions.
             - Ensure questions are concise, clear, and aligned with the role.
             - Maintain consistency as Alejandro, reflecting the defined voice and personality.
-            - You speak with a clear, professional, and natural voice in standard English. Your goal is to answer questions accurately without hallucinating or generating unsolicited information. When encountering technical terms,    acronyms, or proper nouns, pronounce them exactly as written, following these pronunciation guidelines:
-            - TransVIP: "Trans-Vip" (as a single word, with emphasis on "Vip").
-            - LIT: "El Eye Tee" (individual letters: L-I-T).
-            - HTMX: "Eich Tee Em Ex" (individual letters: H-T-M-X).
-
+            - You speak with a clear, professional, and natural voice in standard Spanish. Your goal is to answer questions accurately without hallucinating or generating unsolicited information. When encountering technical terms, acronyms, or proper nouns, pronounce them exactly as written.
             Avoid breaking down or varying the terms and maintain a professional tone.
 
             This is the candidate's resume: ${resume}.
@@ -99,21 +95,21 @@ export function Conversation({ resume, jobDescription, interviewId, onBack }: Co
         <button
           onClick={startConversation}
           disabled={conversation.status === 'connected'}
-          className="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-black transition disabled:bg-gray-300"
+          className="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-black transition disabled:bg-gray-300 hover:cursor-pointer"
         >
           Iniciar Conversación
         </button>
         <button
           onClick={stopConversation}
           disabled={conversation.status !== 'connected'}
-          className="px-4 py-2 bg-red-700 text-white rounded-md hover:bg-red-800 transition disabled:bg-gray-300"
+          className="px-4 py-2 bg-red-700 text-white rounded-md hover:bg-red-800 transition disabled:bg-gray-300 hover:cursor-pointer"
         >
           Detener Conversación
         </button>
       </div>
 
       <div className="mt-2 text-lg">
-        {conversation.isSpeaking ? (
+        {conversation.status !== 'connected' && conversation.isSpeaking ? (
           <p className="text-green-500 font-semibold">El entrevistador está hablando...</p>
         ) : (
           <p className="text-blue-500 font-semibold">El entrevistador está escuchando...</p>
