@@ -11,7 +11,6 @@ model Area {
   id        BigInt      @id @default(autoincrement())
   name      String
   careers   Career[]
-  job_types JobType[]
 
   @@map("area")
 }
@@ -73,35 +72,20 @@ model User {
   @@index([career_id])
 }
 
-model JobType {
-  id          BigInt    @id @default(autoincrement())
-  name        String    @unique
-  description String    @db.Text
-  area_id     BigInt
-  created_at  DateTime  @default(now())
-  area        Area      @relation(fields: [area_id], references: [id])
-  interviews  Interview[]
 
-  @@map("job_types")
-  @@index([name])
-  @@index([area_id])
-}
 
 model Interview {
   id              BigInt    @id @default(autoincrement())
   user_id         String    @db.Uuid
   job_description String    @db.Text
-  job_type_id     BigInt?
   resume          String    @db.Text
   created_at      DateTime  @default(now())
   
   user            User      @relation(fields: [user_id], references: [id])
-  job_type        JobType?  @relation(fields: [job_type_id], references: [id])
   conversation    Conversation?
 
   @@map("interview")
   @@index([user_id])
-  @@index([job_type_id])
 }
 
 model Conversation {
