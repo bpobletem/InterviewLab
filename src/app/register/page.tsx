@@ -212,13 +212,13 @@ export default function RegisterPage() {
           {error && <p className="text-red-500 text-sm">{error}</p>}
           <button
             type="submit"
-            className="w-full py-2 text-sm bg-gray-900 text-white rounded-md hover:bg-black transition"
+            className="w-full py-2 text-sm bg-gray-900 text-white rounded-md hover:bg-black transition hover:cursor-pointer"
           >
             Registrarse
           </button>
         </form>
         <p className="text-xs text-center text-gray-500 mt-6">
-          ¿Ya tienes cuenta? <a href="/login" className="text-gray-800 underline">Inicia sesión</a>
+          ¿Ya tienes cuenta? <a href="/login" className="text-gray-800 underline hover:cursor-pointer">Inicia sesión</a>
         </p>
       </div>
     </main>
