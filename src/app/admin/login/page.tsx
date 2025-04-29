@@ -68,7 +68,7 @@ export default function AdminLogin() {
           <div className="space-y-4 rounded-md">
             <div>
               <label htmlFor="email" className="block text-sm font-medium">
-                Email de administrador
+                Email
               </label>
               <input
                 id="email"
@@ -129,7 +129,7 @@ export default function AdminLogin() {
                 Cargando...
               </span>
             ) : (
-              'Ingresar como Administrador'
+              'Ingresar'
             )}
           </button>
         </form>
