@@ -41,9 +41,8 @@ export default function LandingPage() {
       <footer className="mt-16 text-sm text-gray-500 flex flex-col items-center gap-1">
         <span>InterviewLab</span>
         <div className="flex gap-4">
-          <a href="#">Términos</a>
-          <a href="#">Privacidad</a>
-          <a href="#">Contacto</a>
+          <a href="/terms">Términos</a>
+          <a href="/privacy">Privacidad</a>
         </div>
       </footer>
     </main>

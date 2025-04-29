@@ -16,6 +16,7 @@ export default function RegisterPage() {
   const [careers, setCareers] = useState([])
   const [selectedInstitution, setSelectedInstitution] = useState('')
   const [selectedCareer, setSelectedCareer] = useState('')
+  const [acceptTerms, setAcceptTerms] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -72,6 +73,11 @@ export default function RegisterPage() {
       return
     }
 
+    if (!acceptTerms) {
+      setError('Debes aceptar los términos y condiciones para continuar.')
+      return
+    }
+
     if (!isValidBirthdate(birthdate)) {
       setBirthdateError('Debes tener al menos 16 años')
       return
@@ -110,11 +116,11 @@ export default function RegisterPage() {
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-white text-gray-800">
-      <div className="w-full max-w-sm p-6 border border-gray-200 rounded-xl shadow-sm">
+      <div className="w-full max-w-md p-6 border border-gray-200 rounded-xl shadow-sm">
         <h1 className="text-xl font-semibold text-center mb-1">Regístrate en <span className="font-bold text-gray-900">InterviewLab</span></h1>
         <form onSubmit={handleRegister} className="space-y-4">
           <div>
-            <label className="text-sm block mb-1">Nombre</label>
+            <label className="text-sm block mb-1">Nombre y Apellido</label>
             <input
               type="text"
               value={name}
@@ -208,6 +214,22 @@ export default function RegisterPage() {
               <option value="Femenino">Femenino</option>
               <option value="Ninguno">Ninguno</option>
             </select>
+          </div>
+          <div className="flex items-start">
+            <div className="flex items-center h-5">
+              <input
+                id="terms"
+                type="checkbox"
+                checked={acceptTerms}
+                onChange={(e) => setAcceptTerms(e.target.checked)}
+                className="w-4 h-4 border border-gray-300 rounded focus:ring-2 focus:ring-gray-500"
+              />
+            </div>
+            <div className="ml-3 text-sm">
+              <label htmlFor="terms" className="text-gray-600">
+                Acepto los <a href="/terms" className="text-gray-800 underline hover:cursor-pointer">términos y condiciones</a> de privacidad
+              </label>
+            </div>
           </div>
           {error && <p className="text-red-500 text-sm">{error}</p>}
           <button
