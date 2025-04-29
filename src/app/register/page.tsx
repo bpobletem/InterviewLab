@@ -11,6 +11,7 @@ export default function RegisterPage() {
   const [name, setName] = useState('')
   const [birthdate, setBirthdate] = useState('')
   const [birthdateError, setBirthdateError] = useState('')
+  const [gender, setGender] = useState('')
   const [institutions, setInstitutions] = useState([])
   const [careers, setCareers] = useState([])
   const [selectedInstitution, setSelectedInstitution] = useState('')
@@ -65,6 +66,11 @@ export default function RegisterPage() {
       setError('Por favor selecciona una carrera.')
       return
     }
+    
+    if (!gender) {
+      setError('Por favor selecciona un género.')
+      return
+    }
 
     if (!isValidBirthdate(birthdate)) {
       setBirthdateError('Debes tener al menos 16 años')
@@ -82,6 +88,7 @@ export default function RegisterPage() {
           password,
           name,
           birthday: birthdate,
+          gender,
           institution_id: selectedInstitution,
           career_id: selectedCareer
         })
@@ -187,6 +194,19 @@ export default function RegisterPage() {
                   {career.name}
                 </option>
               ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-sm block mb-1">Género</label>
+            <select
+              value={gender}
+              onChange={(e) => setGender(e.target.value)}
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+            >
+              <option value="Masculino">Masculino</option>
+              <option value="Femenino">Femenino</option>
+              <option value="Ninguno">Ninguno</option>
             </select>
           </div>
           {error && <p className="text-red-500 text-sm">{error}</p>}

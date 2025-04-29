@@ -19,7 +19,7 @@ export async function GET() {
 // POST /api/users - Create a new user
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { email, password, name, birthday, institution_id, career_id } = body;
+  const { email, password, name, birthday, gender, institution_id, career_id } = body;
 
   try {
     const user = await saveUser({
@@ -27,6 +27,7 @@ export async function POST(req: NextRequest) {
       password,
       name,
       birthday: new Date(birthday), // Asegúrate de que sea un Date
+      gender,
       institution_id: BigInt(institution_id),
       career_id: BigInt(career_id),
     });

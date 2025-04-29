@@ -27,7 +27,7 @@ import { validateInstitutionEmail } from 'src/utils/validations/validateInstitut
  */
 export async function saveUser(data: SignUpData) {
   const supabase = await createClient();
-  const { email, password, name, birthday, institution_id, career_id } = data;
+  const { email, password, name, birthday, gender, institution_id, career_id } = data;
 
   // Verificar que el correo no esté ya registrado
   const existingUser = await prisma.user.findUnique({
@@ -39,7 +39,7 @@ export async function saveUser(data: SignUpData) {
     throw new Error('Este correo electrónico ya está registrado');
   }
 
-  if (!email || !password || !name || !birthday || !career_id || !institution_id) {
+  if (!email || !password || !name || !birthday || !gender || !career_id || !institution_id) {
     throw new Error('Todos los campos son requeridos');
   }
 
@@ -80,6 +80,7 @@ export async function saveUser(data: SignUpData) {
         email,
         name,
         birthday,
+        gender,
         institution_id,
         career_id,
       },
@@ -89,6 +90,7 @@ export async function saveUser(data: SignUpData) {
         email,
         name,
         birthday,
+        gender,
         institution_id,
         career_id,
       },
