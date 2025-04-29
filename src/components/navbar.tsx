@@ -55,7 +55,7 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="w-full border-b border-gray-200 px-6 py-3 flex justify-between items-center bg-white text-sm">
+    <nav className="w-full border-b border-gray-200 px-6 py-3 flex justify-between items-center bg-white text-sm fixed top-0 z-10">
       <Link href="/home" className="font-semibold text-gray-800 hover:cursor-pointer">
         InterviewLab
       </Link>
