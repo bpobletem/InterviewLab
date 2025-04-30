@@ -1,10 +1,14 @@
 'use client';
 
-import { useParams } from 'next/navigation';
-import Link from 'next/link';
+import { useParams, useRouter } from 'next/navigation';
 
 export default function AdminDashboard() {
+  const router = useRouter();
   const { institution_id } = useParams();
+
+  const handleChangePassword = () => {
+    router.push(`/admin/reset-password?institution_id=${institution_id}`);
+  };
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-gray-50 text-gray-800 p-6">
@@ -13,13 +17,12 @@ export default function AdminDashboard() {
         <p className="text-lg text-center mb-2">Aquí va el contenido del dashboard.</p>
         <p className="text-sm text-center text-gray-500 mb-6">Institución ID: {institution_id}</p>
 
-        <Link href="/admin/reset-password">
-          <button
-            className="w-full py-2 text-sm bg-gray-900 text-white rounded-md hover:bg-black transition hover:cursor-pointer"
-          >
-            Cambiar Contraseña
-          </button>
-        </Link>
+        <button
+          onClick={handleChangePassword}
+          className="w-full py-2 text-sm bg-gray-900 text-white rounded-md hover:bg-black transition hover:cursor-pointer"
+        >
+          Cambiar Contraseña
+        </button>
       </div>
     </main>
   );
