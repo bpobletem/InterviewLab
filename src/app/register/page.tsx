@@ -11,10 +11,12 @@ export default function RegisterPage() {
   const [name, setName] = useState('')
   const [birthdate, setBirthdate] = useState('')
   const [birthdateError, setBirthdateError] = useState('')
+  const [gender, setGender] = useState('')
   const [institutions, setInstitutions] = useState([])
   const [careers, setCareers] = useState([])
   const [selectedInstitution, setSelectedInstitution] = useState('')
   const [selectedCareer, setSelectedCareer] = useState('')
+  const [acceptTerms, setAcceptTerms] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -65,6 +67,16 @@ export default function RegisterPage() {
       setError('Por favor selecciona una carrera.')
       return
     }
+    
+    if (!gender) {
+      setError('Por favor selecciona un género.')
+      return
+    }
+
+    if (!acceptTerms) {
+      setError('Debes aceptar los términos y condiciones para continuar.')
+      return
+    }
 
     if (!isValidBirthdate(birthdate)) {
       setBirthdateError('Debes tener al menos 16 años')
@@ -82,6 +94,7 @@ export default function RegisterPage() {
           password,
           name,
           birthday: birthdate,
+          gender,
           institution_id: selectedInstitution,
           career_id: selectedCareer
         })
@@ -103,11 +116,11 @@ export default function RegisterPage() {
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-white text-gray-800">
-      <div className="w-full max-w-sm p-6 border border-gray-200 rounded-xl shadow-sm">
+      <div className="w-full max-w-md p-6 border border-gray-200 rounded-xl shadow-sm">
         <h1 className="text-xl font-semibold text-center mb-1">Regístrate en <span className="font-bold text-gray-900">InterviewLab</span></h1>
         <form onSubmit={handleRegister} className="space-y-4">
           <div>
-            <label className="text-sm block mb-1">Nombre</label>
+            <label className="text-sm block mb-1">Nombre y Apellido</label>
             <input
               type="text"
               value={name}
@@ -189,16 +202,45 @@ export default function RegisterPage() {
               ))}
             </select>
           </div>
+          <div>
+            <label className="text-sm block mb-1">Género</label>
+            <select
+              value={gender}
+              onChange={(e) => setGender(e.target.value)}
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+            >
+              <option value="Masculino">Masculino</option>
+              <option value="Femenino">Femenino</option>
+              <option value="Ninguno">Ninguno</option>
+            </select>
+          </div>
+          <div className="flex items-start">
+            <div className="flex items-center h-5">
+              <input
+                id="terms"
+                type="checkbox"
+                checked={acceptTerms}
+                onChange={(e) => setAcceptTerms(e.target.checked)}
+                className="w-4 h-4 border border-gray-300 rounded focus:ring-2 focus:ring-gray-500"
+              />
+            </div>
+            <div className="ml-3 text-sm">
+              <label htmlFor="terms" className="text-gray-600">
+                Acepto los <a href="/terms" className="text-gray-800 underline hover:cursor-pointer">términos y condiciones</a> de privacidad
+              </label>
+            </div>
+          </div>
           {error && <p className="text-red-500 text-sm">{error}</p>}
           <button
             type="submit"
-            className="w-full py-2 text-sm bg-gray-900 text-white rounded-md hover:bg-black transition"
+            className="w-full py-2 text-sm bg-gray-900 text-white rounded-md hover:bg-black transition hover:cursor-pointer"
           >
             Registrarse
           </button>
         </form>
         <p className="text-xs text-center text-gray-500 mt-6">
-          ¿Ya tienes cuenta? <a href="/login" className="text-gray-800 underline">Inicia sesión</a>
+          ¿Ya tienes cuenta? <a href="/login" className="text-gray-800 underline hover:cursor-pointer">Inicia sesión</a>
         </p>
       </div>
     </main>

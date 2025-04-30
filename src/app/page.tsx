@@ -37,15 +37,6 @@ export default function LandingPage() {
           description="Entrevistas adaptadas a tu industria y nivel de experiencia."
         />
       </div>
-
-      <footer className="mt-16 text-sm text-gray-500 flex flex-col items-center gap-1">
-        <span>InterviewLab</span>
-        <div className="flex gap-4">
-          <a href="#">Términos</a>
-          <a href="#">Privacidad</a>
-          <a href="#">Contacto</a>
-        </div>
-      </footer>
     </main>
   )
 }

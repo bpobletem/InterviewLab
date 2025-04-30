@@ -10,11 +10,26 @@ export async function POST(request: Request) {
   const { conversationId, interviewId } = await request.json();
 
   if (!conversationId || !interviewId) {
-    return NextResponse.json({ error: "Se necesita conversation ID" }, { status: 400 });
+    return NextResponse.json({ error: "Se necesita conversation ID y interview ID" }, { status: 400 });
   }
 
   try {
-    // Guardar la conversación en la base de datos
+    // Verificar si ya existe una conversación para esta entrevista
+    const existingConversation = await prisma.conversation.findUnique({
+      where: { interview_id: interviewId },
+    });
+
+    if (existingConversation) {
+      // Actualizar la conversación existente
+      await prisma.conversation.update({
+        where: { interview_id: interviewId },
+        data: { id: conversationId },
+      });
+
+      return NextResponse.json({ message: "Conversación actualizada" }, { status: 200 });
+    }
+
+    // Crear una nueva conversación si no existe
     await prisma.conversation.create({
       data: {
         id: conversationId,
@@ -22,7 +37,7 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.json({ error: "Conversación guardara" }, { status: 200 });
+    return NextResponse.json({ message: "Conversación guardada" }, { status: 200 });
   } catch (error) {
     console.error("Error saving conversation:", error);
     return NextResponse.json({ error: "Error al guardar la conversación" }, { status: 500 });

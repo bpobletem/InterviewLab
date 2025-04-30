@@ -3,6 +3,7 @@ export interface SignUpData {
   password: string;
   name: string;
   birthday: Date;
+  gender: string;
   institution_id: bigint;
   career_id: bigint;
 }

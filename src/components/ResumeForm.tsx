@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 interface ResumeFormProps {
   onComplete: (data: { resume: string; jobDescription: string; interviewId: string }) => void;
@@ -51,32 +51,38 @@ export function ResumeForm({ onComplete }: ResumeFormProps) {
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md mb-8 w-full">
-      <h2 className="text-xl font-bold mb-4 text-gray-900">Subir Archivos</h2>
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label htmlFor="file" className="block text-gray-900 mb-2">
-            Subir Currículum <span className="text-red-600">*</span>
+    <div className="bg-white p-8 rounded-lg shadow-lg mb-8 w-full border border-gray-100 transition-all duration-300">
+      <h2 className="text-2xl font-bold mb-6 text-black border-b pb-3">Subir Archivos</h2>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="mb-5">
+          <label htmlFor="file" className="block text-black font-medium mb-2">
+            Subir Currículum <span className="text-black font-bold">*</span>
           </label>
-          <input
-            type="file"
-            id="file"
-            onChange={(e) => e.target.files && setFile(e.target.files[0])}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-800"
-            accept="application/pdf"
-          />
-          {file && <p className="mt-2 text-sm text-gray-700">Archivo seleccionado: {file.name}</p>}
+          <div className="relative">
+            <input
+              type="file"
+              id="file"
+              onChange={(e) => e.target.files && setFile(e.target.files[0])}
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-md text-black bg-white hover:border-black transition-colors duration-300 focus:outline-none focus:border-black cursor-pointer"
+              accept="application/pdf"
+            />
+          </div>
+          {file && (
+            <p className="mt-2 text-sm text-gray-700 bg-gray-50 p-2 rounded border border-gray-200">
+              <span className="font-medium">Archivo seleccionado:</span> {file.name}
+            </p>
+          )}
         </div>
 
-        <div className="mb-4">
-          <label htmlFor="text" className="block text-gray-900 mb-2">
-            Descripción del trabajo <span className="text-red-600">*</span>
+        <div className="mb-5">
+          <label htmlFor="text" className="block text-black font-medium mb-2">
+            Descripción del trabajo <span className="text-black font-bold">*</span>
           </label>
           <textarea
             id="text"
             value={text}
             onChange={(e) => setText(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md h-32 text-gray-800"
+            className="w-full px-4 py-3 border-2 border-gray-200 rounded-md h-40 text-black resize-none hover:border-black transition-colors duration-300 focus:outline-none focus:border-black cursor-text"
             placeholder="Describe el puesto con el mayor detalle posible para una entrevista más precisa..."
           />
         </div>
@@ -85,15 +91,23 @@ export function ResumeForm({ onComplete }: ResumeFormProps) {
           <button
             type="submit"
             disabled={isLoading || !isFormComplete}
-            className="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-black transition disabled:bg-gray-300"
+            className="px-6 py-3 bg-black text-white rounded-md hover:bg-gray-800 transition-all duration-300 disabled:bg-gray-300 disabled:cursor-not-allowed cursor-pointer transform hover:translate-y-[-2px] font-medium"
           >
-            {isLoading ? 'Subiendo...' : 'Enviar'}
+            {isLoading ? (
+              <span className="flex items-center justify-center">
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Subiendo...
+              </span>
+            ) : 'Enviar'}
           </button>
 
           {message && (
-            <p className={`text-sm ${message.includes('Error') ? 'text-red-600' : 'text-green-600'}`}>
+            <div className={`p-3 rounded-md text-sm ${message.includes('Error') ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-green-50 text-green-600 border border-green-200'}`}>
               {message}
-            </p>
+            </div>
           )}
         </div>
       </form>
