@@ -4,14 +4,50 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
+import { useEffect } from 'react';
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const router = useRouter();
   const supabase = createClient();
+
+  // Auth guard - verificar si hay una sesión activa
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session) {
+          // Si hay una sesión activa, verificar si es administrador
+          const res = await fetch('/api/admin/validate', {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+          
+          if (res.ok) {
+            const validationData = await res.json();
+            // Redirigir al dashboard si es un admin válido
+            router.push(`/dashboard/${validationData.institution_id}`);
+            return;
+          }
+          // Si no es admin, cerrar sesión
+          await supabase.auth.signOut();
+        }
+      } catch (error) {
+        console.error('Error checking session:', error);
+      } finally {
+        setCheckingAuth(false);
+      }
+    };
+    
+    checkSession();
+  }, [router, supabase.auth]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
