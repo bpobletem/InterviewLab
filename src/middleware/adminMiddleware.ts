@@ -46,16 +46,16 @@ export async function adminMiddleware(request: NextRequest): Promise<NextRespons
     }
 
     // Si llegamos aquí, el usuario es un administrador válido
-    // Crear una copia de la solicitud para añadir el ID de la institución como header
-    const requestWithInstitution = new NextRequest(request);
-    requestWithInstitution.headers.set('x-institution-id', institution.id.toString());
+    // Pasar el ID de la institución en los headers directamente
+    const headers = new Headers(request.headers);
+    headers.set('x-institution-id', institution.id.toString());
 
     // Devolver respuesta exitosa con el ID de la institución en los headers
     return NextResponse.json(
       { success: true, institution_id: institution.id.toString() },
       { 
         status: 200,
-        headers: requestWithInstitution.headers
+        headers
       }
     );
   } catch (error) {
