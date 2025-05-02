@@ -27,12 +27,12 @@ export default function Login() {
       });
 
       const data = await res.json();
-      
+
       if (!res.ok) {
         setError(data.error || 'Error al iniciar sesión');
         return;
       }
-      
+
       // If the custom endpoint authentication was successful, update Supabase's auth state
       // This ensures the navbar and other components that rely on Supabase auth state are updated
       if (data.session) {
@@ -41,7 +41,7 @@ export default function Login() {
           access_token: data.session.access_token,
           refresh_token: data.session.refresh_token
         });
-        
+
         // Navigate to home page
         router.push('/home');
       } else {
@@ -136,6 +136,11 @@ export default function Login() {
           ¿No tienes cuenta?{' '}
           <Link href="/register" className="text-gray-800 underline">
             Regístrate
+          </Link>
+        </p>
+        <p className="text-sm text-center text-gray-500 mt-2">
+          <Link href="/reset-password" className="text-gray-800 underline">
+            ¿Olvidaste tu contraseña?
           </Link>
         </p>
       </div>
