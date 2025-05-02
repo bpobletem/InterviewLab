@@ -11,7 +11,6 @@ function Navbar() {
   const router = useRouter();
   const supabase = createClient();
 
-  // El update de los links esta funcionando mal - Hay que ver como podemos arreglar esto
   useEffect(() => {
     // Obtener el usuario inicial
     const getUser = async () => {
