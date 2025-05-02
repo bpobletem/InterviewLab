@@ -1,9 +1,9 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 
-export default function AdminResetPasswordPage() {
+function ResetPasswordForm() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -17,6 +17,12 @@ export default function AdminResetPasswordPage() {
   const handlePasswordChange = async () => {
     setMessage('');
     setMessageType('');
+
+    if (!institution_id) {
+      setMessage('ID de institución no encontrado en la URL.');
+      setMessageType('error');
+      return;
+    }
 
     if (newPassword !== confirmPassword) {
       setMessage('Las contraseñas no coinciden');
@@ -36,7 +42,7 @@ export default function AdminResetPasswordPage() {
       const response = await fetch('/api/admin/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ newPassword }),
+        body: JSON.stringify({ newPassword, institutionId: institution_id }),
       });
 
       const data = await response.json();
@@ -52,7 +58,11 @@ export default function AdminResetPasswordPage() {
 
         // Esperar unos segundos y volver al dashboard
         setTimeout(() => {
-          router.push(`/dashboard/${institution_id}`);
+          if (institution_id) {
+            router.push(`/dashboard/${institution_id}`);
+          } else {
+            router.push('/admin/login');
+          }
         }, 2000);
       }
     } catch (error) {
@@ -65,56 +75,71 @@ export default function AdminResetPasswordPage() {
   };
 
   const volverAlDashboard = () => {
-    router.push(`/dashboard/${institution_id}`);
+    if (institution_id) {
+      router.push(`/dashboard/${institution_id}`);
+    } else {
+      router.push('/admin/login');
+      setMessage('No se pudo determinar a qué dashboard volver.');
+      setMessageType('error');
+    }
   };
 
   return (
+    <div className="w-full max-w-sm bg-white p-6 rounded shadow">
+      <label className="block mb-2 text-sm font-medium text-gray-700">Nueva contraseña:</label>
+      <input
+        type="password"
+        value={newPassword}
+        onChange={(e) => setNewPassword(e.target.value)}
+        className="w-full border px-3 py-2 rounded shadow-sm mb-4 text-gray-800"
+        placeholder="********"
+      />
+
+      <label className="block mb-2 text-sm font-medium text-gray-700">Confirmar nueva contraseña:</label>
+      <input
+        type="password"
+        value={confirmPassword}
+        onChange={(e) => setConfirmPassword(e.target.value)}
+        className="w-full border px-3 py-2 rounded shadow-sm mb-4 text-gray-800"
+        placeholder="********"
+      />
+
+      <button
+        onClick={handlePasswordChange}
+        disabled={loading || !newPassword || !confirmPassword || !institution_id}
+        className="w-full bg-gray-900 text-white py-2 rounded hover:bg-black transition hover:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {loading ? 'Cambiando...' : 'Cambiar contraseña'}
+      </button>
+
+      {message && (
+        <p
+          className={`mt-4 text-sm text-center ${
+            messageType === 'success' ? 'text-green-600' : 'text-red-600'
+          }`}
+        >
+          {message}
+        </p>
+      )}
+
+      <button
+        onClick={volverAlDashboard}
+        disabled={!institution_id}
+        className="mt-4 w-full text-sm underline text-gray-700 hover:text-black disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        Volver al dashboard
+      </button>
+    </div>
+  );
+}
+
+export default function AdminResetPasswordPage() {
+  return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-6">
       <h1 className="text-2xl font-bold mb-4 text-gray-800">Cambiar contraseña de administrador</h1>
-
-      <div className="w-full max-w-sm bg-white p-6 rounded shadow">
-        <label className="block mb-2 text-sm font-medium text-gray-700">Nueva contraseña:</label>
-        <input
-          type="password"
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-          className="w-full border px-3 py-2 rounded shadow-sm mb-4 text-gray-800"
-          placeholder="********"
-        />
-
-        <input
-          type="password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          className="w-full border px-3 py-2 rounded shadow-sm mb-4 text-gray-800"
-          placeholder="********"
-        />
-
-        <button
-          onClick={handlePasswordChange}
-          disabled={loading || !newPassword || !confirmPassword}
-          className="w-full bg-gray-900 text-white py-2 rounded hover:bg-black transition hover:cursor-pointer"
-        >
-          {loading ? 'Cambiando...' : 'Cambiar contraseña'}
-        </button>
-
-        {message && (
-          <p
-            className={`mt-4 text-sm text-center ${
-              messageType === 'success' ? 'text-green-600' : 'text-red-600'
-            }`}
-          >
-            {message}
-          </p>
-        )}
-
-        <button
-          onClick={volverAlDashboard}
-          className="mt-4 w-full text-sm underline text-gray-700 hover:text-black"
-        >
-          Volver al dashboard
-        </button>
-      </div>
+      <Suspense fallback={<div className="text-gray-500">Cargando...</div>}>
+        <ResetPasswordForm />
+      </Suspense>
     </main>
   );
 }

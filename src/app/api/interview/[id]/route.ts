@@ -1,12 +1,12 @@
 import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   let interviewId: bigint;
   try {
-    interviewId = BigInt(params.id);
+    interviewId = BigInt((await params).id);
   } catch (error) {
-    console.error('Invalid interview ID format:', params.id, error);
+    console.error('Invalid interview ID format:', error);
     return NextResponse.json(
       { error: 'El formato del ID de entrevista es inválido' },
       { status: 400 }
