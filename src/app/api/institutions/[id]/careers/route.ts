@@ -31,16 +31,16 @@ import { NextRequest, NextResponse } from 'next/server';
  * }
  */
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   let institutionId: bigint;
   try {
     // Intentamos convertir el ID de la URL a BigInt.
     // Si params.id no es un número entero válido (ej: "abc", "1.5"), esto lanzará un error.
-    institutionId = await BigInt(params.id);
+    institutionId = BigInt((await params).id);
   } catch (error) {
-    console.error('Invalid institution ID format:', params.id, error);
+    console.error('Invalid institution ID format:', error);
     return NextResponse.json(
       { error: 'El formato del ID de institución es inválido' },
       { status: 400 }

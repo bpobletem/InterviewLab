@@ -2,10 +2,10 @@ import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
 // Get interviews para el usuario especificado
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     // Obtener el ID del usuario de los parámetros de la ruta
-    const { id } = params;
+    const { id } = await params;
     
     // Verificar que el ID del usuario sea válido
     if (!id) {
