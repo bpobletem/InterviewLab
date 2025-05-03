@@ -33,7 +33,7 @@ export default function AdminLogin() {
           if (res.ok) {
             const validationData = await res.json();
             // Redirigir al dashboard si es un admin válido
-            router.push(`/dashboard/${validationData.institution_id}`);
+            router.push(`/admin/dashboard/${validationData.institution_id}`);
             return;
           }
           // Si no es admin, cerrar sesión
@@ -84,7 +84,7 @@ export default function AdminLogin() {
       }
       
       // Si la validación fue exitosa, redirigir al dashboard de administración
-      router.push(`/dashboard/${validationData.institution_id}`);
+      router.push(`/admin/dashboard/${validationData.institution_id}`);
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Ocurrió un error durante el inicio de sesión';
       setError(errorMessage);
