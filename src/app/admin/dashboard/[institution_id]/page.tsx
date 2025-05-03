@@ -21,6 +21,7 @@ export default function AdminDashboard() {
               <h3 className="font-medium text-sm">Estadísticas</h3>
               <p className="text-xs text-gray-500">Próximamente: Visualiza estadísticas de uso</p>
             </div>
+
           </div>
         </div>
       </div>

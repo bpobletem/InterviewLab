@@ -52,7 +52,7 @@ export default function AdminResetPasswordPage() {
 
         // Esperar unos segundos y volver al dashboard
         setTimeout(() => {
-          router.push(`/dashboard/${institution_id}`);
+          router.push(`/admin/dashboard/${institution_id}`);
         }, 2000);
       }
     } catch (error) {

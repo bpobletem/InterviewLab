@@ -1,4 +1,5 @@
-import type { Metadata } from "next";
+'use client';
+
 import { Geist, Geist_Mono } from "next/font/google";
 import "../globals.css";
 import AdminNavbar from "@/components/AdminNavbar";
@@ -14,25 +15,20 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "InterviewLab Admin - Panel de Administración",
-  description: "Panel de administración para instituciones en InterviewLab",
-};
-
 export default function AdminLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="es">
       <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased flex flex-col min-h-screen`}>
         <AdminNavbar />
-        <div className="flex-grow"> {/* Añadimos margen superior para compensar el navbar fijo */}
+        <div className="flex-grow">
           {children}
         </div>
         <Footer />
       </body>
     </html>
-  )
+  );
 }
