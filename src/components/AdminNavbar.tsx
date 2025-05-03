@@ -20,6 +20,7 @@ export default function AdminNavbar() {
       if (error) {
         console.error('[AdminNavbar] Error fetching user:', error);
       } else {
+        console.log('[AdminNavbar] Usuario obtenido:', user);
         setUser(user);
         
         // Obtener el ID de la institución del administrador
@@ -34,7 +35,10 @@ export default function AdminNavbar() {
             
             if (response.ok) {
               const data = await response.json();
+              console.log('[AdminNavbar] Datos de institución obtenidos:', data);
               setInstitutionId(data.institution_id);
+            } else {
+              console.error('[AdminNavbar] Error en respuesta de validación:', response.status, await response.text());
             }
           } catch (error) {
             console.error('[AdminNavbar] Error fetching institution:', error);
@@ -45,13 +49,33 @@ export default function AdminNavbar() {
     getUser();
 
     // Escuchar cambios en el estado de autenticación
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('[AdminNavbar] Auth state changed:', event);
       setUser(session?.user ?? null);
       
       // Si el usuario cierra sesión, limpiar el ID de la institución
       if (event === 'SIGNED_OUT') {
         setInstitutionId(null);
+      } else if (event === 'SIGNED_IN' && session?.user) {
+        // Intentar obtener el ID de institución cuando el usuario inicia sesión
+        try {
+          const response = await fetch('/api/admin/validate', {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            console.log('[AdminNavbar] Datos de institución obtenidos después de inicio de sesión:', data);
+            setInstitutionId(data.institution_id);
+          } else {
+            console.error('[AdminNavbar] Error en respuesta de validación después de inicio de sesión:', response.status, await response.text());
+          }
+        } catch (error) {
+          console.error('[AdminNavbar] Error fetching institution after sign in:', error);
+        }
       }
     });
 
@@ -84,20 +108,26 @@ export default function AdminNavbar() {
         InterviewLab <span className="text-xs font-normal bg-gray-200 px-2 py-1 rounded ml-1">Admin</span>
       </Link>
       <div className="flex items-center gap-4">
-        {user && institutionId && (
+        {user ? (
           <div className="flex items-center gap-4">
-            <Link 
-              href={`/admin/dashboard/${institutionId}`} 
-              className="text-gray-600 hover:text-black transition hover:cursor-pointer"
-            >
-              Dashboard
-            </Link>
-            <Link 
-              href={`/admin/reset-password?institution_id=${institutionId}`} 
-              className="text-gray-600 hover:text-black transition hover:cursor-pointer"
-            >
-              Cambiar Contraseña
-            </Link>
+            {institutionId ? (
+              <>
+                <Link 
+                  href={`/admin/dashboard/${institutionId}`} 
+                  className="text-gray-600 hover:text-black transition hover:cursor-pointer"
+                >
+                  Dashboard
+                </Link>
+                <Link 
+                  href={`/admin/reset-password?institution_id=${institutionId}`} 
+                  className="text-gray-600 hover:text-black transition hover:cursor-pointer"
+                >
+                  Cambiar Contraseña
+                </Link>
+              </>
+            ) : (
+              <span className="text-gray-600">Cargando opciones...</span>
+            )}
             <button
               onClick={handleLogout}
               disabled={isLoggingOut}
@@ -107,7 +137,7 @@ export default function AdminNavbar() {
               {isLoggingOut ? 'Cerrando...' : 'Cerrar sesión'}
             </button>
           </div>
-        )}
+        ) : null}
       </div>
     </nav>
   );
