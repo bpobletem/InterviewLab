@@ -54,17 +54,10 @@ export default function AdminLogin() {
     setLoading(true);
 
     try {
-<<<<<<< HEAD:src/app/(admin)/admin/login/page.tsx
       const res = await fetch('/api/auth/unified-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
-=======
-      // Autenticar directamente con Supabase
-      const { error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
->>>>>>> 42cd322 (fix vars sin uso):src/app/admin/login/page.tsx
       });
 
       const data = await res.json();
