@@ -16,14 +16,22 @@ export default function Navbar() {
   useEffect(() => {
     // Obtener el usuario inicial
     const getUser = async () => {
-      const { data: { user }, error } = await supabase.auth.getUser();
-      if (error) {
-        console.error('[Navbar] Error fetching user:', error);
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+
+      if (sessionError || !sessionData.session) {
+        console.warn("[Navbar] No hay sesión activa");
+        return;
+      }
+
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError) {
+        console.error("[Navbar] Error fetching user:", userError.message);
       } else {
-        setUser(user);
+        setUser(userData.user);
       }
     };
     getUser();
+
 
     // Escuchar cambios en el estado de autenticación
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
