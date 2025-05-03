@@ -19,7 +19,7 @@ export default function AdminDashboard() {
           <div className="grid grid-cols-1 gap-3">
             <div className="p-3 bg-gray-50 rounded border border-gray-200">
               <h3 className="font-medium text-sm">Estadísticas</h3>
-              <p className="text-xs text-gray-500">Próximamente: Visualiza estadísticas de uso</p>
+              <p className="text-xs text-gray-500">Próximamente: Visualiza estadísticas de uso.</p>
             </div>
 
           </div>
