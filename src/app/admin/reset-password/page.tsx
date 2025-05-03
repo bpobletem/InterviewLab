@@ -64,12 +64,10 @@ export default function AdminResetPasswordPage() {
     }
   };
 
-  const volverAlDashboard = () => {
-    router.push(`/dashboard/${institution_id}`);
-  };
+
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-6">
+    <main className="flex flex-col items-center justify-center bg-gray-100 p-6 min-h-screen">
       <h1 className="text-2xl font-bold mb-4 text-gray-800">Cambiar contraseña de administrador</h1>
 
       <div className="w-full max-w-sm bg-white p-6 rounded shadow">
@@ -107,13 +105,6 @@ export default function AdminResetPasswordPage() {
             {message}
           </p>
         )}
-
-        <button
-          onClick={volverAlDashboard}
-          className="mt-4 w-full text-sm underline text-gray-700 hover:text-black"
-        >
-          Volver al dashboard
-        </button>
       </div>
     </main>
   );
