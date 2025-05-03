@@ -72,7 +72,7 @@ function ResetPasswordForm() {
 
   const volverAlDashboard = () => {
     if (institution_id) {
-      router.push(`/dashboard/${institution_id}`);
+      router.push(`/admin/dashboard/${institution_id}`);
     } else {
       router.push('/admin/login');
       setMessage('No se pudo determinar a qué dashboard volver.');
