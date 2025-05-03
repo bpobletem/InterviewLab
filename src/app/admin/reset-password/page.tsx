@@ -58,7 +58,6 @@ function ResetPasswordForm() {
 
         // Esperar unos segundos y volver al dashboard
         setTimeout(() => {
-          
           if (institution_id) {
             router.push(`/dashboard/${institution_id}`);
           } else {
