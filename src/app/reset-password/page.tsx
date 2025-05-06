@@ -27,7 +27,7 @@ export default function ResetPasswordPage() {
     return (
         <main className="flex min-h-screen items-center justify-center bg-gray-100">
             <div className="w-full max-w-md bg-white p-8 rounded-md shadow">
-                <h1 className="text-2xl font-bold text-center text-gray-300 mb-4">Recuperar contraseña</h1>
+                <h1 className="text-2xl font-bold text-center text-gray-900 mb-4">Recuperar contraseña</h1>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <input
                         type="email"
@@ -35,7 +35,7 @@ export default function ResetPasswordPage() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
-                        className="w-full px-4 py-2 border border-black rounded text-sm"
+                        className="w-full px-4 py-2 border border-black text-gray-900 rounded text-sm"
                     />
                     <button
                         type="submit"
@@ -45,7 +45,7 @@ export default function ResetPasswordPage() {
                     </button>
                 </form>
                 {message && (
-                    <p className="mt-4 text-sm text-center text-gray-500">{message}</p>
+                    <p className="mt-4 text-sm text-center text-gray-900">{message}</p>
                 )}
             </div>
         </main>
