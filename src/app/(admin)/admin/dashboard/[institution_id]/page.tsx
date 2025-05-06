@@ -6,7 +6,7 @@ export default function AdminDashboard() {
   const { institution_id } = useParams();
 
   return (
-    <main className="flex flex-col items-center justify-center bg-gray-50 text-gray-800 p-6 min-h-screen">
+    <main className="flex flex-col items-center justify-center text-gray-800">
       <div className="w-full max-w-md">
         <h1 className="text-2xl font-bold text-center mb-4">Dashboard de Administración</h1>
         <p className="text-lg text-center mb-2">Aquí va el contenido del dashboard.</p>

@@ -135,7 +135,7 @@ function ResetPasswordForm() {
 
 export default function AdminResetPasswordPage() {
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-6">
+    <main className="flex flex-col items-center justify-center bg-gray-100">
       <h1 className="text-2xl font-bold mb-4 text-gray-800">Cambiar contraseña de administrador</h1>
       <Suspense fallback={<div className="text-gray-500">Cargando...</div>}>
         <ResetPasswordForm />

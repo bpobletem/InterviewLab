@@ -1,6 +1,6 @@
 export default function LandingPage() {
   return (
-    <main className="min-h-screen bg-white text-gray-900 flex flex-col items-center justify-center px-4">
+    <main className="text-gray-900 flex flex-col items-center justify-center px-4">
       <div className="text-center space-y-4 max-w-2xl">
         <h1 className="text-5xl font-bold">InterviewLab</h1>
         <p className="text-gray-600 text-lg">

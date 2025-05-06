@@ -115,10 +115,10 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-white text-gray-800">
+    <main className="flex items-center justify-center text-gray-800">
       <div className="w-full max-w-md p-6 border border-gray-200 rounded-xl shadow-sm">
         <h1 className="text-xl font-semibold text-center mb-1">Regístrate en <span className="font-bold text-gray-900">InterviewLab</span></h1>
-        <form onSubmit={handleRegister} className="space-y-4">
+        <form onSubmit={handleRegister} className="space-y-4 mt-4">
           <div>
             <label className="text-sm block mb-1">Nombre y Apellido</label>
             <input
