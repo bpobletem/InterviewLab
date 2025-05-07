@@ -8,29 +8,53 @@ import { User } from '@supabase/supabase-js';
 
 export default function Navbar() {
   const [user, setUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
   useEffect(() => {
-    // Obtener el usuario inicial
-    const getUser = async () => {
-      const { data: { user }, error } = await supabase.auth.getUser();
-      if (error) {
-        console.error('[Navbar] Error fetching user:', error);
+    const fetchUserAndAdminStatus = async () => {
+      const { data: { user: supabaseUser }, error: userError } = await supabase.auth.getUser();
+      if (userError) {
+        console.error('[Navbar] Error fetching user:', userError);
+        setUser(null);
+        setIsAdmin(false);
+        return;
+      }
+      setUser(supabaseUser);
+
+      if (supabaseUser) {
+        try {
+          const response = await fetch('/api/auth/user-info');
+          if (response.ok) {
+            const data = await response.json();
+            setIsAdmin(data.isAdmin);
+          } else {
+            console.error('[Navbar] Error fetching admin status:', response.statusText);
+            setIsAdmin(false);
+          }
+        } catch (error) {
+          console.error('[Navbar] Exception fetching admin status:', error);
+          setIsAdmin(false);
+        }
       } else {
-        setUser(user);
+        setIsAdmin(false);
       }
     };
-    getUser();
 
-    // Escuchar cambios en el estado de autenticación
+    fetchUserAndAdminStatus();
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('[Navbar] Auth state changed:', event);
       setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchUserAndAdminStatus();
+      } else {
+        setIsAdmin(false);
+      }
     });
 
-    // Limpiar la suscripción al desmontar
     return () => {
       subscription.unsubscribe();
     };
@@ -62,11 +86,14 @@ export default function Navbar() {
         <Link href="/home" className="text-gray-600 hover:text-black transition hover:cursor-pointer">
           Inicio
         </Link>
+        {user && !isAdmin && (
+          <Link href="/entrevista" className="text-gray-600 hover:text-black transition hover:cursor-pointer">
+            Entrevista
+          </Link>
+        )}
         {user ? (
           <div className="flex items-center gap-4">
-            <Link href="/entrevista" className="text-gray-600 hover:text-black transition hover:cursor-pointer">
-              Entrevista
-            </Link>
+            {/* The Entrevista link is now conditionally rendered above based on isAdmin status */}
             <button
               onClick={handleLogout}
               disabled={isLoggingOut}
