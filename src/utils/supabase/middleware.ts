@@ -45,6 +45,8 @@ export async function updateSession(request: NextRequest) {
         // no user, potentially respond by redirecting the user to the login page
         const url = request.nextUrl.clone()
         url.pathname = '/login'
+        url.host = request.headers.get('host') || url.host
+        url.protocol = request.nextUrl.protocol || 'https:'
         return NextResponse.redirect(url)
     }
     
@@ -55,6 +57,8 @@ export async function updateSession(request: NextRequest) {
     ) {
         const url = request.nextUrl.clone()
         url.pathname = '/home'
+        url.host = request.headers.get('host') || url.host
+        url.protocol = request.nextUrl.protocol || 'https:'
         return NextResponse.redirect(url)
     }
 
