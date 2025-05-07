@@ -58,7 +58,7 @@ export default function Login() {
 
   return (
     <main className="flex items-center justify-center text-gray-800">
-      <div className="w-full max-w-md p-6 border border-gray-200 rounded-xl shadow-sm">
+      <div className="w-full max-w-md p-6 bg-white border border-gray-200 rounded-xl shadow-sm">
         <h1 className="text-xl font-semibold text-center mb-1">
           Iniciar sesión en <span className="font-bold text-gray-900">InterviewLab</span>
         </h1>
