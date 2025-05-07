@@ -103,7 +103,7 @@ export default function AdminNavbar() {
   };
 
   return (
-    <nav className="w-full border-b border-gray-200 px-6 py-3 flex justify-between items-center bg-white text-sm sticky top-0 z-10">
+    <nav className="w-full border-b border-gray-200 px-6 py-3 flex justify-between items-center bg-white text-sm">
       <Link href={institutionId ? `/admin/dashboard/${institutionId}` : '/admin/login'} className="font-semibold text-gray-800 hover:cursor-pointer">
         InterviewLab <span className="text-xs font-normal bg-gray-200 px-2 py-1 rounded ml-1">Admin</span>
       </Link>

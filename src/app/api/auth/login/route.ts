@@ -34,23 +34,41 @@ export async function POST(request: NextRequest) {
     // Obtener el usuario autenticado
     const user = data.user;
 
-    // Buscar el institution_id del usuario usando Prisma
+    // Verificar si el email del usuario existe en la tabla institutions (admin check)
+    const adminInstitution = await prisma.institution.findFirst({
+      where: { email: user.email },
+      select: { id: true }
+    });
+
+    if (adminInstitution) {
+      // Si es un admin, invalidar la sesión y devolver error
+      await supabase.auth.signOut(); 
+      return NextResponse.json(
+        { error: 'Los administradores deben iniciar sesión a través del portal de administración.' },
+        { status: 403 }
+      );
+    }
+
+    // Buscar el institution_id del usuario usando Prisma (para estudiantes)
     const dbUser = await prisma.user.findUnique({
       where: { authId: user.id },
       select: { institution_id: true },
     });
 
     if (!dbUser) {
+      // Invalidar sesión si el usuario no se encuentra en la BD (aunque Supabase lo autenticó)
+      await supabase.auth.signOut();
       return NextResponse.json(
-        { error: 'Usuario no encontrado en la base de datos' },
+        { error: 'Usuario no encontrado en la base de datos local.' },
         { status: 404 }
       );
     }
 
     // Si el usuario no tiene una institución asociada, no permitir el login
     if (!dbUser.institution_id) {
+      await supabase.auth.signOut();
       return NextResponse.json(
-        { error: "No hay institucion asociada" },
+        { error: "El usuario no tiene una institución asociada." },
         { status: 400 }
       );
     }
@@ -61,6 +79,7 @@ export async function POST(request: NextRequest) {
     );
 
     if (institutionError) {
+      await supabase.auth.signOut();
       return NextResponse.json(
         { error: institutionError },
         { status: institutionError === 'Institución no encontrada' ? 404 : 500 }
@@ -68,8 +87,9 @@ export async function POST(request: NextRequest) {
     }
 
     if (!isActive) {
+      await supabase.auth.signOut();
       return NextResponse.json(
-        { error: 'La institución no tiene una suscripción activa' },
+        { error: 'La institución no tiene una suscripción activa.' },
         { status: 403 }
       );
     }

@@ -26,9 +26,9 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-white flex items-center justify-center py-10 px-4 font-sans">
-      <div className="bg-gray-50 shadow-lg rounded-xl p-8 max-w-4xl w-full space-y-10">
-        <h1 className="text-3xl sm:text-4xl font-bold text-center text-gray-800">
+    <main className="flex items-center justify-center py-10 px-4 font-sans">
+      <div className="bg-white shadow-sm rounded-xl p-8 max-w-4xl w-full">
+        <h1 className="text-3xl sm:text-4xl font-bold text-center text-gray-800 mb-4">
           Simulador de Entrevistas
         </h1>
 
