@@ -171,7 +171,7 @@ export default function FeedbackPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-white flex items-center justify-center py-16 px-4 font-sans">
+      <main className="flex items-center justify-center py-16 px-4 font-sans">
         <div className="bg-gray-50 shadow-lg rounded-xl p-8 max-w-4xl w-full space-y-6 my-16">
           <h1 className="text-3xl sm:text-4xl font-bold text-center text-gray-800 mb-6">
             Feedback de la Entrevista
@@ -190,7 +190,7 @@ export default function FeedbackPage() {
 
   if (error) {
     return (
-      <main className="min-h-screen bg-white flex items-center justify-center py-16 px-4 font-sans">
+      <main className="flex items-center justify-center py-16 px-4 font-sans">
         <div className="bg-gray-50 shadow-lg rounded-xl p-8 max-w-4xl w-full space-y-6 my-16">
           <h1 className="text-3xl sm:text-4xl font-bold text-center text-gray-800 mb-6">
             Feedback de la Entrevista
@@ -280,7 +280,7 @@ export default function FeedbackPage() {
   if (!evaluationResults || evaluationResults.length === 0) {
     // Si no hay resultados, mostrar un mensaje y la estructura de datos para depuración
     return (
-      <main className="min-h-screen bg-white flex items-center justify-center py-16 px-4 font-sans">
+      <main className="flex items-center justify-center py-16 px-4 font-sans">
         <div className="bg-gray-50 shadow-lg rounded-xl p-8 max-w-4xl w-full space-y-6 my-16">
           <h1 className="text-3xl sm:text-4xl font-bold text-center text-gray-800 mb-6">
             Feedback de la Entrevista
@@ -331,7 +331,7 @@ export default function FeedbackPage() {
   }
 
   return (
-    <main className="min-h-screen bg-white flex items-center justify-center py-16 px-4 font-sans">
+    <main className="flex items-center justify-center py-16 px-4 font-sans">
       <div className="bg-gray-50 shadow-lg rounded-xl p-8 max-w-4xl w-full space-y-6 my-16">
         <h1 className="text-3xl sm:text-4xl font-bold text-center text-gray-800 mb-6">
           Feedback de la Entrevista
