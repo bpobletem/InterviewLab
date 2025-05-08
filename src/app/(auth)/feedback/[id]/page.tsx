@@ -55,6 +55,10 @@ export default function FeedbackPage() {
               throw new Error('Conversación no encontrada.');
             } else if (response.status === 400) {
               throw new Error('El formato del ID de conversación es inválido.');
+            } else if (response.status === 401) {
+              throw new Error('Debes iniciar sesión para ver este feedback.');
+            } else if (response.status === 403) {
+              throw new Error('No tienes permiso para acceder a este feedback.');
             }
             throw new Error('Error al obtener los datos de la conversación.');
           }
