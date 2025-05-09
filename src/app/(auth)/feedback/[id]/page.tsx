@@ -16,6 +16,12 @@ interface EvaluationCriterion {
   result?: 'success' | 'failure';
 }
 
+// Mapa de palabras sin acento a palabras con acento
+const accentMap: Record<string, string> = {
+  'interes': 'interés',
+  'tecnica': 'técnica',
+};
+
 interface CriterionResult {
   result: 'success' | 'failure';
   rationale: string;
@@ -88,28 +94,51 @@ export default function FeedbackPage() {
             results = details.data.evaluation_criteria_results;
           }
           
+          // Función para normalizar criterios con acentos
+          const normalizeCriterion = (criterion: string): string => {
+            // Convertir a minúsculas para comparación
+            const lowerCriterion = criterion.toLowerCase();
+            // Verificar si existe en el mapa de acentos
+            const normalized = accentMap[lowerCriterion] || criterion;
+            
+            // Preservar la capitalización original (primera letra mayúscula si el original la tenía)
+            if (criterion.length > 0 && criterion[0] === criterion[0].toUpperCase()) {
+              return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+            }
+            
+            return normalized;
+          };
+          
           // Convertir los resultados a un formato uniforme si es un objeto en lugar de un array
           if (results && !Array.isArray(results)) {
             const formattedResults: EvaluationCriterion[] = Object.entries(results).map(([key, value]) => {
+              // Normalizar el criterio para añadir acentos si es necesario
+              const normalizedKey = normalizeCriterion(key);
+              
               if (typeof value === 'object' && value !== null && 'result' in value && 'rationale' in value) {
                 // Es un objeto CriterionResult
                 const criterionResult = value as CriterionResult;
                 return {
-                  criterion: key,
+                  criterion: normalizedKey,
                   feedback: criterionResult.rationale,
                   result: criterionResult.result // Añadir el resultado para usarlo en la UI
                 };
               } else {
                 // Formato desconocido, intentar adaptarlo
                 return {
-                  criterion: key,
+                  criterion: normalizedKey,
                   feedback: String(value)
                 };
               }
             });
             setEvaluationResults(formattedResults);
           } else if (results && Array.isArray(results)) {
-            setEvaluationResults(results);
+            // Normalizar los criterios en el array también
+            const normalizedResults = results.map(item => ({
+              ...item,
+              criterion: normalizeCriterion(item.criterion)
+            }));
+            setEvaluationResults(normalizedResults);
           } else {
             setEvaluationResults([]); // No results found, but not an error
           }
