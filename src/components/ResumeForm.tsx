@@ -52,11 +52,18 @@ export function ResumeForm({ onComplete }: ResumeFormProps) {
 
   return (
     <div className="bg-white p-8 rounded-lg shadow-sm mb-8 w-full border border-gray-100 transition-all duration-300">
-      <h2 className="text-2xl font-bold mb-6 text-black border-b pb-3">Subir Archivos</h2>
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="mb-5">
-          <label htmlFor="file" className="block text-black font-medium mb-2">
-            Subir Currículum <span className="text-black font-bold">*</span>
+        <div className="mb-8">
+          <label htmlFor="file-input-resume" className="block text-gray-800 font-medium mb-2">
+            Currículum <span className="text-gray-800 font-bold">*</span>
+          </label>
+          <label
+            htmlFor="file-input-resume"
+            className={`w-full flex items-center px-4 py-3 border-2 border-gray-200 rounded-md bg-white hover:border-black transition-colors duration-300 cursor-pointer ${
+              file ? 'text-gray-800' : 'text-gray-500'
+            }`}
+          >
+            {file ? file.name : 'Seleccionar archivo PDF...'}
           </label>
           <div className="relative">
             <input
