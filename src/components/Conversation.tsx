@@ -1,7 +1,8 @@
 'use client';
 
 import { useConversation } from '@11labs/react';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface ConversationProps {
   resume: string;
@@ -11,6 +12,9 @@ interface ConversationProps {
 }
 
 export function Conversation({ resume, jobDescription, interviewId, onBack }: ConversationProps) {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
   const conversation = useConversation({
     overrides: {
       agent: {
@@ -91,15 +95,44 @@ export function Conversation({ resume, jobDescription, interviewId, onBack }: Co
 
     } catch (error) {
       console.error('Error al iniciar la conversación:', error);
+      alert('Error al iniciar la entrevista. Por favor, verifica tu micrófono e intenta nuevamente.');
     }
   }, [conversation, interviewId]);
 
   const stopConversation = useCallback(async () => {
-    await conversation.endSession();
-  }, [conversation]);
+    try {
+      setIsLoading(true);
+      setLoadingMessage('Finalizando entrevista y preparando feedback...');
+      await conversation.endSession();
+      
+      // Pequeña pausa para asegurar que los datos se procesen correctamente
+      setTimeout(() => {
+        // Redirigir a la página de feedback usando el ID de la entrevista
+        router.push(`/feedback/${interviewId}`);
+      }, 2000);
+    } catch (error) {
+      console.error('Error al finalizar la entrevista:', error);
+      setIsLoading(false);
+    }
+  }, [conversation, interviewId, router]);
 
   return (
     <div className="flex flex-col items-center w-full max-w-2xl mx-auto">
+      {/* Overlay de carga (solo para finalizar entrevista) */}
+      {isLoading && loadingMessage.includes('Finalizando') && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full text-center">
+            <div className="flex justify-center mb-4">
+              <svg className="animate-spin h-10 w-10 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            </div>
+            <p className="text-lg font-medium text-gray-800">{loadingMessage}</p>
+            <p className="text-sm text-gray-500 mt-2">Por favor, espere un momento...</p>
+          </div>
+        </div>
+      )}
       {/* Interview Status Card */}
       <div className="w-full bg-white border border-gray-200 rounded-lg shadow-sm mb-6 overflow-hidden">
         <div className="p-5 border-b border-gray-200">
