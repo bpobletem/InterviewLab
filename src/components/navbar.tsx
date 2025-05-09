@@ -78,40 +78,43 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="w-full border-b border-gray-200 px-6 py-3 flex justify-between items-center bg-white text-sm">
-      <Link href="/home" className="font-semibold text-gray-800 hover:cursor-pointer">
-        InterviewLab
-      </Link>
-      <div className="flex items-center gap-4">
-        <Link href="/home" className="text-gray-600 hover:text-black transition hover:cursor-pointer">
-          Inicio
+    <nav className="w-full border-b border-gray-100 px-6 py-3 flex justify-between items-center bg-white/60 text-sm">
+      <div className="max-w-7xl flex justify-between items-center w-full mx-auto">
+        <Link href="/" className="text-md font-semibold bg-gradient-to-r from-blue-500 to-violet-500 text-transparent bg-clip-text hover:cursor-pointer">
+          Interview
+          <span className='italic'>Lab</span>
         </Link>
-        {user && !isAdmin && (
-          <Link href="/entrevista" className="text-gray-600 hover:text-black transition hover:cursor-pointer">
-            Entrevista
+        <div className="flex items-center gap-4">
+          <Link href="/home" className="text-gray-600 hover:text-black transition hover:cursor-pointer">
+            Inicio
           </Link>
-        )}
-        {user ? (
-          <div className="flex items-center gap-4">
-            {/* The Entrevista link is now conditionally rendered above based on isAdmin status */}
-            <button
-              onClick={handleLogout}
-              disabled={isLoggingOut}
-              className="text-gray-500 hover:text-black transition disabled:opacity-50 disabled:cursor-not-allowed hover:cursor-pointer"
-              aria-label="Cerrar sesión"
+          {user && !isAdmin && (
+            <Link href="/entrevista" className="text-gray-600 hover:text-black transition hover:cursor-pointer">
+              Entrevista
+            </Link>
+          )}
+          {user ? (
+            <div className="flex items-center gap-4">
+              {/* The Entrevista link is now conditionally rendered above based on isAdmin status */}
+              <button
+                onClick={handleLogout}
+                disabled={isLoggingOut}
+                className="text-gray-500 hover:text-black transition disabled:opacity-50 disabled:cursor-not-allowed hover:cursor-pointer"
+                aria-label="Cerrar sesión"
+              >
+                {isLoggingOut ? 'Cerrando...' : 'Cerrar sesión'}
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              className="text-gray-500 hover:text-black transition hover:cursor-pointer"
+              aria-label="Iniciar sesión"
             >
-              {isLoggingOut ? 'Cerrando...' : 'Cerrar sesión'}
-            </button>
-          </div>
-        ) : (
-          <Link
-            href="/login"
-            className="text-gray-500 hover:text-black transition hover:cursor-pointer"
-            aria-label="Iniciar sesión"
-          >
-            Iniciar sesión
-          </Link>
-        )}
+              Iniciar sesión
+            </Link>
+          )}
+        </div>
       </div>
     </nav>
   );

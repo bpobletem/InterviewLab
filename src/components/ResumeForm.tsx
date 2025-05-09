@@ -65,40 +65,37 @@ export function ResumeForm({ onComplete }: ResumeFormProps) {
           >
             {file ? file.name : 'Seleccionar archivo PDF...'}
           </label>
-          <div className="relative">
-            <input
-              type="file"
-              id="file"
-              onChange={(e) => e.target.files && setFile(e.target.files[0])}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-md text-black bg-white hover:border-black transition-colors duration-300 focus:outline-none focus:border-black cursor-pointer"
-              accept="application/pdf"
-            />
-          </div>
-          {file && (
-            <p className="mt-2 text-sm text-gray-700 bg-gray-50 p-2 rounded border border-gray-200">
-              <span className="font-medium">Archivo seleccionado:</span> {file.name}
-            </p>
-          )}
+          <input
+            type="file"
+            id="file-input-resume"
+            onChange={(e) => {
+              if (e.target.files && e.target.files.length > 0) {
+                setFile(e.target.files[0]);
+              }
+            }}
+            className="hidden"
+            accept="application/pdf"
+          />
         </div>
 
-        <div className="mb-5">
-          <label htmlFor="text" className="block text-black font-medium mb-2">
-            Descripción del trabajo <span className="text-black font-bold">*</span>
+        <div className="mb-8">
+          <label htmlFor="text" className="block text-gray-800 font-medium mb-4">
+            Descripción del trabajo <span className="text-gray-800 font-bold">*</span>
           </label>
           <textarea
             id="text"
             value={text}
             onChange={(e) => setText(e.target.value)}
-            className="w-full px-4 py-3 border-2 border-gray-200 rounded-md h-40 text-black resize-none hover:border-black transition-colors duration-300 focus:outline-none focus:border-black cursor-text"
+            className="w-full px-4 py-3 border-2 border-gray-200 rounded-md h-40 text-gray-800 resize-none hover:border-black transition-colors duration-300 focus:outline-none focus:border-black cursor-text"
             placeholder="Describe el puesto con el mayor detalle posible para una entrevista más precisa..."
           />
         </div>
 
-        <div className="flex flex-col space-y-4">
+        <div className="text-right">
           <button
             type="submit"
             disabled={isLoading || !isFormComplete}
-            className="px-6 py-3 bg-black text-white rounded-md hover:bg-gray-800 transition-all duration-300 disabled:bg-gray-300 disabled:cursor-not-allowed cursor-pointer transform hover:translate-y-[-2px] font-medium"
+            className="py-2 px-6 bg-blue-500 text-white rounded-md hover:bg-blue-700 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer transform font-medium"
           >
             {isLoading ? (
               <span className="flex items-center justify-center">

@@ -118,7 +118,7 @@ export function Conversation({ resume, jobDescription, interviewId, onBack }: Co
         </div>
       )}
       {/* Interview Status Card */}
-      <div className="w-full bg-white border border-gray-200 rounded-lg shadow-sm mb-6 overflow-hidden">
+      <div className="w-full mb-6 overflow-hidden">
         <div className="p-5 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-gray-800">
@@ -134,7 +134,7 @@ export function Conversation({ resume, jobDescription, interviewId, onBack }: Co
         </div>
 
         {/* Status Indicator */}
-        <div className="p-5">
+        <div className="mt-4 ">
           {conversation.status === 'connected' ? (
             <div className="flex items-center justify-center p-4 bg-gray-50 rounded-md">
               {conversation.isSpeaking ? (
@@ -192,7 +192,7 @@ export function Conversation({ resume, jobDescription, interviewId, onBack }: Co
         <button
           onClick={startConversation}
           disabled={conversation.status === 'connected'}
-          className="flex-1 px-4 py-3 bg-gray-900 text-white rounded-md hover:bg-black transition disabled:bg-gray-300 disabled:cursor-not-allowed hover:cursor-pointer flex items-center justify-center gap-2 font-medium"
+          className="flex-1 px-4 py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition disabled:bg-gray-300 disabled:cursor-not-allowed hover:cursor-pointer flex items-center justify-center gap-2 font-medium"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />

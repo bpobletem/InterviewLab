@@ -1,29 +1,26 @@
 export default function LandingPage() {
   return (
     <main className="text-gray-900 flex flex-col items-center justify-center px-4">
-      <div className="text-center space-y-4 max-w-2xl">
-        <h1 className="text-5xl font-bold">InterviewLab</h1>
-        <p className="text-gray-600 text-lg">
+      <div className="text-center max-w-2xl">
+        <h1 className="text-3xl md:text-6xl font-bold mb-8 bg-gradient-to-r from-blue-500 via-violet-500 to-pink-500 text-transparent bg-clip-text">
+          Interview
+          <span className="italic">Lab</span>
+        </h1>
+        <p className="text-gray-600 text-lg md:text-2xl mb-8">
           Mejora tus habilidades para entrevistas de trabajo con nuestro simulador de entrevistas impulsado por IA.
         </p>
 
-        <div className="flex gap-4 justify-center mt-6">
+        <div className="flex gap-4 justify-center mb-8">
           <a
-            href="/login"
-            className="bg-gray-900 text-white px-6 py-2 rounded-md font-medium hover:bg-black transition"
+            href="/entrevista"
+            className="bg-gradient-to-r from-blue-500 to-violet-500 text-lg text-white mb-8 px-6 py-2 rounded-md hover:transform hover:scale-105 transition"
           >
-            Iniciar sesión
-          </a>
-          <a
-            href="/register"
-            className="border border-gray-300 px-6 py-2 rounded-md font-medium hover:bg-gray-100 transition"
-          >
-            Registrarse
+            Comenzar
           </a>
         </div>
       </div>
 
-      <div className="mt-20 grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-5xl w-full px-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-5xl w-full">
         <Feature
           title="Entrevistas Realistas"
           description="Practica con simulaciones de entrevistas que se sienten reales."
@@ -43,9 +40,9 @@ export default function LandingPage() {
 
 function Feature({ title, description }: { title: string; description: string }) {
   return (
-    <div className="border border-gray-200 bg-white p-6 rounded-xl text-center shadow-sm">
-      <h2 className="font-semibold mb-2">{title}</h2>
-      <p className="text-sm text-gray-500">{description}</p>
+    <div className="border border-gray-200 bg-white p-8 rounded-xl text-center shadow-sm hover:transform hover:scale-105 transition">
+      <h2 className="font-semibold text-gray-700 mb-4 text-lg">{title}</h2>
+      <p className="text-md text-gray-500">{description}</p>
     </div>
   )
 }

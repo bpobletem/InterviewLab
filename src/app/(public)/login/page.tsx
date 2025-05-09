@@ -58,16 +58,16 @@ export default function Login() {
 
   return (
     <main className="flex items-center justify-center text-gray-800">
-      <div className="w-full max-w-md p-6 bg-white border border-gray-200 rounded-xl shadow-sm">
-        <h1 className="text-xl font-semibold text-center mb-1">
-          Iniciar sesión en <span className="font-bold text-gray-900">InterviewLab</span>
+      <div className="w-full max-w-md md:max-w-lg p-8 bg-white border border-gray-200 rounded-xl shadow-sm">
+        <h1 className="text-xl font-semibold text-center mb-2">
+          Inicia sesión en <span className="font-bold text-gray-900">InterviewLab</span>
         </h1>
-        <p className="text-sm text-center text-gray-500 mb-6">Ingresa tus credenciales</p>
-        <form className="mt-8 space-y-6" onSubmit={handleLogin}>
+        <p className="text-sm text-center text-gray-500 mb-8">Ingresa tus credenciales</p>
+        <form className="mt-8 space-y-8" onSubmit={handleLogin}>
           <div className="space-y-4 rounded-md">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium">
-                Email address
+              <label htmlFor="email" className="block text-sm font-medium mb-4">
+                Correo electrónico
               </label>
               <input
                 id="email"
@@ -77,12 +77,12 @@ export default function Login() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-foreground/20 px-3 py-2 shadow-sm focus:border-foreground/50 focus:outline-none focus:ring-1 focus:ring-foreground/50"
+                className="block w-full rounded-md border border-foreground/20 px-3 py-2 shadow-sm focus:border-foreground/50 focus:outline-none focus:ring-1 focus:ring-foreground/50"
               />
             </div>
             <div>
-              <label htmlFor="password" className="block text-sm font-medium">
-                Password
+              <label htmlFor="password" className="block text-sm font-medium mb-4">
+                Contraseña
               </label>
               <input
                 id="password"
@@ -92,7 +92,7 @@ export default function Login() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-foreground/20 px-3 py-2 shadow-sm focus:border-foreground/50 focus:outline-none focus:ring-1 focus:ring-foreground/50"
+                className="block w-full rounded-md border border-foreground/20 px-3 py-2 shadow-sm focus:border-foreground/50 focus:outline-none focus:ring-1 focus:ring-foreground/50"
               />
             </div>
           </div>
@@ -101,7 +101,7 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2 text-sm bg-gray-900 text-white rounded-md hover:bg-black transition hover:cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+            className="px-4 py-2 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 transition hover:cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {loading ? (
               <span className="flex items-center justify-center">
