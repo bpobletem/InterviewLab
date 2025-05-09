@@ -11,12 +11,12 @@ export default async function HomePage() {
 
   return (
     <main className="flex flex-col items-center justify-center text-gray-800 px-4">
-      <div className="text-center space-y-4 mb-12 mt-12">
-        <h1 className="text-3xl font-bold">Hola, {data.user.email}</h1>
-        <p className="text-gray-600">Bienvenido a InterviewLab</p>
+      <div className="text-center space-y-4 mb-16 mt-12">
+        <h1 className="text-gray-800 text-3xl font-bold">Bienvenido a Interview<span className='italic'>Lab</span></h1>
+        <p className="">{data.user.email}</p>
       </div>
 
-      <div className="max-w-4xl w-full space-y-12">
+      <div className="max-w-4xl w-full space-y-16">
         <section className="bg-gray-50 p-8 rounded-lg shadow-sm border border-gray-100">
           <h2 className="text-2xl font-bold mb-4">¿Qué es InterviewLab?</h2>
           <p className="text-gray-700 mb-4">
@@ -34,28 +34,28 @@ export default async function HomePage() {
           <h2 className="text-2xl font-bold mb-4">¿Cómo funciona?</h2>
           <div className="space-y-4">
             <div className="flex items-start">
-              <div className="bg-black text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 mt-1">1</div>
+              <div className="bg-gray-800 text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 mt-1">1</div>
               <div className="ml-4">
                 <h3 className="font-semibold text-lg">Sube tu CV</h3>
                 <p className="text-gray-700">Carga tu currículum en formato PDF para que nuestro sistema pueda analizarlo.</p>
               </div>
             </div>
             <div className="flex items-start">
-              <div className="bg-black text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 mt-1">2</div>
+              <div className="bg-gray-800 text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 mt-1">2</div>
               <div className="ml-4">
                 <h3 className="font-semibold text-lg">Describe el puesto</h3>
                 <p className="text-gray-700">Proporciona una descripción detallada del puesto al que estás aplicando.</p>
               </div>
             </div>
             <div className="flex items-start">
-              <div className="bg-black text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 mt-1">3</div>
+              <div className="bg-gray-800 text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 mt-1">3</div>
               <div className="ml-4">
                 <h3 className="font-semibold text-lg">Inicia la entrevista</h3>
                 <p className="text-gray-700">Comienza la simulación de entrevista y responde a las preguntas como lo harías en una entrevista real.</p>
               </div>
             </div>
             <div className="flex items-start">
-              <div className="bg-black text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 mt-1">4</div>
+              <div className="bg-gray-800 text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 mt-1">4</div>
               <div className="ml-4">
                 <h3 className="font-semibold text-lg">Mejora tus habilidades</h3>
                 <p className="text-gray-700">Practica tantas veces como necesites para ganar confianza y mejorar tus respuestas.</p>
@@ -65,7 +65,7 @@ export default async function HomePage() {
         </section>
 
         <div className="text-center">
-          <Link href="/entrevista" className="inline-block bg-gray-900 text-white px-6 py-3 rounded-md font-medium hover:bg-black hover:translate-y-[-2px] transition">
+          <Link href="/entrevista" className="inline-block bg-blue-500 text-white px-6 py-2 rounded-md font-medium hover:bg-blue-600 hover:translate-y-[-2px] transition">
             Comenzar una entrevista
           </Link>
         </div>
