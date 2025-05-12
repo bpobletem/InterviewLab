@@ -241,7 +241,7 @@ export function Conversation({ resume, jobDescription, interviewId, onBack }: Co
           Volver al formulario
         </button>
         <button
-          onClick={onBack}
+          onClick={() => router.push(`/feedback/${interviewId}`)}
           className="flex-1 px-4 py-3 bg-gray-100 border border-gray-300 text-gray-800 rounded-md hover:bg-gray-200 transition hover:cursor-pointer flex items-center justify-center gap-2 font-medium"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
