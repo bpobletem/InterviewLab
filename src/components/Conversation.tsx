@@ -1,7 +1,8 @@
 'use client';
 
 import { useConversation } from '@11labs/react';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface ConversationProps {
   resume: string;
@@ -11,6 +12,8 @@ interface ConversationProps {
 }
 
 export function Conversation({ resume, jobDescription, interviewId, onBack }: ConversationProps) {
+  const router = useRouter();
+  const [isLoadingFeedback, setIsLoadingFeedback] = useState(false);
   const conversation = useConversation({
     overrides: {
       agent: {
@@ -91,15 +94,29 @@ export function Conversation({ resume, jobDescription, interviewId, onBack }: Co
 
     } catch (error) {
       console.error('Error al iniciar la conversación:', error);
+      alert('Error al iniciar la entrevista. Por favor, verifica tu micrófono e intenta nuevamente.');
     }
   }, [conversation, interviewId]);
 
   const stopConversation = useCallback(async () => {
-    await conversation.endSession();
+    try {
+      await conversation.endSession();
+    } catch (error) {
+      console.error('Error al finalizar la entrevista:', error);
+    }
   }, [conversation]);
 
   return (
-    <div className="flex flex-col items-center w-full max-w-2xl mx-auto">
+    <div className="flex flex-col items-center w-full max-w-2xl mx-auto relative">
+      {/* Overlay de carga para feedback */}
+      {isLoadingFeedback && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900 mb-4"></div>
+            <p className="text-gray-800 font-medium text-lg">Preparando feedback...</p>
+          </div>
+        </div>
+      )}
       {/* Interview Status Card */}
       <div className="w-full bg-white border border-gray-200 rounded-lg shadow-sm mb-6 overflow-hidden">
         <div className="p-5 border-b border-gray-200">
@@ -208,7 +225,13 @@ export function Conversation({ resume, jobDescription, interviewId, onBack }: Co
           Volver al formulario
         </button>
         <button
-          onClick={onBack}
+          onClick={() => {
+            setIsLoadingFeedback(true);
+            // Aumentamos el tiempo de espera para asegurar que los datos se procesen correctamente
+            setTimeout(() => {
+              router.push(`/feedback/${interviewId}`);
+            }, 3000);
+          }}
           className="flex-1 px-4 py-3 bg-gray-100 border border-gray-300 text-gray-800 rounded-md hover:bg-gray-200 transition hover:cursor-pointer flex items-center justify-center gap-2 font-medium"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
