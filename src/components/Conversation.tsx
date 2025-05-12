@@ -13,8 +13,7 @@ interface ConversationProps {
 
 export function Conversation({ resume, jobDescription, interviewId, onBack }: ConversationProps) {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState('');
+  const [isLoadingFeedback, setIsLoadingFeedback] = useState(false);
   const conversation = useConversation({
     overrides: {
       agent: {
@@ -101,35 +100,20 @@ export function Conversation({ resume, jobDescription, interviewId, onBack }: Co
 
   const stopConversation = useCallback(async () => {
     try {
-      setIsLoading(true);
-      setLoadingMessage('Finalizando entrevista y preparando feedback...');
       await conversation.endSession();
-      
-      // Pequeña pausa para asegurar que los datos se procesen correctamente
-      setTimeout(() => {
-        // Redirigir a la página de feedback usando el ID de la entrevista
-        router.push(`/feedback/${interviewId}`);
-      }, 2000);
     } catch (error) {
       console.error('Error al finalizar la entrevista:', error);
-      setIsLoading(false);
     }
-  }, [conversation, interviewId, router]);
+  }, [conversation]);
 
   return (
-    <div className="flex flex-col items-center w-full max-w-2xl mx-auto">
-      {/* Overlay de carga (solo para finalizar entrevista) */}
-      {isLoading && loadingMessage.includes('Finalizando') && (
+    <div className="flex flex-col items-center w-full max-w-2xl mx-auto relative">
+      {/* Overlay de carga para feedback */}
+      {isLoadingFeedback && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full text-center">
-            <div className="flex justify-center mb-4">
-              <svg className="animate-spin h-10 w-10 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-            </div>
-            <p className="text-lg font-medium text-gray-800">{loadingMessage}</p>
-            <p className="text-sm text-gray-500 mt-2">Por favor, espere un momento...</p>
+          <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900 mb-4"></div>
+            <p className="text-gray-800 font-medium text-lg">Preparando feedback...</p>
           </div>
         </div>
       )}
@@ -241,7 +225,13 @@ export function Conversation({ resume, jobDescription, interviewId, onBack }: Co
           Volver al formulario
         </button>
         <button
-          onClick={() => router.push(`/feedback/${interviewId}`)}
+          onClick={() => {
+            setIsLoadingFeedback(true);
+            // Aumentamos el tiempo de espera para asegurar que los datos se procesen correctamente
+            setTimeout(() => {
+              router.push(`/feedback/${interviewId}`);
+            }, 3000);
+          }}
           className="flex-1 px-4 py-3 bg-gray-100 border border-gray-300 text-gray-800 rounded-md hover:bg-gray-200 transition hover:cursor-pointer flex items-center justify-center gap-2 font-medium"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
