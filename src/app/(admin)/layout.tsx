@@ -12,7 +12,7 @@ export default function AdminLayout({
   return (
     <>
       <AdminNavbar />
-      <div className="flex-grow overflow-y-auto content-center justify-center bg-radial from-white from-40% to-gray-100 py-4">
+      <div className="flex-grow overflow-y-auto content-center justify-center py-4">
         {children}
       </div>
       <Footer />
