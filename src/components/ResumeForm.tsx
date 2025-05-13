@@ -59,7 +59,7 @@ export function ResumeForm({ onComplete }: ResumeFormProps) {
           </label>
           <label
             htmlFor="file-input-resume"
-            className={`w-full flex items-center px-4 py-3 border-2 border-gray-200 rounded-md bg-white transition-colors duration-300 cursor-pointer focus:border-foreground/50 focus:outline-none focus:ring-1 focus:ring-foreground/5 ${
+            className={`w-full flex items-center px-4 py-4 border-2 border-gray-200 rounded-md bg-white transition-colors duration-300 cursor-pointer focus:border-foreground/50 focus:outline-none focus:ring-1 focus:ring-foreground/5 ${
               file ? 'text-gray-800' : 'text-gray-500'
             }`}
           >
@@ -86,9 +86,12 @@ export function ResumeForm({ onComplete }: ResumeFormProps) {
             id="text"
             value={text}
             onChange={(e) => setText(e.target.value)}
-            className="w-full px-4 py-3 border-2 border-gray-200 rounded-md h-40 text-gray-800 resize-none transition-colors duration-300 focus:border-foreground/50 focus:outline-none focus:ring-1 focus:ring-foreground/5 cursor-text"
+            className="w-full px-4 py-4 border-2 border-gray-200 rounded-md h-40 text-gray-800 resize-none transition-colors duration-300 focus:border-foreground/50 focus:outline-none focus:ring-1 focus:ring-foreground/5 cursor-text"
             placeholder="Describe el puesto con el mayor detalle posible para una entrevista más precisa..."
           />
+          <div className="mt-4 p-2 bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-600">
+            <span className="font-semibold text-slate-700">Pro tip:</span> Te recomendamos copiar y pegar la descripción del puesto de trabajo o práctica al que quieres postular (ej. desde LinkedIn, la web de la empresa, etc.).
+          </div>
         </div>
 
         <div className="text-right">
@@ -109,7 +112,7 @@ export function ResumeForm({ onComplete }: ResumeFormProps) {
           </button>
 
           {message && (
-            <div className={`p-3 rounded-md text-sm ${message.includes('Error') ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-green-50 text-green-600 border border-green-200'}`}>
+            <div className={`p-2 rounded-md text-sm ${message.includes('Error') ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-green-50 text-green-600 border border-green-200'}`}>
               {message}
             </div>
           )}

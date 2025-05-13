@@ -9,7 +9,7 @@ export default function PublicLayout({
   return (
     <>
       <Navbar />
-      <div className="flex-grow overflow-y-auto content-center justify-center py-4 bg-gradient-to-br from-sky-50 via-slate-50 to-blue-100">
+      <div className="flex-grow overflow-y-auto content-center justify-center py-4">
         {children}
       </div>
       <Footer />
