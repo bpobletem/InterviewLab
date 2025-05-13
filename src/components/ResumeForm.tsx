@@ -51,7 +51,7 @@ export function ResumeForm({ onComplete }: ResumeFormProps) {
   };
 
   return (
-    <div className="bg-white p-8 rounded-lg shadow-sm mb-8 w-full border border-gray-100 transition-all duration-300">
+    <div className="bg-white/80 p-8 rounded-lg shadow-sm mb-8 w-full border border-gray-100 transition-all duration-300">
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="mb-8">
           <label htmlFor="file-input-resume" className="block text-gray-800 font-medium mb-2">

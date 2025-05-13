@@ -17,7 +17,7 @@ export default async function HomePage() {
       </div>
 
       <div className="max-w-4xl w-full space-y-16">
-        <section className="bg-gray-50 p-8 rounded-lg shadow-sm border border-gray-100">
+        <section className="bg-white/80 p-8 rounded-lg shadow-sm border border-gray-100">
           <h2 className="text-2xl font-bold mb-4">¿Qué es InterviewLab?</h2>
           <p className="text-gray-700 mb-4">
             InterviewLab es una plataforma innovadora diseñada para ayudarte a prepararte para entrevistas laborales mediante simulaciones realistas. 
@@ -30,7 +30,7 @@ export default async function HomePage() {
           </p>
         </section>
 
-        <section className="bg-gray-50 p-8 rounded-lg shadow-sm border border-gray-100">
+        <section className="bg-white/80 p-8 rounded-lg shadow-sm border border-gray-100">
           <h2 className="text-2xl font-bold mb-4">¿Cómo funciona?</h2>
           <div className="space-y-4">
             <div className="flex items-start">

@@ -32,7 +32,7 @@ export default function Home() {
       </h1>
       <div className="flex flex-col lg:flex-row gap-16 w-full max-w-7xl">
         {/* Columna Izquierda - Consejos */}
-        <aside className="lg:w-1/3 bg-gray-50 p-6 rounded-lg shadow">
+        <aside className="lg:w-1/3 bg-white/80 p-6 rounded-lg shadow">
           <h2 className="text-xl font-semibold text-gray-700 mb-4">Cómo funciona la entrevista</h2>
           <p className="text-gray-600 mb-4 text-md">
             Nuestro simulador de IA te hará preguntas basadas en tu currículum y la descripción del trabajo que proporcionaste.
