@@ -105,7 +105,7 @@ export default function AdminNavbar() {
   return (
     <nav className="w-full border-b border-gray-200 px-6 py-3 flex justify-between items-center bg-white/60 text-sm">
       <div className="max-w-7xl flex justify-between items-center w-full mx-auto">
-        <Link href="/" className="text-lg font-semibold bg-gradient-to-r from-blue-500 to-violet-500 text-transparent bg-clip-text hover:cursor-pointer">
+        <Link href="/" className="text-lg font-semibold text-gray-700 hover:text-transparent hover:bg-gradient-to-r hover:from-blue-500 hover:to-violet-500 hover:bg-clip-text transition-colors duration-500 hover:cursor-pointer ease-in-out tracking-tighter px-2">
           Interview
           <span className='italic'>Lab</span>
         </Link>
