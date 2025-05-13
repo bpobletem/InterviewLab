@@ -105,8 +105,9 @@ export default function AdminNavbar() {
   return (
     <nav className="w-full border-b border-gray-200 px-6 py-3 flex justify-between items-center bg-white/60 text-sm">
       <div className="max-w-7xl flex justify-between items-center w-full mx-auto">
-        <Link href={institutionId ? `/admin/dashboard/${institutionId}` : '/admin/login'} className="font-semibold text-gray-800 hover:cursor-pointer">
-          InterviewLab <span className="text-xs font-normal bg-gray-200 px-2 py-1 rounded ml-1">Admin</span>
+        <Link href="/" className="text-lg font-semibold bg-gradient-to-r from-blue-500 to-violet-500 text-transparent bg-clip-text hover:cursor-pointer">
+          Interview
+          <span className='italic'>Lab</span>
         </Link>
         <div className="flex items-center gap-4">
           {user ? (
@@ -115,15 +116,17 @@ export default function AdminNavbar() {
                 <>
                   <Link
                     href={`/admin/dashboard/${institutionId}`}
-                    className="text-gray-600 hover:text-black transition hover:cursor-pointer"
+                    className="text-gray-600 hover:gray-800 transition relative group hover:cursor-pointer"
                   >
-                    Dashboard
+                    <span>Dashboard</span>
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 ease-out group-hover:w-full"></span>
                   </Link>
                   <Link
                     href={`/admin/reset-password?institution_id=${institutionId}`}
-                    className="text-gray-600 hover:text-black transition hover:cursor-pointer"
+                    className="text-gray-600 hover:gray-800 transition relative group hover:cursor-pointer"
                   >
-                    Cambiar Contraseña
+                    <span>Cambiar contraseña</span>
+                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 ease-out group-hover:w-full"></span>
                   </Link>
                 </>
               ) : (
@@ -132,10 +135,11 @@ export default function AdminNavbar() {
               <button
                 onClick={handleLogout}
                 disabled={isLoggingOut}
-                className="text-gray-500 hover:text-black transition disabled:opacity-50 disabled:cursor-not-allowed hover:cursor-pointer"
+                className="text-gray-600 hover:gray-800 transition relative group hover:cursor-pointer"
                 aria-label="Cerrar sesión"
               >
-                {isLoggingOut ? 'Cerrando...' : 'Cerrar sesión'}
+                <span>{isLoggingOut ? 'Cerrando...' : 'Cerrar sesión'}</span>
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 ease-out group-hover:w-full"></span>
               </button>
             </div>
           ) : null}

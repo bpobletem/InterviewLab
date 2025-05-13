@@ -78,40 +78,49 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="w-full border-b border-gray-100 px-6 py-3 flex justify-between items-center bg-white/60 text-sm">
+    <nav className="w-full border-b border-gray-100 px-6 py-3 flex justify-between items-center bg-white/60 text-sm backdrop-blur-md shadow-md">
       <div className="max-w-7xl flex justify-between items-center w-full mx-auto">
-        <Link href="/" className="text-md font-semibold bg-gradient-to-r from-blue-500 to-violet-500 text-transparent bg-clip-text hover:cursor-pointer">
+        <Link href="/" className="text-lg font-semibold bg-gradient-to-r from-blue-500 to-violet-500 text-transparent bg-clip-text hover:cursor-pointer">
           Interview
           <span className='italic'>Lab</span>
         </Link>
-        <div className="flex items-center gap-4">
-          <Link href="/home" className="text-gray-600 hover:text-black transition hover:cursor-pointer">
-            Inicio
+        <div className="flex items-center gap-6">
+          <Link
+            href="/home"
+            className="text-gray-600 hover:gray-800 transition relative group hover:cursor-pointer"
+          >
+            <span>Inicio</span>
+            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 ease-out group-hover:w-full"></span>
           </Link>
           {user && !isAdmin && (
-            <Link href="/entrevista" className="text-gray-600 hover:text-black transition hover:cursor-pointer">
-              Entrevista
+            <Link
+              href="/entrevista"
+              className="text-gray-600 hover:gray-800 transition relative group hover:cursor-pointer"
+            >
+              <span>Entrevista</span>
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 ease-out group-hover:w-full"></span>
             </Link>
           )}
           {user ? (
-            <div className="flex items-center gap-4">
-              {/* The Entrevista link is now conditionally rendered above based on isAdmin status */}
+            <div className="flex items-center gap-6">
               <button
                 onClick={handleLogout}
                 disabled={isLoggingOut}
-                className="text-gray-500 hover:text-black transition disabled:opacity-50 disabled:cursor-not-allowed hover:cursor-pointer"
+                className="text-gray-500 hover:gray-800 transition disabled:opacity-50 disabled:cursor-not-allowed relative group hover:cursor-pointer"
                 aria-label="Cerrar sesión"
               >
-                {isLoggingOut ? 'Cerrando...' : 'Cerrar sesión'}
+                <span>{isLoggingOut ? 'Cerrando...' : 'Cerrar sesión'}</span>
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 ease-out group-hover:w-full"></span>
               </button>
             </div>
           ) : (
             <Link
               href="/login"
-              className="text-gray-500 hover:text-black transition hover:cursor-pointer"
+              className="text-gray-500 hover:gray-800 transition relative group hover:cursor-pointer"
               aria-label="Iniciar sesión"
             >
-              Iniciar sesión
+              <span>Iniciar sesión</span>
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 ease-out group-hover:w-full"></span>
             </Link>
           )}
         </div>
