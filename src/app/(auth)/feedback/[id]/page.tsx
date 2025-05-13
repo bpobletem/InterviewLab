@@ -69,14 +69,13 @@ export default function FeedbackPage() {
             throw new Error('Error al obtener los datos de la conversación.');
           }
           const details: ConversationDetails = await response.json();
-          console.log('Datos recibidos:', details);
-          
+
           // Guardar los datos completos para depuración
           window.__DEBUG_DATA = details as Record<string, unknown>;
-          
+
           // Intentar diferentes estructuras posibles para encontrar los resultados de evaluación
           let results = null;
-          
+
           // Estructura 1: details.data.analysis.evaluation_criteria_results
           if (details?.data?.analysis?.evaluation_criteria_results) {
             results = details.data.analysis.evaluation_criteria_results;
@@ -93,28 +92,28 @@ export default function FeedbackPage() {
           else if (details?.data?.evaluation_criteria_results) {
             results = details.data.evaluation_criteria_results;
           }
-          
+
           // Función para normalizar criterios con acentos
           const normalizeCriterion = (criterion: string): string => {
             // Convertir a minúsculas para comparación
             const lowerCriterion = criterion.toLowerCase();
             // Verificar si existe en el mapa de acentos
             const normalized = accentMap[lowerCriterion] || criterion;
-            
+
             // Preservar la capitalización original (primera letra mayúscula si el original la tenía)
             if (criterion.length > 0 && criterion[0] === criterion[0].toUpperCase()) {
               return normalized.charAt(0).toUpperCase() + normalized.slice(1);
             }
-            
+
             return normalized;
           };
-          
+
           // Convertir los resultados a un formato uniforme si es un objeto en lugar de un array
           if (results && !Array.isArray(results)) {
             const formattedResults: EvaluationCriterion[] = Object.entries(results).map(([key, value]) => {
               // Normalizar el criterio para añadir acentos si es necesario
               const normalizedKey = normalizeCriterion(key);
-              
+
               if (typeof value === 'object' && value !== null && 'result' in value && 'rationale' in value) {
                 // Es un objeto CriterionResult
                 const criterionResult = value as CriterionResult;
@@ -142,7 +141,7 @@ export default function FeedbackPage() {
           } else {
             setEvaluationResults([]); // No results found, but not an error
           }
-          
+
           // Contar criterios aprobados
           if (Array.isArray(results)) {
             const approved = results.filter(item => item.result === 'success').length;
@@ -163,7 +162,7 @@ export default function FeedbackPage() {
       fetchConversationData();
     }
   }, [id]);
-  
+
   // Función para obtener el color de fondo según el resultado
   const getBackgroundColor = (item: EvaluationCriterion) => {
     if (item.result === 'success') {
@@ -173,7 +172,7 @@ export default function FeedbackPage() {
     }
     return 'bg-white';
   };
-  
+
   // Función para obtener el icono según el resultado
   const getResultIcon = (item: EvaluationCriterion) => {
     if (item.result === 'success') {
@@ -204,15 +203,18 @@ export default function FeedbackPage() {
 
   if (loading) {
     return (
-      <main className="flex items-center justify-center py-16 px-4 font-sans">
-        <div className="bg-gray-50 shadow-lg rounded-xl p-8 max-w-4xl w-full space-y-6 my-16">
+      <main className="flex items-center justify-center px-4 font-sans">
+        <div className="bg-gray-50 shadow-md rounded-xl p-8 max-w-4xl w-full space-y-6">
           <h1 className="text-3xl sm:text-4xl font-bold text-center text-gray-800 mb-6">
             Feedback de la Entrevista
           </h1>
-          
-          <div className="w-full bg-white border border-gray-200 rounded-lg shadow-sm p-8 text-center">
+
+          <div className="w-full border border-gray-200 rounded-lg shadow-sm p-8 text-center">
             <div className="flex justify-center mb-4">
-              <div className="w-10 h-10 border-t-2 border-b-2 border-gray-900 rounded-full animate-spin"></div>
+              <svg className="animate-spin h-8 w-8 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
             </div>
             <p className="text-gray-800 font-medium">Cargando feedback...</p>
           </div>
@@ -223,13 +225,13 @@ export default function FeedbackPage() {
 
   if (error) {
     return (
-      <main className="flex items-center justify-center py-16 px-4 font-sans">
-        <div className="bg-gray-50 shadow-lg rounded-xl p-8 max-w-4xl w-full space-y-6 my-16">
+      <main className="flex items-center justify-center px-4 font-sans">
+        <div className="bg-gray-50 shadow-md rounded-xl p-8 max-w-4xl w-full space-y-6">
           <h1 className="text-3xl sm:text-4xl font-bold text-center text-gray-800 mb-6">
             Feedback de la Entrevista
           </h1>
-          
-          <div className="w-full bg-white border border-red-200 rounded-lg shadow-sm p-8 text-center">
+
+          <div className="w-full border border-red-200 rounded-lg shadow-sm p-8 text-center">
             <div className="flex justify-center mb-4">
               <div className="flex items-center justify-center w-12 h-12 rounded-full bg-red-100 text-red-600">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -251,11 +253,11 @@ export default function FeedbackPage() {
     return (
       <div className="flex justify-center space-x-1 mb-4">
         {[...Array(totalStars)].map((_, i) => (
-          <svg 
-            key={i} 
-            className={`w-8 h-8 ${i < count ? 'text-yellow-400' : 'text-gray-300'}`} 
-            fill="currentColor" 
-            viewBox="0 0 20 20" 
+          <svg
+            key={i}
+            className={`w-8 h-8 ${i < count ? 'text-yellow-400' : 'text-gray-300'}`}
+            fill="currentColor"
+            viewBox="0 0 20 20"
             xmlns="http://www.w3.org/2000/svg"
           >
             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.8-2.034c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
@@ -289,38 +291,17 @@ export default function FeedbackPage() {
     return "text-green-600";
   };
 
-  // Función para mostrar la estructura de datos recibida
-  const renderDataStructure = (data: Record<string, unknown>) => {
-    return (
-      <div className="w-full max-w-2xl mx-auto">
-        <div className="w-full bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
-          <div className="p-5 border-b border-gray-200">
-            <div className="flex justify-between items-center">
-              <h2 className="text-lg font-bold text-gray-800">Estructura de Datos Recibida</h2>
-              <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">Información técnica</div>
-            </div>
-          </div>
-          <div className="p-5">
-            <pre className="text-xs bg-gray-50 p-4 rounded-md overflow-auto max-h-96">{JSON.stringify(data, null, 2)}</pre>
-          </div>
-        </div>
-      </div>
-    );
-  };
-  
-  // Mostramos los datos de depuración si no hay resultados
-
   if (!evaluationResults || evaluationResults.length === 0) {
-    // Si no hay resultados, mostrar un mensaje y la estructura de datos para depuración
+    // Si no hay resultados, mostrar un mensaje
     return (
-      <main className="flex items-center justify-center py-16 px-4 font-sans">
-        <div className="bg-gray-50 shadow-lg rounded-xl p-8 max-w-4xl w-full space-y-6 my-16">
+      <main className="flex items-center justify-center px-4 font-sans">
+        <div className="bg-gray-50 shadow-lg rounded-xl p-8 max-w-4xl w-full space-y-6">
           <h1 className="text-3xl sm:text-4xl font-bold text-center text-gray-800 mb-6">
             Feedback de la Entrevista
           </h1>
-          
+
           {/* Estrellas y mensaje de feedback */}
-          <div className="w-full bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden mb-6">
+          <div className="w-full border border-gray-200 rounded-lg overflow-hidden mb-6">
             <div className="p-5 border-b border-gray-200">
               <h2 className="text-xl font-bold text-center text-gray-800">Desempeño General</h2>
             </div>
@@ -334,8 +315,8 @@ export default function FeedbackPage() {
               </p>
             </div>
           </div>
-          
-          <div className="w-full bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+
+          <div className="w-full border border-gray-200 rounded-lg overflow-hidden">
             <div className="p-5 border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-gray-800">Resultados de Evaluación</h2>
@@ -356,22 +337,21 @@ export default function FeedbackPage() {
               <p className="text-gray-700">No se pudieron encontrar criterios de evaluación para esta conversación.</p>
             </div>
           </div>
-          
-          {renderDataStructure(window.__DEBUG_DATA || {})}
+
         </div>
       </main>
     );
   }
 
   return (
-    <main className="flex items-center justify-center py-16 px-4 font-sans">
-      <div className="bg-gray-50 shadow-lg rounded-xl p-8 max-w-4xl w-full space-y-6 my-16">
+    <main className="flex items-center justify-center px-4 font-sans my-10">
+      <div className="bg-white/80 shadow-md rounded-xl p-8 max-w-4xl w-full space-y-6">
         <h1 className="text-3xl sm:text-4xl font-bold text-center text-gray-800 mb-6">
           Feedback de la Entrevista
         </h1>
-        
+
         {/* Estrellas y mensaje de feedback */}
-        <div className="w-full bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden mb-6">
+        <div className="w-full border border-gray-200 rounded-lg overflow-hidden mb-6">
           <div className="p-5 border-b border-gray-200">
             <h2 className="text-xl font-bold text-center text-gray-800">Desempeño General</h2>
           </div>
@@ -385,8 +365,8 @@ export default function FeedbackPage() {
             </p>
           </div>
         </div>
-        
-        <div className="w-full bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+
+        <div className="w-full border border-gray-200 rounded-lg overflow-hidden">
           <div className="p-5 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold text-gray-800">Resultados de Evaluación</h2>
@@ -395,7 +375,7 @@ export default function FeedbackPage() {
               </div>
             </div>
           </div>
-          
+
           <div className="p-5">
             <div className="space-y-4">
               {evaluationResults.map((item, index) => (

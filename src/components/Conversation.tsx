@@ -89,8 +89,6 @@ export function Conversation({ resume, jobDescription, interviewId, onBack }: Co
           interviewId: interviewId,
         }),
       });
-      console.log('Conversación iniciada con ID:', conversationid);
-      console.log('Interview ID:', interviewId);
 
     } catch (error) {
       console.error('Error al iniciar la conversación:', error);
@@ -107,7 +105,7 @@ export function Conversation({ resume, jobDescription, interviewId, onBack }: Co
   }, [conversation]);
 
   return (
-    <div className="flex flex-col items-center w-full max-w-2xl mx-auto relative">
+    <div className="flex flex-col items-center w-full max-w-2xl relative bg-white/80 p-8 shadow-sm rounded-lg">
       {/* Overlay de carga para feedback */}
       {isLoadingFeedback && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -119,7 +117,7 @@ export function Conversation({ resume, jobDescription, interviewId, onBack }: Co
       )}
       {/* Interview Status Card */}
       <div className="w-full mb-6 overflow-hidden">
-        <div className="p-5 border-b border-gray-200">
+        <div className="mb-4 border-gray-200">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-gray-800">
               {conversation.status === 'connected' ? 'Entrevista en curso' : 'Preparado para iniciar'}
@@ -174,7 +172,7 @@ export function Conversation({ resume, jobDescription, interviewId, onBack }: Co
               )}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center p-6 bg-gray-50 rounded-md text-center">
+            <div className="flex flex-col items-center justify-center p-6 bg-gray-50 rounded-lg text-center">
               <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mb-3">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />

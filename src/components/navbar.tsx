@@ -78,7 +78,7 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="w-full border-b border-gray-100 px-6 py-3 flex justify-between items-center bg-white/60 text-sm backdrop-blur-md shadow-md">
+    <nav className="w-full border-b border-gray-100 px-6 py-3 flex justify-between items-center bg-white/60 text-sm backdrop-blur-md">
       <div className="max-w-7xl flex justify-between items-center w-full mx-auto">
         <Link href="/" className="text-lg font-semibold bg-gradient-to-r from-blue-500 to-violet-500 text-transparent bg-clip-text hover:cursor-pointer">
           Interview
