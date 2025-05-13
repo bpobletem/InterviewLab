@@ -3,7 +3,7 @@
 export default function TermsPage() {
   return (
     <main className="px-6">
-      <div className="max-w-3xl mx-auto mt-12">
+      <div className="max-w-4xl mx-auto bg-white/80 rounded-lg shadow-md p-8">
         <h1 className="text-3xl font-bold mb-8 text-gray-900">Términos y Condiciones</h1>
 
         <div className="prose prose-gray text-gray-800">
