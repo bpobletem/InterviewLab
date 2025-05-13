@@ -59,7 +59,7 @@ export function ResumeForm({ onComplete }: ResumeFormProps) {
           </label>
           <label
             htmlFor="file-input-resume"
-            className={`w-full flex items-center px-4 py-3 border-2 border-gray-200 rounded-md bg-white hover:border-black transition-colors duration-300 cursor-pointer ${
+            className={`w-full flex items-center px-4 py-3 border-2 border-gray-200 rounded-md bg-white transition-colors duration-300 cursor-pointer focus:border-foreground/50 focus:outline-none focus:ring-1 focus:ring-foreground/5 ${
               file ? 'text-gray-800' : 'text-gray-500'
             }`}
           >
@@ -86,7 +86,7 @@ export function ResumeForm({ onComplete }: ResumeFormProps) {
             id="text"
             value={text}
             onChange={(e) => setText(e.target.value)}
-            className="w-full px-4 py-3 border-2 border-gray-200 rounded-md h-40 text-gray-800 resize-none hover:border-black transition-colors duration-300 focus:outline-none focus:border-black cursor-text"
+            className="w-full px-4 py-3 border-2 border-gray-200 rounded-md h-40 text-gray-800 resize-none transition-colors duration-300 focus:border-foreground/50 focus:outline-none focus:ring-1 focus:ring-foreground/5 cursor-text"
             placeholder="Describe el puesto con el mayor detalle posible para una entrevista más precisa..."
           />
         </div>
@@ -95,7 +95,7 @@ export function ResumeForm({ onComplete }: ResumeFormProps) {
           <button
             type="submit"
             disabled={isLoading || !isFormComplete}
-            className="py-2 px-6 bg-blue-500 text-white rounded-md hover:bg-blue-700 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer transform font-medium"
+            className="py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-700 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer transform font-medium"
           >
             {isLoading ? (
               <span className="flex items-center justify-center">

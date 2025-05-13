@@ -1,6 +1,6 @@
 export default function LandingPage() {
   return (
-    <main className="text-gray-900 flex flex-col items-center justify-center px-4">
+    <main className="text-gray-600 flex flex-col items-center justify-center px-4">
       <div className="text-center max-w-2xl">
         <h1 className="text-3xl md:text-6xl font-bold mb-8 bg-gradient-to-r from-blue-500 via-violet-500 to-pink-500 text-transparent bg-clip-text">
           Interview

@@ -48,11 +48,11 @@ export default function Home() {
           </ul>
           <h2 className="text-xl font-semibold text-gray-700 mt-6 mb-4">Qué se evaluará</h2>
           <ul className="list-disc list-inside text-gray-600 space-y-2 text-md">
-            <li><strong>Interés:</strong> Tu entusiasmo y motivación por el puesto.</li>
-            <li><strong>Claridad:</strong> La facilidad para entender tus respuestas.</li>
-            <li><strong>Profesionalismo:</strong> Tu comportamiento y lenguaje.</li>
-            <li><strong>Técnica:</strong> El uso de métodos para estructurar respuestas y la relevancia de tus habilidades.</li>
-            <li><strong>Ejemplos:</strong> La calidad y pertinencia de los ejemplos que proporcionas.</li>
+            <li>Interés: Tu entusiasmo y motivación por el puesto.</li>
+            <li>Claridad: La facilidad para entender tus respuestas.</li>
+            <li>Profesionalismo: Tu comportamiento y lenguaje.</li>
+            <li>Técnica: El uso de métodos para estructurar respuestas y la relevancia de tus habilidades.</li>
+            <li>Ejemplos: La calidad y pertinencia de los ejemplos que proporcionas.</li>
           </ul>
         </aside>
 
