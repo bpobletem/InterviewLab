@@ -10,48 +10,89 @@ export default function Navbar() {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [institutionId, setInstitutionId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const supabase = createClient();
 
   useEffect(() => {
     const fetchUserAndAdminStatus = async () => {
-      const { data: { user: supabaseUser }, error: userError } = await supabase.auth.getUser();
-      if (userError) {
-        console.error('[Navbar] Error fetching user:', userError);
-        setUser(null);
-        setIsAdmin(false);
-        return;
-      }
-      setUser(supabaseUser);
+      try {
+        const { data: { user: supabaseUser }, error: userError } = await supabase.auth.getUser();
+        if (userError) {
+          console.error('[Navbar] Error fetching user:', userError);
+          setUser(null);
+          setIsAdmin(false);
+          setInstitutionId(null);
+          setIsLoading(false);
+          return;
+        }
+        setUser(supabaseUser);
 
-      if (supabaseUser) {
-        try {
-          const response = await fetch('/api/auth/user-info');
-          if (response.ok) {
-            const data = await response.json();
-            setIsAdmin(data.isAdmin);
-          } else {
-            console.error('[Navbar] Error fetching admin status:', response.statusText);
+        if (supabaseUser) {
+          // Check if user is admin
+          try {
+            const response = await fetch('/api/auth/user-info');
+            if (response.ok) {
+              const data = await response.json();
+              setIsAdmin(data.isAdmin);
+              
+              // If user is admin, fetch institution ID
+              if (data.isAdmin) {
+                try {
+                  const adminResponse = await fetch('/api/admin/validate', {
+                    method: 'GET',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                  });
+                  
+                  if (adminResponse.ok) {
+                    const adminData = await adminResponse.json();
+                    setInstitutionId(adminData.institution_id);
+                  } else {
+                    console.error('[Navbar] Error fetching institution ID:', adminResponse.statusText);
+                    setInstitutionId(null);
+                  }
+                } catch (error) {
+                  console.error('[Navbar] Exception fetching institution ID:', error);
+                  setInstitutionId(null);
+                }
+              }
+            } else {
+              console.error('[Navbar] Error fetching admin status:', response.statusText);
+              setIsAdmin(false);
+            }
+          } catch (error) {
+            console.error('[Navbar] Exception fetching admin status:', error);
             setIsAdmin(false);
           }
-        } catch (error) {
-          console.error('[Navbar] Exception fetching admin status:', error);
+        } else {
           setIsAdmin(false);
+          setInstitutionId(null);
         }
-      } else {
-        setIsAdmin(false);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchUserAndAdminStatus();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('[Navbar] Auth state changed:', event);
+      setIsLoading(true);
       setUser(session?.user ?? null);
-      if (session?.user) {
+      
+      if (event === 'SIGNED_OUT') {
+        setIsAdmin(false);
+        setInstitutionId(null);
+        setIsLoading(false);
+      } else if (session?.user) {
         fetchUserAndAdminStatus();
       } else {
         setIsAdmin(false);
+        setInstitutionId(null);
+        setIsLoading(false);
       }
     });
 
@@ -67,7 +108,12 @@ export default function Navbar() {
       if (error) {
         console.error('[Navbar] Error signing out:', error);
       } else {
-        router.push('/');
+        // Redirect to different pages based on user type
+        if (isAdmin) {
+          router.push('/admin/login');
+        } else {
+          router.push('/');
+        }
         router.refresh(); // Sincronizar con el middleware
       }
     } catch (error) {
@@ -84,24 +130,62 @@ export default function Navbar() {
           Interview
           <span className='italic'>Lab</span>
         </Link>
-        <div className="flex items-center gap-6">
-          <Link
-            href="/home"
-            className="text-gray-600 hover:gray-800 transition relative group hover:cursor-pointer"
-          >
-            <span>Inicio</span>
-            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 ease-out group-hover:w-full"></span>
-          </Link>
-          {user && !isAdmin && (
+        
+        {/* Desktop Navigation */}
+        <div className="hidden md:flex items-center gap-6">
+          {/* Regular user navigation */}
+          {user && !isAdmin && !isLoading && (
+            <>
+              <Link
+                href="/home"
+                className="text-gray-600 hover:gray-800 transition relative group hover:cursor-pointer"
+              >
+                <span>Inicio</span>
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 ease-out group-hover:w-full"></span>
+              </Link>
+              <Link
+                href="/entrevista"
+                className="text-gray-600 hover:gray-800 transition relative group hover:cursor-pointer"
+              >
+                <span>Entrevista</span>
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 ease-out group-hover:w-full"></span>
+              </Link>
+            </>
+          )}
+          
+          {/* Admin navigation */}
+          {user && isAdmin && institutionId && !isLoading && (
+            <>
+              <Link
+                href={`/admin/dashboard/${institutionId}`}
+                className="text-gray-600 hover:gray-800 transition relative group hover:cursor-pointer"
+              >
+                <span>Dashboard</span>
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 ease-out group-hover:w-full"></span>
+              </Link>
+              <Link
+                href={`/admin/reset-password?institution_id=${institutionId}`}
+                className="text-gray-600 hover:gray-800 transition relative group hover:cursor-pointer"
+              >
+                <span>Cambiar contraseña</span>
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 ease-out group-hover:w-full"></span>
+              </Link>
+            </>
+          )}
+          
+          {/* Non-authenticated user */}
+          {!user && !isLoading && (
             <Link
-              href="/entrevista"
+              href="/home"
               className="text-gray-600 hover:gray-800 transition relative group hover:cursor-pointer"
             >
-              <span>Entrevista</span>
+              <span>Inicio</span>
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 ease-out group-hover:w-full"></span>
             </Link>
           )}
-          {user ? (
+          
+          {/* Authentication links */}
+          {!isLoading && user ? (
             <div className="flex items-center gap-6">
               <button
                 onClick={handleLogout}
@@ -121,6 +205,98 @@ export default function Navbar() {
             >
               <span>Iniciar sesión</span>
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 ease-out group-hover:w-full"></span>
+            </Link>
+          )}
+        </div>
+        
+        {/* Mobile Hamburger Button */}
+        <button 
+          className="md:hidden flex flex-col justify-center items-center w-8 h-8 space-y-1.5 focus:outline-none"
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          aria-label="Toggle menu"
+          aria-expanded={isMenuOpen}
+        >
+          <span className={`block w-6 h-0.5 bg-gray-600 transform transition duration-300 ease-in-out ${isMenuOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
+          <span className={`block w-6 h-0.5 bg-gray-600 transition duration-300 ease-in-out ${isMenuOpen ? 'opacity-0' : 'opacity-100'}`}></span>
+          <span className={`block w-6 h-0.5 bg-gray-600 transform transition duration-300 ease-in-out ${isMenuOpen ? '-rotate-45 -translate-y-2' : ''}`}></span>
+        </button>
+      </div>
+      
+      {/* Mobile Menu */}
+      <div className={`md:hidden absolute top-[60px] left-0 right-0 bg-white/95 backdrop-blur-md shadow-md transition-all duration-300 ease-in-out z-50 border-b border-gray-100 ${isMenuOpen ? 'max-h-[300px] opacity-100' : 'max-h-0 opacity-0 invisible'}`}>
+        <div className="flex flex-col px-6 py-4 space-y-4">
+          {/* Regular user navigation */}
+          {user && !isAdmin && !isLoading && (
+            <>
+              <Link
+                href="/home"
+                className="text-gray-600 hover:gray-800 transition py-2 hover:cursor-pointer"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Inicio
+              </Link>
+              <Link
+                href="/entrevista"
+                className="text-gray-600 hover:gray-800 transition py-2 hover:cursor-pointer"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Entrevista
+              </Link>
+            </>
+          )}
+          
+          {/* Admin navigation */}
+          {user && isAdmin && institutionId && !isLoading && (
+            <>
+              <Link
+                href={`/admin/dashboard/${institutionId}`}
+                className="text-gray-600 hover:gray-800 transition py-2 hover:cursor-pointer"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Dashboard
+              </Link>
+              <Link
+                href={`/admin/reset-password?institution_id=${institutionId}`}
+                className="text-gray-600 hover:gray-800 transition py-2 hover:cursor-pointer"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Cambiar contraseña
+              </Link>
+            </>
+          )}
+          
+          {/* Non-authenticated user */}
+          {!user && !isLoading && (
+            <Link
+              href="/home"
+              className="text-gray-600 hover:gray-800 transition py-2 hover:cursor-pointer"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Inicio
+            </Link>
+          )}
+          
+          {/* Authentication links */}
+          {!isLoading && user ? (
+            <button
+              onClick={() => {
+                setIsMenuOpen(false);
+                handleLogout();
+              }}
+              disabled={isLoggingOut}
+              className="text-gray-500 hover:gray-800 transition py-2 text-left disabled:opacity-50 disabled:cursor-not-allowed hover:cursor-pointer"
+              aria-label="Cerrar sesión"
+            >
+              {isLoggingOut ? 'Cerrando...' : 'Cerrar sesión'}
+            </button>
+          ) : (
+            <Link
+              href="/login"
+              className="text-gray-500 hover:gray-800 transition py-2 hover:cursor-pointer"
+              aria-label="Iniciar sesión"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Iniciar sesión
             </Link>
           )}
         </div>
