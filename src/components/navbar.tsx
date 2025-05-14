@@ -2,120 +2,21 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/utils/supabase/client';
-import { useState, useEffect } from 'react';
-import { User } from '@supabase/supabase-js';
+import { useState, memo } from 'react';
+import { useAuth } from '@/context/AuthContext';
 
-export default function Navbar() {
-  const [user, setUser] = useState<User | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
+function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [institutionId, setInstitutionId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const router = useRouter();
-  const supabase = createClient();
-
-  useEffect(() => {
-    const fetchUserAndAdminStatus = async () => {
-      try {
-        const { data: { user: supabaseUser }, error: userError } = await supabase.auth.getUser();
-        if (userError) {
-          console.error('[Navbar] Error fetching user:', userError);
-          setUser(null);
-          setIsAdmin(false);
-          setInstitutionId(null);
-          setIsLoading(false);
-          return;
-        }
-        setUser(supabaseUser);
-
-        if (supabaseUser) {
-          // Check if user is admin
-          try {
-            const response = await fetch('/api/auth/user-info');
-            if (response.ok) {
-              const data = await response.json();
-              setIsAdmin(data.isAdmin);
-              
-              // If user is admin, fetch institution ID
-              if (data.isAdmin) {
-                try {
-                  const adminResponse = await fetch('/api/admin/validate', {
-                    method: 'GET',
-                    headers: {
-                      'Content-Type': 'application/json',
-                    },
-                  });
-                  
-                  if (adminResponse.ok) {
-                    const adminData = await adminResponse.json();
-                    setInstitutionId(adminData.institution_id);
-                  } else {
-                    console.error('[Navbar] Error fetching institution ID:', adminResponse.statusText);
-                    setInstitutionId(null);
-                  }
-                } catch (error) {
-                  console.error('[Navbar] Exception fetching institution ID:', error);
-                  setInstitutionId(null);
-                }
-              }
-            } else {
-              console.error('[Navbar] Error fetching admin status:', response.statusText);
-              setIsAdmin(false);
-            }
-          } catch (error) {
-            console.error('[Navbar] Exception fetching admin status:', error);
-            setIsAdmin(false);
-          }
-        } else {
-          setIsAdmin(false);
-          setInstitutionId(null);
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchUserAndAdminStatus();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setIsLoading(true);
-      setUser(session?.user ?? null);
-      
-      if (event === 'SIGNED_OUT') {
-        setIsAdmin(false);
-        setInstitutionId(null);
-        setIsLoading(false);
-      } else if (session?.user) {
-        fetchUserAndAdminStatus();
-      } else {
-        setIsAdmin(false);
-        setInstitutionId(null);
-        setIsLoading(false);
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [supabase]);
+  const { user, isAdmin, institutionId, isLoading, logout } = useAuth();
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error('[Navbar] Error signing out:', error);
-      } else {
-        // Redirect to different pages based on user type
-        if (isAdmin) {
-          router.push('/admin/login');
-        } else {
-          router.push('/');
-        }
-        router.refresh(); // Sincronizar con el middleware
-      }
+      await logout();
+      router.push('/');
+      router.refresh(); // Sincronizar con el middleware
     } catch (error) {
       console.error('[Navbar] Unexpected error during logout:', error);
     } finally {
@@ -304,3 +205,5 @@ export default function Navbar() {
     </nav>
   );
 }
+
+export default memo(Navbar);
