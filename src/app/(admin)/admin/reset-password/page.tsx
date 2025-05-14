@@ -85,7 +85,7 @@ function ResetPasswordForm() {
   };
 
   return (
-    <div className="w-full max-w-sm bg-white p-6 rounded shadow">
+    <div className="bg-white/80 p-6 rounded-lg shadow">
       <label className="block mb-2 text-sm font-medium text-gray-700">Nueva contraseña:</label>
       <input
         type="password"
@@ -107,9 +107,9 @@ function ResetPasswordForm() {
       <button
         onClick={handlePasswordChange}
         disabled={loading || !newPassword || !confirmPassword || !institution_id}
-        className="w-full bg-gray-900 text-white py-2 rounded hover:bg-black transition hover:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+        className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition hover:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {loading ? 'Cambiando...' : 'Cambiar contraseña'}
+        {loading ? 'Cambiando...' : 'Guardar'}
       </button>
 
       {message && (
@@ -125,7 +125,7 @@ function ResetPasswordForm() {
       <button
         onClick={volverAlDashboard}
         disabled={!institution_id}
-        className="mt-4 w-full text-sm underline text-gray-700 hover:text-black disabled:opacity-50 disabled:cursor-not-allowed"
+        className="mt-4 w-full text-sm underline text-gray-700 hover:text-gray-800 hover:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
       >
         Volver al dashboard
       </button>
@@ -135,8 +135,8 @@ function ResetPasswordForm() {
 
 export default function AdminResetPasswordPage() {
   return (
-    <main className="flex flex-col items-center justify-center bg-gray-100">
-      <h1 className="text-2xl font-bold mb-4 text-gray-800">Cambiar contraseña de administrador</h1>
+    <main className="flex flex-col items-center justify-center">
+      <h1 className="text-2xl font-bold mb-4 text-gray-800">Cambiar contraseña</h1>
       <Suspense fallback={<div className="text-gray-500">Cargando...</div>}>
         <ResetPasswordForm />
       </Suspense>

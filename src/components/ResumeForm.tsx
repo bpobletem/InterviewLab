@@ -51,47 +51,54 @@ export function ResumeForm({ onComplete }: ResumeFormProps) {
   };
 
   return (
-    <div className="bg-white p-8 rounded-lg shadow-sm mb-8 w-full border border-gray-100 transition-all duration-300">
-      <h2 className="text-2xl font-bold mb-6 text-black border-b pb-3">Subir Archivos</h2>
+    <div className="bg-white/80 p-8 rounded-lg shadow-sm mb-8 w-full border border-gray-100 transition-all duration-300">
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="mb-5">
-          <label htmlFor="file" className="block text-black font-medium mb-2">
-            Subir Currículum <span className="text-black font-bold">*</span>
+        <div className="mb-8">
+          <label htmlFor="file-input-resume" className="block text-gray-800 font-medium mb-2">
+            Currículum <span className="text-gray-800 font-bold">*</span>
           </label>
-          <div className="relative">
-            <input
-              type="file"
-              id="file"
-              onChange={(e) => e.target.files && setFile(e.target.files[0])}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-md text-black bg-white hover:border-black transition-colors duration-300 focus:outline-none focus:border-black cursor-pointer"
-              accept="application/pdf"
-            />
-          </div>
-          {file && (
-            <p className="mt-2 text-sm text-gray-700 bg-gray-50 p-2 rounded border border-gray-200">
-              <span className="font-medium">Archivo seleccionado:</span> {file.name}
-            </p>
-          )}
+          <label
+            htmlFor="file-input-resume"
+            className={`w-full flex items-center px-4 py-4 border-2 border-gray-200 rounded-md bg-white transition-colors duration-300 cursor-pointer focus:border-foreground/50 focus:outline-none focus:ring-1 focus:ring-foreground/5 ${
+              file ? 'text-gray-800' : 'text-gray-500'
+            }`}
+          >
+            {file ? file.name : 'Seleccionar archivo PDF...'}
+          </label>
+          <input
+            type="file"
+            id="file-input-resume"
+            onChange={(e) => {
+              if (e.target.files && e.target.files.length > 0) {
+                setFile(e.target.files[0]);
+              }
+            }}
+            className="hidden"
+            accept="application/pdf"
+          />
         </div>
 
-        <div className="mb-5">
-          <label htmlFor="text" className="block text-black font-medium mb-2">
-            Descripción del trabajo <span className="text-black font-bold">*</span>
+        <div className="mb-8">
+          <label htmlFor="text" className="block text-gray-800 font-medium mb-4">
+            Descripción del trabajo <span className="text-gray-800 font-bold">*</span>
           </label>
           <textarea
             id="text"
             value={text}
             onChange={(e) => setText(e.target.value)}
-            className="w-full px-4 py-3 border-2 border-gray-200 rounded-md h-40 text-black resize-none hover:border-black transition-colors duration-300 focus:outline-none focus:border-black cursor-text"
+            className="w-full px-4 py-4 border-2 border-gray-200 rounded-md h-40 text-gray-800 resize-none transition-colors duration-300 focus:border-foreground/50 focus:outline-none focus:ring-1 focus:ring-foreground/5 cursor-text"
             placeholder="Describe el puesto con el mayor detalle posible para una entrevista más precisa..."
           />
+          <div className="mt-4 p-2 bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-600">
+            <span className="font-semibold text-slate-700">Pro tip:</span> Te recomendamos copiar y pegar la descripción del puesto de trabajo o práctica al que quieres postular (ej. desde LinkedIn, la web de la empresa, etc.).
+          </div>
         </div>
 
-        <div className="flex flex-col space-y-4">
+        <div className="text-right">
           <button
             type="submit"
             disabled={isLoading || !isFormComplete}
-            className="px-6 py-3 bg-black text-white rounded-md hover:bg-gray-800 transition-all duration-300 disabled:bg-gray-300 disabled:cursor-not-allowed cursor-pointer transform hover:translate-y-[-2px] font-medium"
+            className="py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-700 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer transform font-medium"
           >
             {isLoading ? (
               <span className="flex items-center justify-center">
@@ -105,7 +112,7 @@ export function ResumeForm({ onComplete }: ResumeFormProps) {
           </button>
 
           {message && (
-            <div className={`p-3 rounded-md text-sm ${message.includes('Error') ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-green-50 text-green-600 border border-green-200'}`}>
+            <div className={`p-2 rounded-md text-sm ${message.includes('Error') ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-green-50 text-green-600 border border-green-200'}`}>
               {message}
             </div>
           )}
