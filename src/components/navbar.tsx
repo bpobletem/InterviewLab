@@ -9,39 +9,7 @@ function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const router = useRouter();
-  const supabase = createClient();
-
-  useEffect(() => {
-    // Obtener el usuario inicial
-    const getUser = async () => {
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-
-      if (sessionError || !sessionData.session) {
-        console.warn("[Navbar] No hay sesión activa");
-        return;
-      }
-
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      if (userError) {
-        console.error("[Navbar] Error fetching user:", userError.message);
-      } else {
-        setUser(userData.user);
-      }
-    };
-    getUser();
-
-
-    // Escuchar cambios en el estado de autenticación
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('[Navbar] Auth state changed:', event);
-      setUser(session?.user ?? null);
-    });
-
-    // Limpiar la suscripción al desmontar
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [supabase]);
+  const { user, isAdmin, institutionId, isLoading, logout } = useAuth();
 
   const handleLogout = async () => {
     setIsLoggingOut(true);

@@ -67,7 +67,7 @@ function PasswordResetForm() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2 bg-gray-900 text-white rounded hover:bg-black disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full py-2 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 transition hover:cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <span className="flex items-center justify-center">
