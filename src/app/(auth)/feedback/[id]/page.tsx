@@ -3,17 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 
-// Extender el objeto window para incluir la propiedad de depuración
-declare global {
-  interface Window {
-    __DEBUG_DATA?: Record<string, unknown>;
-  }
-}
-
 interface EvaluationCriterion {
   criterion: string;
   feedback: string;
-  result?: 'success' | 'failure';
+  result?: 'success' | 'failure' | 'unknown';
 }
 
 // Mapa de palabras sin acento a palabras con acento
@@ -23,7 +16,7 @@ const accentMap: Record<string, string> = {
 };
 
 interface CriterionResult {
-  result: 'success' | 'failure';
+  result: 'success' | 'failure' | 'unknown';
   rationale: string;
 }
 
@@ -49,6 +42,7 @@ export default function FeedbackPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [approvedCriteria, setApprovedCriteria] = useState(0);
+  const [hasUnknownResults, setHasUnknownResults] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -70,27 +64,14 @@ export default function FeedbackPage() {
           }
           const details: ConversationDetails = await response.json();
 
-          // Guardar los datos completos para depuración
-          window.__DEBUG_DATA = details as Record<string, unknown>;
-
           // Intentar diferentes estructuras posibles para encontrar los resultados de evaluación
           let results = null;
+
+          console.log(details);
 
           // Estructura 1: details.data.analysis.evaluation_criteria_results
           if (details?.data?.analysis?.evaluation_criteria_results) {
             results = details.data.analysis.evaluation_criteria_results;
-          }
-          // Estructura 2: details.analysis.evaluation_criteria_results
-          else if (details?.analysis?.evaluation_criteria_results) {
-            results = details.analysis.evaluation_criteria_results;
-          }
-          // Estructura 3: details.evaluation_criteria_results
-          else if (details?.evaluation_criteria_results) {
-            results = details.evaluation_criteria_results;
-          }
-          // Estructura 4: details.data.evaluation_criteria_results
-          else if (details?.data?.evaluation_criteria_results) {
-            results = details.data.evaluation_criteria_results;
           }
 
           // Función para normalizar criterios con acentos
@@ -142,14 +123,47 @@ export default function FeedbackPage() {
             setEvaluationResults([]); // No results found, but not an error
           }
 
-          // Contar criterios aprobados
+          // Filtrar resultados desconocidos y contar criterios aprobados
           if (Array.isArray(results)) {
+            // Verificar si hay resultados desconocidos
+            const hasUnknown = results.some(item => item.result === 'unknown');
+            setHasUnknownResults(hasUnknown);
+            
+            // Filtrar resultados con estado conocido (success o failure)
+            const filteredResults = results.filter(item => item.result === 'success' || item.result === 'failure');
             const approved = results.filter(item => item.result === 'success').length;
+            setEvaluationResults(filteredResults);
             setApprovedCriteria(approved);
           } else if (results && typeof results === 'object') {
+            // Verificar si hay resultados desconocidos
+            const hasUnknown = Object.values(results).some(
+              value => typeof value === 'object' && value !== null && 'result' in value && value.result === 'unknown'
+            );
+            setHasUnknownResults(hasUnknown);
+            
+            // Filtrar resultados con estado conocido (success o failure)
+            const filteredResults = Object.entries(results)
+              .filter(([_, value]) => 
+                typeof value === 'object' && 
+                value !== null && 
+                'result' in value && 
+                (value.result === 'success' || value.result === 'failure')
+              )
+              .map(([key, value]) => {
+                const normalizedKey = normalizeCriterion(key);
+                const criterionResult = value as CriterionResult;
+                return {
+                  criterion: normalizedKey,
+                  feedback: criterionResult.rationale,
+                  result: criterionResult.result
+                };
+              });
+            
             const approved = Object.values(results).filter(
               value => typeof value === 'object' && value !== null && 'result' in value && value.result === 'success'
             ).length;
+            
+            setEvaluationResults(filteredResults);
             setApprovedCriteria(approved);
           }
         } catch (err: unknown) {
@@ -300,22 +314,6 @@ export default function FeedbackPage() {
             Feedback de la Entrevista
           </h1>
 
-          {/* Estrellas y mensaje de feedback */}
-          <div className="w-full border border-gray-200 rounded-lg overflow-hidden mb-6">
-            <div className="p-5 border-b border-gray-200">
-              <h2 className="text-xl font-bold text-center text-gray-800">Desempeño General</h2>
-            </div>
-            <div className="p-5 text-center">
-              {renderStars(0)}
-              <p className={`text-lg font-medium ${getFeedbackMessageColor(0)}`}>
-                {getFeedbackMessage(0)}
-              </p>
-              <p className="text-sm text-gray-500 mt-2">
-                Has aprobado 0 de 5 criterios de evaluación
-              </p>
-            </div>
-          </div>
-
           <div className="w-full border border-gray-200 rounded-lg overflow-hidden">
             <div className="p-5 border-b border-gray-200">
               <div className="flex items-center justify-between">
@@ -333,8 +331,8 @@ export default function FeedbackPage() {
                   </svg>
                 </div>
               </div>
-              <h2 className="text-xl font-semibold mb-2 text-gray-800">No se Encontraron Resultados de Evaluación</h2>
-              <p className="text-gray-700">No se pudieron encontrar criterios de evaluación para esta conversación.</p>
+              <h2 className="text-xl font-semibold mb-2 text-gray-800">No pudimos evaluar tus respuestas correctamente.</h2>
+              <p className="text-gray-700">Te recomendamos realizar otra entrevista utilizando respuestas más extensas para obtener un análisis más preciso de tus habilidades.</p>
             </div>
           </div>
 
@@ -365,6 +363,27 @@ export default function FeedbackPage() {
             </p>
           </div>
         </div>
+
+        {/* Mensaje de recomendación si hay resultados desconocidos */}
+        {hasUnknownResults && (
+          <div className="w-full border border-yellow-200 bg-yellow-50 rounded-lg p-4 mb-6">
+            <div className="flex items-start">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-yellow-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-yellow-800">Recomendación</h3>
+                <div className="mt-2 text-sm text-yellow-700">
+                  <p>
+                    Algunos criterios no pudieron ser evaluados completamente. Te recomendamos realizar otra entrevista utilizando respuestas más extensas para obtener un análisis más preciso de tus habilidades.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="w-full border border-gray-200 rounded-lg overflow-hidden">
           <div className="p-5 border-b border-gray-200">
