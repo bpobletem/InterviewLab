@@ -128,7 +128,7 @@ export default function ProfilePage() {
   };
 
   return (
-    <main className="flex flex-col items-center py-10 px-4 min-h-screen bg-gradient-to-b from-white to-gray-50">
+    <main className="flex flex-col items-center py-10 px-4 min-h-screen">
       <h1 className="text-3xl sm:text-4xl font-bold text-center text-gray-800 mb-12">
         Perfil de Usuario
       </h1>
@@ -199,7 +199,7 @@ export default function ProfilePage() {
             <h2 className="text-2xl font-bold text-gray-800 mb-4 sm:mb-0">
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-green-600">Historial de Entrevistas</span>
             </h2>
-            <Link href="/entrevista" className="px-5 py-2.5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-md transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg flex items-center space-x-2">
+            <Link href="/entrevista" className="px-5 py-2.5 bg-blue-500 hover:bg-blue-700 text-white rounded-md transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg flex items-center space-x-2">
               <span>Nueva Entrevista</span>
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
@@ -236,7 +236,7 @@ export default function ProfilePage() {
                     
                     {interview.status === 'completed' && (
                       <div className="mt-4 text-right">
-                        <Link href={`/feedback/${interview.id}`} className="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors duration-300">
+                        <Link href={`/feedback/${interview.id}`} className="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-700 transition-colors duration-300">
                           Ver Feedback
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -256,7 +256,7 @@ export default function ProfilePage() {
                 </svg>
               </div>
               <p className="text-gray-500 mb-6 text-lg">No tienes entrevistas registradas.</p>
-              <Link href="/entrevista" className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-md transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105">
+              <Link href="/entrevista" className="px-6 py-3 bg-blue-500 hover:bg-blue-700 text-white rounded-md transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105">
                 Comienza tu primera entrevista
               </Link>
             </div>
