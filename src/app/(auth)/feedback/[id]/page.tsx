@@ -2,38 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-
-interface EvaluationCriterion {
-  criterion: string;
-  feedback: string;
-  result?: 'success' | 'failure' | 'unknown';
-}
+import { EvaluationCriterion, CriterionResult, ConversationDetails } from '@/types/types';
 
 // Mapa de palabras sin acento a palabras con acento
 const accentMap: Record<string, string> = {
   'interes': 'interés',
   'tecnica': 'técnica',
 };
-
-interface CriterionResult {
-  result: 'success' | 'failure' | 'unknown';
-  rationale: string;
-}
-
-// La API devuelve directamente los detalles de la conversación
-interface ConversationDetails {
-  data?: {
-    analysis?: {
-      evaluation_criteria_results?: EvaluationCriterion[] | Record<string, CriterionResult>;
-    };
-    evaluation_criteria_results?: EvaluationCriterion[] | Record<string, CriterionResult>;
-  };
-  analysis?: {
-    evaluation_criteria_results?: EvaluationCriterion[] | Record<string, CriterionResult>;
-  };
-  evaluation_criteria_results?: EvaluationCriterion[] | Record<string, CriterionResult>;
-  [key: string]: unknown;
-}
 
 export default function FeedbackPage() {
   const params = useParams();
@@ -143,7 +118,7 @@ export default function FeedbackPage() {
             
             // Filtrar resultados con estado conocido (success o failure)
             const filteredResults = Object.entries(results)
-              .filter(([_, value]) => 
+              .filter(([, value]) =>
                 typeof value === 'object' && 
                 value !== null && 
                 'result' in value && 
