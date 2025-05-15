@@ -30,67 +30,54 @@ interface UserProfile {
 
 export default function ProfilePage() {
   // Estado para almacenar los datos del perfil y entrevistas
-  const [profile, setProfile] = useState<UserProfile>({
-    id: 'user123',
-    name: 'Sebastian Monjes',
-    email: 'seb.monjes@duocuc.cl',
-    gender: 'Masculino',
-    birthday: '2001-03-23',
-    institution_id: 1,
-    institution_name: 'DuocUC',
-    career_id: 2,
-    career_name: 'Analista programador computacional',
-    authId: 'auth123'
-  });
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [interviews, setInterviews] = useState<Interview[]>([]);
 
-  const [interviews, setInterviews] = useState<Interview[]>([
-    {
-      id: 1,
-      created_at: '2023-10-15',
-      job_description: 'Desarrollador Frontend Senior en TechSolutions Inc.',
-      resume: 'Experiencia en React y TypeScript',
-      user_id: 'user123',
-      status: 'completed',
-      score: 3
-    },
-    {
-      id: 2,
-      created_at: '2023-11-20',
-      job_description: 'Ingeniero de Software en Innovate Systems',
-      resume: 'Experiencia en desarrollo backend',
-      user_id: 'user123',
-      status: 'completed',
-      score: 2
-    },
-    {
-      id: 3,
-      created_at: '2023-12-05',
-      job_description: 'Desarrollador Full Stack en Digital Creators',
-      resume: 'Experiencia en MERN stack',
-      user_id: 'user123',
-      status: 'pending'
-    }
-  ]);
+  // Cargar datos del perfil y entrevistas desde la API
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // En una implementación real, aquí se cargarían los datos desde una API
   useEffect(() => {
-    // Simulación de carga de datos
-    // En producción: 
-    // fetch('/api/user').then(res => res.json()).then(data => setProfile(data));
-    // fetch('/api/interviews').then(res => res.json()).then(data => {
-    //   // Asegurarse de que los datos tienen el formato correcto
-    //   const formattedInterviews = data.map((interview: any) => ({
-    //     ...interview,
-    //     id: interview.id,
-    //     created_at: interview.created_at,
-    //     job_description: interview.job_description,
-    //     resume: interview.resume,
-    //     user_id: interview.user_id,
-    //     status: interview.status || 'pending',
-    //     score: interview.score
-    //   }));
-    //   setInterviews(formattedInterviews);
-    // });
+    const fetchProfileData = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        // Obtener datos del perfil
+        const profileResponse = await fetch('/api/profile');
+        if (!profileResponse.ok) {
+          throw new Error('Error al cargar el perfil');
+        }
+        const profileData = await profileResponse.json();
+        setProfile(profileData);
+
+        // Obtener entrevistas del usuario
+        if (profileData && profileData.id) {
+          const interviewsResponse = await fetch(`/api/users/${profileData.id}/interview`);
+          if (interviewsResponse.ok) {
+            const interviewsData = await interviewsResponse.json();
+            // Asegurarse de que los datos tienen el formato correcto
+            const formattedInterviews = interviewsData.map((interview: any) => ({
+              ...interview,
+              id: interview.id,
+              created_at: interview.created_at,
+              job_description: interview.job_description,
+              resume: interview.resume,
+              user_id: interview.user_id,
+              status: interview.status || 'pending',
+              score: interview.score
+            }));
+            setInterviews(formattedInterviews);
+          }
+        }
+      } catch (err) {
+        console.error('Error al cargar datos:', err);
+        setError(err instanceof Error ? err.message : 'Error desconocido');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProfileData();
   }, []);
 
   // Función para formatear la fecha
@@ -133,7 +120,26 @@ export default function ProfilePage() {
         Perfil de Usuario
       </h1>
       
-      <div className="w-full max-w-7xl">
+      {isLoading ? (
+        <div className="w-full max-w-7xl flex justify-center items-center py-20">
+          <div className="flex flex-col items-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+            <p className="text-gray-600 text-lg">Cargando información del perfil...</p>
+          </div>
+        </div>
+      ) : error ? (
+        <div className="w-full max-w-7xl bg-red-50 p-6 rounded-lg border border-red-200 text-center">
+          <p className="text-red-600 text-lg mb-2">Error al cargar los datos</p>
+          <p className="text-red-500">{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+          >
+            Reintentar
+          </button>
+        </div>
+      ) : (
+        <div className="w-full max-w-7xl">
         {/* Sección de información personal */}
         <div className="bg-white/90 rounded-lg shadow-lg p-8 mb-8 border border-gray-100 transition-all duration-300 hover:shadow-xl">
           <div className="flex flex-col md:flex-row items-start gap-8">
@@ -144,8 +150,8 @@ export default function ProfilePage() {
                   <FaUser className="text-6xl text-gray-300" />
                 </div>
               </div>
-              <h2 className="text-2xl font-bold text-gray-800 mt-4 text-center">{profile.name}</h2>
-              <p className="text-gray-600 text-center">{profile.email}</p>
+              <h2 className="text-2xl font-bold text-gray-800 mt-4 text-center">{profile?.name || 'Usuario'}</h2>
+              <p className="text-gray-600 text-center">{profile?.email || ''}</p>
             </div>
             
             {/* Información principal */}
@@ -158,7 +164,7 @@ export default function ProfilePage() {
                   </div>
                   <div>
                     <h3 className="text-sm font-medium text-gray-500">Género</h3>
-                    <p className="text-gray-800 font-medium">{profile.gender}</p>
+                    <p className="text-gray-800 font-medium">{profile?.gender || '-'}</p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg transition-all duration-300 hover:bg-gray-100">
@@ -167,7 +173,7 @@ export default function ProfilePage() {
                   </div>
                   <div>
                     <h3 className="text-sm font-medium text-gray-500">Fecha de nacimiento</h3>
-                    <p className="text-gray-800 font-medium">{formatDate(profile.birthday)}</p>
+                    <p className="text-gray-800 font-medium">{profile?.birthday ? formatDate(profile.birthday) : '-'}</p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg transition-all duration-300 hover:bg-gray-100">
@@ -176,7 +182,7 @@ export default function ProfilePage() {
                   </div>
                   <div>
                     <h3 className="text-sm font-medium text-gray-500">Institución</h3>
-                    <p className="text-gray-800 font-medium">{profile.institution_name || profile.institution_id}</p>
+                    <p className="text-gray-800 font-medium">{profile?.institution_name || profile?.institution_id || '-'}</p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg transition-all duration-300 hover:bg-gray-100">
@@ -185,7 +191,7 @@ export default function ProfilePage() {
                   </div>
                   <div>
                     <h3 className="text-sm font-medium text-gray-500">Carrera</h3>
-                    <p className="text-gray-800 font-medium">{profile.career_name || profile.career_id}</p>
+                    <p className="text-gray-800 font-medium">{profile?.career_name || profile?.career_id || '-'}</p>
                   </div>
                 </div>
               </div>
@@ -207,7 +213,7 @@ export default function ProfilePage() {
             </Link>
           </div>
           
-          {interviews.filter(interview => interview.status !== 'pending').length > 0 ? (
+          {interviews && interviews.length > 0 && interviews.filter(interview => interview.status !== 'pending').length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {interviews
                 .filter(interview => interview.status !== 'pending')
@@ -262,7 +268,8 @@ export default function ProfilePage() {
             </div>
           )}
         </div>
-      </div>
+        </div>
+      )}
     </main>
   );
 }
