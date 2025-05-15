@@ -180,9 +180,9 @@ export default function FeedbackPage() {
   // Función para obtener el color de fondo según el resultado
   const getBackgroundColor = (item: EvaluationCriterion) => {
     if (item.result === 'success') {
-      return 'bg-green-50 border-green-200';
+      return 'bg-green-50';
     } else if (item.result === 'failure') {
-      return 'bg-red-50 border-red-200';
+      return 'bg-red-50';
     }
     return 'bg-white';
   };
@@ -218,12 +218,12 @@ export default function FeedbackPage() {
   if (loading) {
     return (
       <main className="flex items-center justify-center px-4 font-sans">
-        <div className="bg-gray-50 shadow-md rounded-xl p-8 max-w-4xl w-full space-y-6">
-          <h1 className="text-3xl sm:text-4xl font-bold text-center text-gray-800 mb-6">
+        <div className="max-w-5xl w-full py-8">
+          <h1 className="text-3xl sm:text-4xl font-bold text-center text-gray-800 mb-10">
             Feedback de la Entrevista
           </h1>
 
-          <div className="w-full border border-gray-200 rounded-lg shadow-sm p-8 text-center">
+          <div className="bg-white rounded-xl p-8 text-center shadow-sm">
             <div className="flex justify-center mb-4">
               <svg className="animate-spin h-8 w-8 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -240,12 +240,12 @@ export default function FeedbackPage() {
   if (error) {
     return (
       <main className="flex items-center justify-center px-4 font-sans">
-        <div className="bg-gray-50 shadow-md rounded-xl p-8 max-w-4xl w-full space-y-6">
-          <h1 className="text-3xl sm:text-4xl font-bold text-center text-gray-800 mb-6">
+        <div className="max-w-5xl w-full py-8">
+          <h1 className="text-3xl sm:text-4xl font-bold text-center text-gray-800 mb-10">
             Feedback de la Entrevista
           </h1>
 
-          <div className="w-full border border-red-200 rounded-lg shadow-sm p-8 text-center">
+          <div className="bg-white rounded-xl p-8 text-center shadow-sm">
             <div className="flex justify-center mb-4">
               <div className="flex items-center justify-center w-12 h-12 rounded-full bg-red-100 text-red-600">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -309,18 +309,16 @@ export default function FeedbackPage() {
     // Si no hay resultados, mostrar un mensaje
     return (
       <main className="flex items-center justify-center px-4 font-sans">
-        <div className="bg-gray-50 shadow-lg rounded-xl p-8 max-w-4xl w-full space-y-6">
-          <h1 className="text-3xl sm:text-4xl font-bold text-center text-gray-800 mb-6">
+        <div className="max-w-5xl w-full py-8">
+          <h1 className="text-3xl sm:text-4xl font-bold text-center text-gray-800 mb-10">
             Feedback de la Entrevista
           </h1>
 
-          <div className="w-full border border-gray-200 rounded-lg overflow-hidden">
-            <div className="p-5 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-gray-800">Resultados de Evaluación</h2>
-                <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                  Sin resultados
-                </div>
+          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div className="p-8 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-800">Resultados de Evaluación</h2>
+              <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                Sin resultados
               </div>
             </div>
             <div className="p-8 text-center">
@@ -332,10 +330,9 @@ export default function FeedbackPage() {
                 </div>
               </div>
               <h2 className="text-xl font-semibold mb-2 text-gray-800">No pudimos evaluar tus respuestas correctamente.</h2>
-              <p className="text-gray-700">Te recomendamos realizar otra entrevista utilizando respuestas más extensas para obtener un análisis más preciso de tus habilidades.</p>
+              <p className="text-gray-700 mx-auto">Te recomendamos realizar otra entrevista utilizando respuestas más extensas para obtener un análisis más preciso de tus habilidades.</p>
             </div>
           </div>
-
         </div>
       </main>
     );
@@ -343,17 +340,17 @@ export default function FeedbackPage() {
 
   return (
     <main className="flex items-center justify-center px-4 font-sans my-10">
-      <div className="bg-white/80 shadow-md rounded-xl p-8 max-w-4xl w-full space-y-6">
-        <h1 className="text-3xl sm:text-4xl font-bold text-center text-gray-800 mb-6">
+      <div className="max-w-5xl w-full py-8">
+        <h1 className="text-3xl sm:text-4xl font-bold text-center text-gray-800 mb-10">
           Feedback de la Entrevista
         </h1>
 
         {/* Estrellas y mensaje de feedback */}
-        <div className="w-full border border-gray-200 rounded-lg overflow-hidden mb-6">
-          <div className="p-5 border-b border-gray-200">
+        <div className="bg-white rounded-xl shadow-sm mb-8">
+          <div className="px-8 pt-8">
             <h2 className="text-xl font-bold text-center text-gray-800">Desempeño General</h2>
           </div>
-          <div className="p-5 text-center">
+          <div className="p-8 text-center">
             {renderStars(approvedCriteria)}
             <p className={`text-lg font-medium ${getFeedbackMessageColor(approvedCriteria)}`}>
               {getFeedbackMessage(approvedCriteria)}
@@ -366,7 +363,7 @@ export default function FeedbackPage() {
 
         {/* Mensaje de recomendación si hay resultados desconocidos */}
         {hasUnknownResults && (
-          <div className="w-full border border-yellow-200 bg-yellow-50 rounded-lg p-4 mb-6">
+          <div className="bg-yellow-50 rounded-xl p-8 mb-8 shadow-sm">
             <div className="flex items-start">
               <div className="flex-shrink-0">
                 <svg className="h-5 w-5 text-yellow-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -375,8 +372,8 @@ export default function FeedbackPage() {
               </div>
               <div className="ml-3">
                 <h3 className="text-sm font-medium text-yellow-800">Recomendación</h3>
-                <div className="mt-2 text-sm text-yellow-700">
-                  <p>
+                <div className="mt-2 text-sm text-yellow-800">
+                  <p className="">
                     Algunos criterios no pudieron ser evaluados completamente. Te recomendamos realizar otra entrevista utilizando respuestas más extensas para obtener un análisis más preciso de tus habilidades.
                   </p>
                 </div>
@@ -385,20 +382,18 @@ export default function FeedbackPage() {
           </div>
         )}
 
-        <div className="w-full border border-gray-200 rounded-lg overflow-hidden">
-          <div className="p-5 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-gray-800">Resultados de Evaluación</h2>
-              <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                {evaluationResults.length} criterios evaluados
-              </div>
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+          <div className="p-8 flex items-center justify-between">
+            <h2 className="text-xl font-bold text-gray-800">Resultados de Evaluación</h2>
+            <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+              {evaluationResults.length} criterios evaluados
             </div>
           </div>
 
-          <div className="p-5">
-            <div className="space-y-4">
+          <div className="p-8">
+            <div className="space-y-8">
               {evaluationResults.map((item, index) => (
-                <div key={index} className={`border rounded-lg p-4 ${getBackgroundColor(item)}`}>
+                <div key={index} className={`rounded-xl p-6 ${getBackgroundColor(item)}`}>
                   <div className="flex items-start">
                     {getResultIcon(item)}
                     <div className="ml-4 flex-1">
