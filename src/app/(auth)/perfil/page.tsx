@@ -139,7 +139,7 @@ export default function ProfilePage() {
           <div className="flex flex-col md:flex-row items-start gap-8">
             {/* Avatar y nombre */}
             <div className="md:w-1/4 flex flex-col items-center">
-              <div className="relative w-32 h-32 rounded-full overflow-hidden bg-gradient-to-r from-blue-500 to-green-500 p-1">
+              <div className="relative w-32 h-32 rounded-full overflow-hidden bg-gradient-to-r from-blue-500 via-violet-600 to-pink-600 p-1">
                 <div className="w-full h-full rounded-full overflow-hidden bg-white flex items-center justify-center">
                   <FaUser className="text-6xl text-gray-300" />
                 </div>
@@ -197,7 +197,7 @@ export default function ProfilePage() {
         <div className="bg-white/90 rounded-lg shadow-lg p-8 border border-gray-100 transition-all duration-300 hover:shadow-xl">
           <div className="flex flex-col sm:flex-row justify-between items-center mb-8">
             <h2 className="text-2xl font-bold text-gray-800 mb-4 sm:mb-0">
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-green-600">Historial de Entrevistas</span>
+              Historial de Entrevistas
             </h2>
             <Link href="/entrevista" className="px-5 py-2.5 bg-blue-500 hover:bg-blue-700 text-white rounded-md transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg flex items-center space-x-2">
               <span>Nueva Entrevista</span>
