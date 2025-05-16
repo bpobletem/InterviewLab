@@ -8,6 +8,12 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     // Obtener el ID del usuario de los parámetros de la ruta
     const { id } = await params;
     
+    // Obtener parámetros de paginación de la URL
+    const searchParams = request.nextUrl.searchParams;
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const limit = parseInt(searchParams.get('limit') || '3', 10); // 3 para testing
+    const skip = (page - 1) * limit;
+    
     // Verificar que el ID del usuario sea válido
     if (!id) {
       return NextResponse.json(
@@ -16,19 +22,31 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       );
     }
 
-    // Obtener las entrevistas del usuario
-    const interviews = await prisma.interview.findMany({
-      where: {
-        user_id: id
-      },
-      orderBy: {
-        created_at: 'desc'
-      }
-    });
+    // Obtener tanto el conteo y las entrevistas
+    const [totalCount, interviews] = await Promise.all([
+      prisma.interview.count({
+        where: { user_id: id }
+      }),
+      prisma.interview.findMany({
+        where: { user_id: id },
+        orderBy: { created_at: 'desc' },
+        skip,
+        take: limit
+      })
+    ]);
 
     const serializedInterviews = interviews.map(interview => serializeData(interview));
     
-    return NextResponse.json(serializedInterviews, { status: 200 });
+    // Incluir metadata de paginación en la respuesta
+    return NextResponse.json({
+      data: serializedInterviews,
+      pagination: {
+        total: totalCount,
+        page,
+        limit,
+        pages: Math.ceil(totalCount / limit)
+      }
+    }, { status: 200 });
   } catch (error) {
     console.error('Error fetching interviews:', error);
     return NextResponse.json(
