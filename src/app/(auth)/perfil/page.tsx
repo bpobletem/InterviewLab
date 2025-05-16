@@ -90,7 +90,7 @@ export default function ProfilePage() {
     };
 
     fetchProfileData();
-  }, []); // Sin dependencia a currentPage
+  }, [fetchInterviews]); // Añadiendo fetchInterviews como dependencia
 
   // Efecto separado para manejar cambios de página después de la carga inicial
   useEffect(() => {
