@@ -139,7 +139,7 @@ export default function ProfilePage() {
       ) : (
         <div className="w-full max-w-7xl">
         {/* Sección de información personal */}
-        <div className="bg-white/90 rounded-lg shadow-lg p-8 mb-8 border border-gray-100 transition-all duration-300 hover:shadow-xl">
+        <div className="bg-white/90 rounded-lg shadow-sm p-8 mb-8 border border-gray-100 transition-all duration-300 hover:shadow-lg">
           <div className="flex flex-col md:flex-row items-start gap-8">
             {/* Avatar y nombre */}
             <div className="md:w-1/4 flex flex-col items-center">
@@ -198,7 +198,7 @@ export default function ProfilePage() {
         </div>
         
         {/* Sección de historial de entrevistas */}
-        <div className="bg-white/90 rounded-lg shadow-lg p-8 border border-gray-100 transition-all duration-300 hover:shadow-xl">
+        <div className="bg-white/90 rounded-lg shadow-sm p-8 border border-gray-100 transition-all duration-300 hover:shadow-lg">
           <div className="flex flex-col sm:flex-row justify-between items-center mb-8">
             <div>
               <h2 className="text-2xl font-bold text-gray-800 mb-2">
