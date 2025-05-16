@@ -9,8 +9,8 @@ export default function Home() {
   const [resume, setResume] = useState('');
   const [jobDescription, setJobDescription] = useState('');
   const [interviewId, setInterviewId] = useState('');
-  const [title, setTitle] = useState('');
-
+  // Eliminando la variable title que no se utiliza
+  
   const handleFormComplete = (data: {
     resume: string;
     jobDescription: string;
@@ -20,7 +20,7 @@ export default function Home() {
     setResume(data.resume);
     setJobDescription(data.jobDescription);
     setInterviewId(data.interviewId);
-    setTitle(data.title);
+    // Eliminando la asignación a setTitle
     setStep('conversation');
   };
 
