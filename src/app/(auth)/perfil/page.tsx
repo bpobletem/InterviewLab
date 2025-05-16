@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { FaUser, FaCalendarAlt, FaUniversity, FaGraduationCap, FaStar } from 'react-icons/fa';
 
 interface Interview {
-  id: number | bigint;
+  id: string;
+  title: string;
   created_at: string;
   job_description: string;
   resume: string;
@@ -230,7 +231,7 @@ export default function ProfilePage() {
                     <div className="flex justify-end items-start mb-3">
                       <span className="text-sm text-gray-500">{formatDate(interview.created_at)}</span>
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2 line-clamp-2">{interview.job_description}</h3>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-2 line-clamp-2">{interview.title}</h3>
                     <p className="text-sm text-gray-600 mb-4 line-clamp-2">{interview.resume}</p>
                     
                     {interview.score !== undefined && (
