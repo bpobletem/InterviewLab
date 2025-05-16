@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import { serializeData } from "@/utils/functions/serializeData";
 
 // Get interviews para el usuario especificado
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -24,8 +25,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         created_at: 'desc'
       }
     });
+
+    const serializedInterviews = interviews.map(interview => serializeData(interview));
     
-    return NextResponse.json(interviews);
+    return NextResponse.json(serializedInterviews, { status: 200 });
   } catch (error) {
     console.error('Error fetching interviews:', error);
     return NextResponse.json(

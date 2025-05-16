@@ -124,7 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     institutionId,
     isLoading,
     logout
-  }), [user, isAdmin, institutionId, isLoading]);
+  }), [user, isAdmin, institutionId, isLoading, logout]);
 
   return (
     <AuthContext.Provider value={contextValue}>
@@ -139,4 +139,4 @@ export function useAuth() {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-} 
+}

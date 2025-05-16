@@ -1,17 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { FaUser, FaCalendarAlt, FaUniversity, FaGraduationCap, FaStar } from 'react-icons/fa';
 
 interface Interview {
-  id: number;
+  id: number | bigint;
   created_at: string;
   job_description: string;
   resume: string;
   user_id: string;
-  status: 'completed' | 'pending' | 'cancelled';
   score?: number;
 }
 
@@ -32,6 +30,10 @@ export default function ProfilePage() {
   // Estado para almacenar los datos del perfil y entrevistas
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [interviews, setInterviews] = useState<Interview[]>([]);
+  
+  // Estado para la paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const interviewsPerPage = 15;
 
   // Cargar datos del perfil y entrevistas desde la API
   const [isLoading, setIsLoading] = useState(false);
@@ -56,14 +58,13 @@ export default function ProfilePage() {
           if (interviewsResponse.ok) {
             const interviewsData = await interviewsResponse.json();
             // Asegurarse de que los datos tienen el formato correcto
-            const formattedInterviews = interviewsData.map((interview: any) => ({
+            const formattedInterviews = interviewsData.map((interview: Interview) => ({
               ...interview,
               id: interview.id,
               created_at: interview.created_at,
               job_description: interview.job_description,
               resume: interview.resume,
               user_id: interview.user_id,
-              status: interview.status || 'pending',
               score: interview.score
             }));
             setInterviews(formattedInterviews);
@@ -85,32 +86,29 @@ export default function ProfilePage() {
     const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
     return new Date(dateString).toLocaleDateString('es-ES', options);
   };
-
-  // Función para obtener el color según el estado de la entrevista
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'bg-green-100 text-green-800';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'cancelled':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+  
+  // Calcular entrevistas para la página actual
+  const indexOfLastInterview = currentPage * interviewsPerPage;
+  const indexOfFirstInterview = indexOfLastInterview - interviewsPerPage;
+  const currentInterviews = interviews.slice(indexOfFirstInterview, indexOfLastInterview);
+  
+  // Calcular el número total de páginas
+  const totalPages = Math.ceil(interviews.length / interviewsPerPage);
+  
+  // Función para cambiar de página
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+  
+  // Función para ir a la página anterior
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
     }
   };
-
-  // Función para traducir el estado
-  const translateStatus = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'Completada';
-      case 'pending':
-        return 'Pendiente';
-      case 'cancelled':
-        return 'Cancelada';
-      default:
-        return status;
+  
+  // Función para ir a la página siguiente
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
     }
   };
 
@@ -202,9 +200,16 @@ export default function ProfilePage() {
         {/* Sección de historial de entrevistas */}
         <div className="bg-white/90 rounded-lg shadow-lg p-8 border border-gray-100 transition-all duration-300 hover:shadow-xl">
           <div className="flex flex-col sm:flex-row justify-between items-center mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4 sm:mb-0">
-              Historial de Entrevistas
-            </h2>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                Historial de Entrevistas
+              </h2>
+              {interviews.length > 0 && (
+                <p className="text-sm text-gray-500">
+                  Mostrando {indexOfFirstInterview + 1}-{Math.min(indexOfLastInterview, interviews.length)} de {interviews.length} entrevista{interviews.length !== 1 ? 's' : ''}
+                </p>
+              )}
+            </div>
             <Link href="/entrevista" className="px-5 py-2.5 bg-blue-500 hover:bg-blue-700 text-white rounded-md transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg flex items-center space-x-2">
               <span>Nueva Entrevista</span>
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -213,17 +218,13 @@ export default function ProfilePage() {
             </Link>
           </div>
           
-          {interviews && interviews.length > 0 && interviews.filter(interview => interview.status !== 'pending').length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {interviews
-                .filter(interview => interview.status !== 'pending')
-                .map((interview) => (
+          {interviews && interviews.length > 0 ? (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {currentInterviews.map((interview) => (
                 <div key={interview.id} className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 transition-all duration-300 hover:shadow-lg transform hover:translate-y-[-5px]">
                   <div className="p-5">
-                    <div className="flex justify-between items-start mb-3">
-                      <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(interview.status)}`}>
-                        {translateStatus(interview.status)}
-                      </span>
+                    <div className="flex justify-end items-start mb-3">
                       <span className="text-sm text-gray-500">{formatDate(interview.created_at)}</span>
                     </div>
                     <h3 className="text-lg font-semibold text-gray-800 mb-2 line-clamp-2">{interview.job_description}</h3>
@@ -240,20 +241,75 @@ export default function ProfilePage() {
                       </div>
                     )}
                     
-                    {interview.status === 'completed' && (
-                      <div className="mt-4 text-right">
-                        <Link href={`/feedback/${interview.id}`} className="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-700 transition-colors duration-300">
-                          Ver Feedback
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                          </svg>
-                        </Link>
-                      </div>
-                    )}
+                    <div className="mt-4 text-right">
+                      <Link href={`/feedback/${interview.id.toString()}`} className="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-700 transition-colors duration-300">
+                        Ver Feedback
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </Link>
+                    </div>
                   </div>
                 </div>
               ))}
-            </div>
+              </div>
+              
+              {/* Controles de paginación */}
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center mt-8 space-x-2">
+                  <button
+                    onClick={goToPreviousPage}
+                    disabled={currentPage === 1}
+                    className="px-3 py-1 bg-gray-200 rounded-md disabled:opacity-50 hover:bg-gray-300 transition-colors"
+                  >
+                    &laquo; Anterior
+                  </button>
+                  
+                  <div className="flex space-x-1">
+                    {/* Mostrar un número limitado de botones de página para mejorar la experiencia cuando hay muchas páginas */}
+                    {Array.from({ length: totalPages }, (_, i) => i + 1)
+                      .filter(pageNumber => {
+                        // Siempre mostrar la primera página, la última página, la página actual y las páginas adyacentes
+                        return pageNumber === 1 || 
+                               pageNumber === totalPages || 
+                               (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1);
+                      })
+                      .map((number, index, filteredArray) => {
+                        // Añadir indicadores de "..." para páginas intermedias no mostradas
+                        const showEllipsisBefore = index > 0 && filteredArray[index - 1] !== number - 1;
+                        const showEllipsisAfter = index < filteredArray.length - 1 && filteredArray[index + 1] !== number + 1;
+                        
+                        return (
+                          <div key={number} className="flex items-center">
+                            {showEllipsisBefore && (
+                              <span className="px-2 text-gray-500">...</span>
+                            )}
+                            
+                            <button
+                              onClick={() => paginate(number)}
+                              className={`w-8 h-8 flex items-center justify-center rounded-md transition-colors ${currentPage === number ? 'bg-blue-500 text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
+                            >
+                              {number}
+                            </button>
+                            
+                            {showEllipsisAfter && (
+                              <span className="px-2 text-gray-500">...</span>
+                            )}
+                          </div>
+                        );
+                      })}
+                  </div>
+                  
+                  <button
+                    onClick={goToNextPage}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-1 bg-gray-200 rounded-md disabled:opacity-50 hover:bg-gray-300 transition-colors"
+                  >
+                    Siguiente &raquo;
+                  </button>
+                </div>
+              )}
+            </>
           ) : (
             <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed border-gray-300">
               <div className="mb-4">
