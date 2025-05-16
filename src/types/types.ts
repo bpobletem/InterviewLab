@@ -34,3 +34,23 @@ export interface ConversationDetails {
   [key: string]: unknown;
 }
 
+// Interface for paginated API responses
+export interface PaginatedResponse<T> {
+  data: T[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    pages: number;
+  };
+}
+
+// Interface for interview data
+export interface Interview {
+  id: string;
+  title: string;
+  created_at: string;
+  job_description: string;
+  resume: string;
+  user_id: string;
+}

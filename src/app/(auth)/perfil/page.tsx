@@ -1,18 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
-import { FaUser, FaCalendarAlt, FaUniversity, FaGraduationCap, FaStar } from 'react-icons/fa';
-
-interface Interview {
-  id: string;
-  title: string;
-  created_at: string;
-  job_description: string;
-  resume: string;
-  user_id: string;
-  score?: number;
-}
+import { FaUser, FaCalendarAlt, FaUniversity, FaGraduationCap } from 'react-icons/fa';
+import { Interview, PaginatedResponse } from '@/types/types';
 
 interface UserProfile {
   id: string;
@@ -34,15 +25,47 @@ export default function ProfilePage() {
   
   // Estado para la paginación
   const [currentPage, setCurrentPage] = useState(1);
-  const interviewsPerPage = 15;
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalInterviews, setTotalInterviews] = useState(0);
+  const interviewsPerPage = 3; // Cambiar al numeor que ocuparemos en producción
 
+  // Tracking para evitar doble carga
+  const initialLoadComplete = useRef(false);
+  
   // Cargar datos del perfil y entrevistas desde la API
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(false);
+  const [isLoadingInterviews, setIsLoadingInterviews] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Función para cargar entrevistas del usuario con paginación
+  const fetchInterviews = useCallback(async (userId: string, page: number) => {
+    if (!userId) return;
+    
+    setIsLoadingInterviews(true);
+    try {
+      const interviewsResponse = await fetch(`/api/users/${userId}/interview?page=${page}&limit=${interviewsPerPage}`);
+      if (!interviewsResponse.ok) {
+        throw new Error('Error al cargar las entrevistas');
+      }
+      
+      const responseData = await interviewsResponse.json() as PaginatedResponse<Interview>;
+      
+      // Extraer datos y metadatos de paginación
+      setInterviews(responseData.data);
+      setTotalInterviews(responseData.pagination.total);
+      setTotalPages(responseData.pagination.pages);
+    } catch (err) {
+      console.error('Error al cargar entrevistas:', err);
+      setError(err instanceof Error ? err.message : 'Error desconocido');
+    } finally {
+      setIsLoadingInterviews(false);
+    }
+  }, [interviewsPerPage]);
+
+  // Cargar datos del perfil y las entrevistas iniciales
   useEffect(() => {
     const fetchProfileData = async () => {
-      setIsLoading(true);
+      setIsLoadingProfile(true);
       setError(null);
       try {
         // Obtener datos del perfil
@@ -53,34 +76,29 @@ export default function ProfilePage() {
         const profileData = await profileResponse.json();
         setProfile(profileData);
 
-        // Obtener entrevistas del usuario
+        // Cargar entrevistas iniciales
         if (profileData && profileData.id) {
-          const interviewsResponse = await fetch(`/api/users/${profileData.id}/interview`);
-          if (interviewsResponse.ok) {
-            const interviewsData = await interviewsResponse.json();
-            // Asegurarse de que los datos tienen el formato correcto
-            const formattedInterviews = interviewsData.map((interview: Interview) => ({
-              ...interview,
-              id: interview.id,
-              created_at: interview.created_at,
-              job_description: interview.job_description,
-              resume: interview.resume,
-              user_id: interview.user_id,
-              score: interview.score
-            }));
-            setInterviews(formattedInterviews);
-          }
+          await fetchInterviews(profileData.id, 1);
+          initialLoadComplete.current = true;
         }
       } catch (err) {
-        console.error('Error al cargar datos:', err);
+        console.error('Error al cargar datos del perfil:', err);
         setError(err instanceof Error ? err.message : 'Error desconocido');
       } finally {
-        setIsLoading(false);
+        setIsLoadingProfile(false);
       }
     };
 
     fetchProfileData();
-  }, []);
+  }, []); // Sin dependencia a currentPage
+
+  // Efecto separado para manejar cambios de página después de la carga inicial
+  useEffect(() => {
+    // Solo actualizar entrevistas cuando cambia la página DESPUÉS de la carga inicial
+    if (profile?.id && initialLoadComplete.current && currentPage > 0) {
+      fetchInterviews(profile.id, currentPage);
+    }
+  }, [currentPage, profile?.id, fetchInterviews]);
 
   // Función para formatear la fecha
   const formatDate = (dateString: string) => {
@@ -88,16 +106,10 @@ export default function ProfilePage() {
     return new Date(dateString).toLocaleDateString('es-ES', options);
   };
   
-  // Calcular entrevistas para la página actual
-  const indexOfLastInterview = currentPage * interviewsPerPage;
-  const indexOfFirstInterview = indexOfLastInterview - interviewsPerPage;
-  const currentInterviews = interviews.slice(indexOfFirstInterview, indexOfLastInterview);
-  
-  // Calcular el número total de páginas
-  const totalPages = Math.ceil(interviews.length / interviewsPerPage);
-  
   // Función para cambiar de página
-  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+  const paginate = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+  };
   
   // Función para ir a la página anterior
   const goToPreviousPage = () => {
@@ -112,6 +124,8 @@ export default function ProfilePage() {
       setCurrentPage(currentPage + 1);
     }
   };
+
+  const isLoading = isLoadingProfile;
 
   return (
     <main className="flex flex-col items-center py-10 px-4">
@@ -208,9 +222,9 @@ export default function ProfilePage() {
               <h2 className="text-2xl font-bold text-gray-800 mb-2">
                 Historial de Entrevistas
               </h2>
-              {interviews.length > 0 && (
+              {totalInterviews > 0 && (
                 <p className="text-sm text-gray-500">
-                  Mostrando {indexOfFirstInterview + 1}-{Math.min(indexOfLastInterview, interviews.length)} de {interviews.length} entrevista{interviews.length !== 1 ? 's' : ''}
+                  Mostrando página {currentPage} de {totalPages} ({totalInterviews} entrevista{totalInterviews !== 1 ? 's' : ''} en total)
                 </p>
               )}
             </div>
@@ -222,28 +236,27 @@ export default function ProfilePage() {
             </Link>
           </div>
           
-          {interviews && interviews.length > 0 ? (
+          {isLoadingInterviews ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="flex flex-col items-center">
+                <svg className="animate-spin h-8 w-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p className="text-gray-600 mt-2">Cargando entrevistas...</p>
+              </div>
+            </div>
+          ) : interviews && interviews.length > 0 ? (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {currentInterviews.map((interview) => (
+                {interviews.map((interview) => (
                 <div key={interview.id} className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 transition-all duration-300 hover:shadow-lg transform hover:translate-y-[-5px]">
                   <div className="p-5">
                     <div className="flex justify-end items-start mb-3">
                       <span className="text-sm text-gray-500">{formatDate(interview.created_at)}</span>
                     </div>
                     <h3 className="text-lg font-semibold text-gray-800 mb-2 line-clamp-2">{interview.title}</h3>
-                    <p className="text-sm text-gray-600 mb-4 line-clamp-2">{interview.resume}</p>
-                    
-                    {interview.score !== undefined && (
-                      <div className="flex items-center mb-4">
-                        <div className="flex-shrink-0 mr-2">
-                          <FaStar className="text-yellow-400" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium">Puntuación: <span className="font-bold">{interview.score}/5</span></p>
-                        </div>
-                      </div>
-                    )}
+                    <p className="text-sm text-gray-600 mb-4 line-clamp-2">{interview.job_description}</p>
                     
                     <div className="mt-4 text-right">
                       <Link href={`/feedback/${interview.id.toString()}`} className="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-700 transition-colors duration-300">
