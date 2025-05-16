@@ -1,19 +1,11 @@
-import { createClient } from '@/utils/supabase/server'
-import { redirect } from 'next/navigation'
 import Link from 'next/link'
 
 export default async function HomePage() {
-  const supabase = await createClient()
-  const { data, error } = await supabase.auth.getUser()
-  if (error || !data?.user) {
-    redirect('/login')
-  }
 
   return (
     <main className="flex flex-col items-center justify-center text-gray-800 px-4 sm:px-6 md:px-8 w-full">
       <div className="text-center space-y-4 mb-8 sm:mb-12 md:mb-16 mt-8 sm:mt-10 md:mt-12 w-full">
         <h1 className="text-gray-800 text-2xl sm:text-3xl font-bold">Bienvenido a Interview<span className='italic'>Lab</span></h1>
-        <p className="text-sm sm:text-base">{data.user.email}</p>
       </div>
 
       <div className="w-full max-w-full sm:max-w-2xl md:max-w-3xl lg:max-w-4xl space-y-8 sm:space-y-12 md:space-y-16">

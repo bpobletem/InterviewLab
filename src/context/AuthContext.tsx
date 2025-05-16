@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react';
 import { User } from '@supabase/supabase-js';
 import { createClient } from '@/utils/supabase/client';
 
@@ -19,94 +19,99 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [institutionId, setInstitutionId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const supabase = createClient();
+  const [isInitialized, setIsInitialized] = useState(false);
+  const supabase = useMemo(() => createClient(), []);
 
-  useEffect(() => {
-    const fetchUserAndAdminStatus = async () => {
-      try {
-        const { data: { user: supabaseUser }, error: userError } = await supabase.auth.getUser();
-        if (userError) {
-          console.error('[AuthContext] Error fetching user:', userError);
-          setUser(null);
-          setIsAdmin(false);
-          setInstitutionId(null);
-          setIsLoading(false);
-          return;
-        }
-        setUser(supabaseUser);
-
-        if (supabaseUser) {
-          // Check if user is admin
-          try {
-            const response = await fetch('/api/auth/user-info');
-            if (response.ok) {
-              const data = await response.json();
-              setIsAdmin(data.isAdmin);
-              
-              // If user is admin, fetch institution ID
-              if (data.isAdmin) {
-                try {
-                  const adminResponse = await fetch('/api/admin/validate', {
-                    method: 'GET',
-                    headers: {
-                      'Content-Type': 'application/json',
-                    },
-                  });
-                  
-                  if (adminResponse.ok) {
-                    const adminData = await adminResponse.json();
-                    setInstitutionId(adminData.institution_id);
-                  } else {
-                    console.error('[AuthContext] Error fetching institution ID:', adminResponse.statusText);
-                    setInstitutionId(null);
-                  }
-                } catch (error) {
-                  console.error('[AuthContext] Exception fetching institution ID:', error);
-                  setInstitutionId(null);
-                }
-              }
-            } else {
-              console.error('[AuthContext] Error fetching admin status:', response.statusText);
-              setIsAdmin(false);
-            }
-          } catch (error) {
-            console.error('[AuthContext] Exception fetching admin status:', error);
-            setIsAdmin(false);
-          }
-        } else {
-          setIsAdmin(false);
-          setInstitutionId(null);
-        }
-      } finally {
-        setIsLoading(false);
+  const fetchUserAndAdminStatus = useCallback(async () => {
+    try {
+      // Only set loading state if this is the initial load
+      if (!isInitialized) {
+        setIsLoading(true);
       }
-    };
-
-    fetchUserAndAdminStatus();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setIsLoading(true);
-      setUser(session?.user ?? null);
       
-      if (event === 'SIGNED_OUT') {
+      const { data: { user: supabaseUser }, error: userError } = await supabase.auth.getUser();
+      if (userError) {
+        console.error('[AuthContext] Error fetching user:', userError);
+        setUser(null);
         setIsAdmin(false);
         setInstitutionId(null);
-        setIsLoading(false);
-      } else if (session?.user) {
-        fetchUserAndAdminStatus();
+        return;
+      }
+      
+      setUser(supabaseUser);
+
+      if (supabaseUser) {
+        // Check if user is admin
+        try {
+          const response = await fetch('/api/auth/user-info');
+          if (response.ok) {
+            const data = await response.json();
+            setIsAdmin(data.isAdmin);
+            
+            // If user is admin, fetch institution ID
+            if (data.isAdmin) {
+              try {
+                const adminResponse = await fetch('/api/admin/validate', {
+                  method: 'GET',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                });
+                
+                if (adminResponse.ok) {
+                  const adminData = await adminResponse.json();
+                  setInstitutionId(adminData.institution_id);
+                } else {
+                  console.error('[AuthContext] Error fetching institution ID:', adminResponse.statusText);
+                  setInstitutionId(null);
+                }
+              } catch (error) {
+                console.error('[AuthContext] Exception fetching institution ID:', error);
+                setInstitutionId(null);
+              }
+            }
+          } else {
+            console.error('[AuthContext] Error fetching admin status:', response.statusText);
+            setIsAdmin(false);
+          }
+        } catch (error) {
+          console.error('[AuthContext] Exception fetching admin status:', error);
+          setIsAdmin(false);
+        }
       } else {
         setIsAdmin(false);
         setInstitutionId(null);
+      }
+    } finally {
+      setIsLoading(false);
+      setIsInitialized(true);
+    }
+  }, [supabase, isInitialized]);
+
+  useEffect(() => {
+    // Only fetch user data once when component mounts
+    if (!isInitialized) {
+      fetchUserAndAdminStatus();
+    }
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT') {
+        setUser(null);
+        setIsAdmin(false);
+        setInstitutionId(null);
         setIsLoading(false);
+      } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        setUser(session?.user ?? null);
+        fetchUserAndAdminStatus();
       }
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, [supabase]);
+  }, [supabase, fetchUserAndAdminStatus, isInitialized]);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) {
@@ -115,7 +120,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('[AuthContext] Unexpected error during logout:', error);
     }
-  };
+  }, [supabase]);
 
   // Memoize context value to prevent unnecessary re-renders
   const contextValue = useMemo(() => ({
@@ -124,7 +129,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     institutionId,
     isLoading,
     logout
-  }), [user, isAdmin, institutionId, isLoading]);
+  }), [user, isAdmin, institutionId, isLoading, logout]);
 
   return (
     <AuthContext.Provider value={contextValue}>
