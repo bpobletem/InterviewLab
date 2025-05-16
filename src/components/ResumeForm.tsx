@@ -3,22 +3,23 @@
 import { useState } from 'react';
 
 interface ResumeFormProps {
-  onComplete: (data: { resume: string; jobDescription: string; interviewId: string }) => void;
+  onComplete: (data: { resume: string; jobDescription: string; interviewId: string; title: string }) => void;
 }
 
 export function ResumeForm({ onComplete }: ResumeFormProps) {
   const [file, setFile] = useState<File | null>(null);
   const [text, setText] = useState('');
+  const [title, setTitle] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
 
-  const isFormComplete = !!file && text.trim().length > 0;
+  const isFormComplete = !!file && text.trim().length > 0 && title.trim().length > 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!file || !text) {
-      setMessage('Por favor, proporciona un archivo y una descripción del trabajo');
+    if (!file || !text || !title) {
+      setMessage('Por favor, proporciona un título, un archivo y una descripción del trabajo');
       return;
     }
 
@@ -29,6 +30,7 @@ export function ResumeForm({ onComplete }: ResumeFormProps) {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('text', text);
+      formData.append('title', title);
 
       const response = await fetch('/api/interview', {
         method: 'POST',
@@ -39,7 +41,7 @@ export function ResumeForm({ onComplete }: ResumeFormProps) {
 
       if (response.ok) {
         setMessage('Currículum y descripción del trabajo subidos exitosamente');
-        onComplete({ resume: data.resume || '', jobDescription: text, interviewId: data.id.toString() });
+        onComplete({ resume: data.resume || '', jobDescription: text, interviewId: data.id, title: title });
       } else {
         setMessage(`Error: ${data.error || 'Algo salió mal'}`);
       }
@@ -75,6 +77,20 @@ export function ResumeForm({ onComplete }: ResumeFormProps) {
             }}
             className="hidden"
             accept="application/pdf"
+          />
+        </div>
+
+        <div className="mb-8">
+          <label htmlFor="title" className="block text-gray-800 font-medium mb-2">
+            Título de la entrevista <span className="text-gray-800 font-bold">*</span>
+          </label>
+          <input
+            type="text"
+            id="title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="w-full px-4 py-4 border-2 border-gray-200 rounded-md text-gray-800 transition-colors duration-300 focus:border-foreground/50 focus:outline-none focus:ring-1 focus:ring-foreground/5 cursor-text"
+            placeholder="Ej: Entrevista para Desarrollador Frontend"
           />
         </div>
 

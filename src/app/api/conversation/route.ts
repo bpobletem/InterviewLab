@@ -12,17 +12,20 @@ export async function POST(request: Request) {
   if (!conversationId || !interviewId) {
     return NextResponse.json({ error: "Se necesita conversation ID y interview ID" }, { status: 400 });
   }
+  
+  // Ensure interviewId is a string
+  const interviewIdStr = String(interviewId);
 
   try {
     // Verificar si ya existe una conversación para esta entrevista
     const existingConversation = await prisma.conversation.findUnique({
-      where: { interview_id: interviewId },
+      where: { interview_id: interviewIdStr },
     });
 
     if (existingConversation) {
       // Actualizar la conversación existente
       await prisma.conversation.update({
-        where: { interview_id: interviewId },
+        where: { interview_id: interviewIdStr },
         data: { id: conversationId },
       });
 
@@ -33,7 +36,7 @@ export async function POST(request: Request) {
     await prisma.conversation.create({
       data: {
         id: conversationId,
-        interview_id: interviewId,
+        interview_id: interviewIdStr,
       },
     });
 

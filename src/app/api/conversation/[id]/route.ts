@@ -3,37 +3,37 @@ import { prisma } from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  let interviewId: bigint;
-  try {
-    // Obtenemos usuario actual
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      return NextResponse.json(
-        { error: 'No autorizado. Debe iniciar sesión para acceder a este recurso.' },
-        { status: 401 }
-      );
-    }
+  let interviewId: string;
+try {
+  // Obtenemos usuario actual
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    return NextResponse.json(
+      { error: 'No autorizado. Debe iniciar sesión para acceder a este recurso.' },
+      { status: 401 }
+    );
+  }
 
-    // Buscar el usuario en la base de datos
-    const dbUser = await prisma.user.findUnique({
-      where: {
-        authId: user.id,
-      },
-      select: {
-        id: true,
-      },
-    });
+  // Buscar el usuario en la base de datos
+  const dbUser = await prisma.user.findUnique({
+    where: {
+      authId: user.id,
+    },
+    select: {
+      id: true,
+    },
+  });
 
-    if (!dbUser) {
-      return NextResponse.json(
-        { error: 'No autorizado. Debe iniciar sesión para acceder a este recurso.' },
-        { status: 401 }
-      );
-    }
-    
-    interviewId = BigInt((await params).id);
+  if (!dbUser) {
+    return NextResponse.json(
+      { error: 'No autorizado. Debe iniciar sesión para acceder a este recurso.' },
+      { status: 401 }
+    );
+  }
+  
+  interviewId = (await params).id;
 
     const interview = await prisma.interview.findUnique({
       where: {
