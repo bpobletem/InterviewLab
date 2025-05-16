@@ -51,6 +51,13 @@ function Navbar() {
                 <span>Entrevista</span>
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 ease-out group-hover:w-full"></span>
               </Link>
+              <Link
+                href="/perfil"
+                className="text-gray-600 hover:gray-800 transition relative group hover:cursor-pointer"
+              >
+                <span>Perfil</span>
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 ease-out group-hover:w-full"></span>
+              </Link>
             </>
           )}
           
