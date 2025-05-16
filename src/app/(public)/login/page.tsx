@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 
@@ -10,7 +9,6 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
   const supabase = createClient();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -37,7 +35,7 @@ export default function Login() {
           access_token: data.session.access_token,
           refresh_token: data.session.refresh_token
         });
-        router.push(data.redirectPath);
+        window.location.href = data.redirectPath;
       } else {
         setError('Error al iniciar sesión: No se recibió una sesión válida');
       }
