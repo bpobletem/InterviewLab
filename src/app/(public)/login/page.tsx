@@ -126,10 +126,15 @@ export default function Login() {
             </button>
           </div>
         </form>
-        <p className="text-xs text-center text-gray-500 mt-6">
+        <p className="text-sm text-center text-gray-500 mt-6">
           ¿No tienes cuenta?{' '}
           <Link href="/register" className="text-gray-800 underline">
             Regístrate
+          </Link>
+        </p>
+        <p className="text-sm text-center text-gray-500 mt-2">
+          <Link href="/reset-password" className="text-gray-800 underline">
+            ¿Olvidaste tu contraseña?
           </Link>
         </p>
       </div>

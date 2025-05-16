@@ -22,7 +22,6 @@ export default function AdminNavbar() {
       } else {
         console.log('[AdminNavbar] Usuario obtenido:', user);
         setUser(user);
-
         // Obtener el ID de la institución del administrador
         if (user) {
           try {
@@ -32,7 +31,6 @@ export default function AdminNavbar() {
                 'Content-Type': 'application/json',
               },
             });
-
             if (response.ok) {
               const data = await response.json();
               console.log('[AdminNavbar] Datos de institución obtenidos:', data);
@@ -52,7 +50,6 @@ export default function AdminNavbar() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('[AdminNavbar] Auth state changed:', event);
       setUser(session?.user ?? null);
-
       // Si el usuario cierra sesión, limpiar el ID de la institución
       if (event === 'SIGNED_OUT') {
         setInstitutionId(null);
@@ -65,7 +62,6 @@ export default function AdminNavbar() {
               'Content-Type': 'application/json',
             },
           });
-
           if (response.ok) {
             const data = await response.json();
             console.log('[AdminNavbar] Datos de institución obtenidos después de inicio de sesión:', data);
