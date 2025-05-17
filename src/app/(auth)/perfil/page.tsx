@@ -27,7 +27,7 @@ export default function ProfilePage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalInterviews, setTotalInterviews] = useState(0);
-  const interviewsPerPage = 3; // Cambiar al numeor que ocuparemos en producción
+  const interviewsPerPage = 6; // Cambiar al numeor que ocuparemos en producción
 
   // Tracking para evitar doble carga
   const initialLoadComplete = useRef(false);
