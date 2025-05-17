@@ -24,6 +24,18 @@ const NavLink = memo(function NavLink({ href, children, onClick }: NavLinkProps)
   );
 });
 
+const MobileNavLink = memo(function MobileNavLink({ href, children, onClick }: NavLinkProps) {
+  return (
+    <Link
+      href={href}
+      className="text-gray-600 hover:gray-800 transition py-2 hover:cursor-pointer"
+      onClick={onClick}
+    >
+      {children}
+    </Link>
+  );
+});
+
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -108,88 +120,18 @@ function Navbar() {
         
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-6">
-          {/* Regular user navigation */}
+          {renderNavLinks()}
+          
+          {/* Enlace adicional de perfil para usuarios regulares */}
           {user && !isAdmin && !isLoading && (
-            <>
-              <Link
-                href="/home"
-                className="text-gray-600 hover:gray-800 transition relative group hover:cursor-pointer"
-              >
-                <span>Inicio</span>
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 ease-out group-hover:w-full"></span>
-              </Link>
-              <Link
-                href="/entrevista"
-                className="text-gray-600 hover:gray-800 transition relative group hover:cursor-pointer"
-              >
-                <span>Entrevista</span>
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 ease-out group-hover:w-full"></span>
-              </Link>
-              <Link
-                href="/perfil"
-                className="text-gray-600 hover:gray-800 transition relative group hover:cursor-pointer"
-              >
-                <span>Perfil</span>
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 ease-out group-hover:w-full"></span>
-              </Link>
-            </>
-          )}
-          
-          {/* Admin navigation */}
-          {user && isAdmin && institutionId && !isLoading && (
-            <>
-              <Link
-                href={`/admin/dashboard/${institutionId}`}
-                className="text-gray-600 hover:gray-800 transition relative group hover:cursor-pointer"
-              >
-                <span>Dashboard</span>
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 ease-out group-hover:w-full"></span>
-              </Link>
-              <Link
-                href={`/admin/reset-password?institution_id=${institutionId}`}
-                className="text-gray-600 hover:gray-800 transition relative group hover:cursor-pointer"
-              >
-                <span>Cambiar contraseña</span>
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 ease-out group-hover:w-full"></span>
-              </Link>
-            </>
-          )}
-          
-          {/* Non-authenticated user */}
-          {!user && !isLoading && (
             <Link
-              href="/home"
+              href="/perfil"
               className="text-gray-600 hover:gray-800 transition relative group hover:cursor-pointer"
             >
-              <span>Inicio</span>
+              <span>Perfil</span>
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 ease-out group-hover:w-full"></span>
             </Link>
           )}
-          
-          {/* Authentication links */}
-          {!isLoading && user ? (
-            <div className="flex items-center gap-6">
-              <button
-                onClick={handleLogout}
-                disabled={isLoggingOut}
-                className="text-gray-500 hover:gray-800 transition disabled:opacity-50 disabled:cursor-not-allowed relative group hover:cursor-pointer"
-                aria-label="Cerrar sesión"
-              >
-                <span>{isLoggingOut ? 'Cerrando...' : 'Cerrar sesión'}</span>
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 ease-out group-hover:w-full"></span>
-              </button>
-            </div>
-          ) : (
-            <Link
-              href="/login"
-              className="text-gray-500 hover:gray-800 transition relative group hover:cursor-pointer"
-              aria-label="Iniciar sesión"
-            >
-              <span>Iniciar sesión</span>
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 ease-out group-hover:w-full"></span>
-            </Link>
-          )}
-          {renderNavLinks()}
           {renderAuthLinks()}
         </div>
         
@@ -209,58 +151,31 @@ function Navbar() {
       {/* Mobile Menu */}
       <div className={`md:hidden absolute top-[60px] left-0 right-0 bg-white/95 backdrop-blur-md shadow-md transition-all duration-300 ease-in-out z-50 border-b border-gray-100 ${isMenuOpen ? 'max-h-[300px] opacity-100' : 'max-h-0 opacity-0 invisible'}`}>
         <div className="flex flex-col px-6 py-4 space-y-4">
-          {/* Regular user navigation */}
+          {/* Adaptación de las funciones memoizadas para móvil */}
           {user && !isAdmin && !isLoading && (
             <>
-              <Link
-                href="/home"
-                className="text-gray-600 hover:gray-800 transition py-2 hover:cursor-pointer"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Inicio
-              </Link>
-              <Link
-                href="/entrevista"
-                className="text-gray-600 hover:gray-800 transition py-2 hover:cursor-pointer"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Entrevista
-              </Link>
+              <MobileNavLink href="/home" onClick={() => setIsMenuOpen(false)}>Inicio</MobileNavLink>
+              <MobileNavLink href="/entrevista" onClick={() => setIsMenuOpen(false)}>Entrevista</MobileNavLink>
             </>
           )}
           
-          {/* Admin navigation */}
           {user && isAdmin && institutionId && !isLoading && (
             <>
-              <Link
-                href={`/admin/dashboard/${institutionId}`}
-                className="text-gray-600 hover:gray-800 transition py-2 hover:cursor-pointer"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Dashboard
-              </Link>
-              <Link
-                href={`/admin/reset-password?institution_id=${institutionId}`}
-                className="text-gray-600 hover:gray-800 transition py-2 hover:cursor-pointer"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Cambiar contraseña
-              </Link>
+              <MobileNavLink href={`/admin/dashboard/${institutionId}`} onClick={() => setIsMenuOpen(false)}>Dashboard</MobileNavLink>
+              <MobileNavLink href={`/admin/reset-password?institution_id=${institutionId}`} onClick={() => setIsMenuOpen(false)}>Cambiar contraseña</MobileNavLink>
             </>
           )}
           
-          {/* Non-authenticated user */}
           {!user && !isLoading && (
-            <Link
-              href="/home"
-              className="text-gray-600 hover:gray-800 transition py-2 hover:cursor-pointer"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Inicio
-            </Link>
+            <MobileNavLink href="/home" onClick={() => setIsMenuOpen(false)}>Inicio</MobileNavLink>
           )}
           
-          {/* Authentication links */}
+          {/* Enlace de perfil para usuarios regulares en móvil */}
+          {user && !isAdmin && !isLoading && (
+            <MobileNavLink href="/perfil" onClick={() => setIsMenuOpen(false)}>Perfil</MobileNavLink>
+          )}
+          
+          {/* Enlaces de autenticación para móvil */}
           {!isLoading && user ? (
             <button
               onClick={() => {
@@ -274,14 +189,7 @@ function Navbar() {
               {isLoggingOut ? 'Cerrando...' : 'Cerrar sesión'}
             </button>
           ) : (
-            <Link
-              href="/login"
-              className="text-gray-500 hover:gray-800 transition py-2 hover:cursor-pointer"
-              aria-label="Iniciar sesión"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Iniciar sesión
-            </Link>
+            <MobileNavLink href="/login" onClick={() => setIsMenuOpen(false)}>Iniciar sesión</MobileNavLink>
           )}
         </div>
       </div>
