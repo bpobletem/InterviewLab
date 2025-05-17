@@ -108,6 +108,87 @@ function Navbar() {
         
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-6">
+          {/* Regular user navigation */}
+          {user && !isAdmin && !isLoading && (
+            <>
+              <Link
+                href="/home"
+                className="text-gray-600 hover:gray-800 transition relative group hover:cursor-pointer"
+              >
+                <span>Inicio</span>
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 ease-out group-hover:w-full"></span>
+              </Link>
+              <Link
+                href="/entrevista"
+                className="text-gray-600 hover:gray-800 transition relative group hover:cursor-pointer"
+              >
+                <span>Entrevista</span>
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 ease-out group-hover:w-full"></span>
+              </Link>
+              <Link
+                href="/perfil"
+                className="text-gray-600 hover:gray-800 transition relative group hover:cursor-pointer"
+              >
+                <span>Perfil</span>
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 ease-out group-hover:w-full"></span>
+              </Link>
+            </>
+          )}
+          
+          {/* Admin navigation */}
+          {user && isAdmin && institutionId && !isLoading && (
+            <>
+              <Link
+                href={`/admin/dashboard/${institutionId}`}
+                className="text-gray-600 hover:gray-800 transition relative group hover:cursor-pointer"
+              >
+                <span>Dashboard</span>
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 ease-out group-hover:w-full"></span>
+              </Link>
+              <Link
+                href={`/admin/reset-password?institution_id=${institutionId}`}
+                className="text-gray-600 hover:gray-800 transition relative group hover:cursor-pointer"
+              >
+                <span>Cambiar contraseña</span>
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 ease-out group-hover:w-full"></span>
+              </Link>
+            </>
+          )}
+          
+          {/* Non-authenticated user */}
+          {!user && !isLoading && (
+            <Link
+              href="/home"
+              className="text-gray-600 hover:gray-800 transition relative group hover:cursor-pointer"
+            >
+              <span>Inicio</span>
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 ease-out group-hover:w-full"></span>
+            </Link>
+          )}
+          
+          {/* Authentication links */}
+          {!isLoading && user ? (
+            <div className="flex items-center gap-6">
+              <button
+                onClick={handleLogout}
+                disabled={isLoggingOut}
+                className="text-gray-500 hover:gray-800 transition disabled:opacity-50 disabled:cursor-not-allowed relative group hover:cursor-pointer"
+                aria-label="Cerrar sesión"
+              >
+                <span>{isLoggingOut ? 'Cerrando...' : 'Cerrar sesión'}</span>
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 ease-out group-hover:w-full"></span>
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              className="text-gray-500 hover:gray-800 transition relative group hover:cursor-pointer"
+              aria-label="Iniciar sesión"
+            >
+              <span>Iniciar sesión</span>
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 ease-out group-hover:w-full"></span>
+            </Link>
+          )}
           {renderNavLinks()}
           {renderAuthLinks()}
         </div>

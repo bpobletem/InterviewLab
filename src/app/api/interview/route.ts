@@ -44,10 +44,11 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
     const text = formData.get('text') as string | null;
+    const title = formData.get('title') as string | null;
 
-    if (!file || !text) {
+    if (!file || !text || !title) {
       return NextResponse.json(
-        { error: 'CV y descripción del trabajo son requeridas' },
+        { error: 'CV, título y descripción del trabajo son requeridas' },
         { status: 400 }
       );
     }
@@ -69,6 +70,7 @@ export async function POST(request: NextRequest) {
     const interview = await prisma.interview.create({
       data: {
         user_id: user.id,
+        title: title,
         resume: resumeText,
         job_description: text,
         created_at: new Date(),
@@ -77,9 +79,10 @@ export async function POST(request: NextRequest) {
 
     // Devolver los datos procesados
     return NextResponse.json({
-      id: interview.id.toString(),
+      id: interview.id,
       resume: resumeText,
       jobDescription: text,
+      title: title
     }, { status: 200 });
 
   } catch (error) {
