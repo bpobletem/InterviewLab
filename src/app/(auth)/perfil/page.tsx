@@ -277,7 +277,7 @@ export default function ProfilePage() {
                   <button
                     onClick={goToPreviousPage}
                     disabled={currentPage === 1}
-                    className="px-3 py-1 bg-gray-200 rounded-md disabled:opacity-50 hover:bg-gray-300 transition-colors"
+                    className="px-3 py-1 bg-gray-200 rounded-md disabled:opacity-50 hover:bg-gray-300 transition-colors hover:cursor-pointer"
                   >
                     &laquo; Anterior
                   </button>
@@ -304,7 +304,7 @@ export default function ProfilePage() {
                             
                             <button
                               onClick={() => paginate(number)}
-                              className={`w-8 h-8 flex items-center justify-center rounded-md transition-colors ${currentPage === number ? 'bg-blue-500 text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
+                              className={`w-8 h-8 flex items-center justify-center rounded-md transition-colors hover:cursor-pointer ${currentPage === number ? 'bg-blue-500 text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
                             >
                               {number}
                             </button>
@@ -320,7 +320,7 @@ export default function ProfilePage() {
                   <button
                     onClick={goToNextPage}
                     disabled={currentPage === totalPages}
-                    className="px-3 py-1 bg-gray-200 rounded-md disabled:opacity-50 hover:bg-gray-300 transition-colors"
+                    className="px-3 py-1 bg-gray-200 rounded-md disabled:opacity-50 hover:bg-gray-300 transition-colors hover:cursor-pointer"
                   >
                     Siguiente &raquo;
                   </button>
