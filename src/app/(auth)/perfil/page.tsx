@@ -102,7 +102,7 @@ export default function ProfilePage() {
 
   // Función para formatear la fecha
   const formatDate = (dateString: string) => {
-    const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+    const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' };
     return new Date(dateString).toLocaleDateString('es-ES', options);
   };
   
