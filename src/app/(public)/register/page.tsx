@@ -256,9 +256,9 @@ export default function RegisterPage() {
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
             >
+              <option value="Ninguno">Ninguno</option>
               <option value="Masculino">Masculino</option>
               <option value="Femenino">Femenino</option>
-              <option value="Ninguno">Ninguno</option>
             </select>
           </div>
           <div className="flex items-start">
