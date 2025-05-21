@@ -44,17 +44,26 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error('Error saving user:', error);
     
-    // Verificar si es un error de correo duplicado
+    // Verificar si es un error de correo duplicado o dominio no permitido
     if (error instanceof Error) {
-      if (error.message.includes('correo electrónico ya está registrado') || 
-          error.message.toLowerCase().includes('email') || 
-          error.message.toLowerCase().includes('correo')) {
+      if (error.message.includes('correo electrónico ya está registrado')) {
         return NextResponse.json(
           { 
             message: 'Este correo electrónico ya está registrado. Por favor utiliza otro.',
             code: 'P2002' 
           },
           { status: 409 }
+        );
+      }
+      
+      // Verificar si es un error de dominio no permitido
+      if (error.message.includes('Error en correo electrónico, dominio no permitido')) {
+        console.log('Error de dominio detectado, enviando código DOMAIN_ERROR');
+        return new Response(JSON.stringify({ 
+            message: 'Error en correo electrónico, dominio no permitido',
+            code: 'DOMAIN_ERROR' 
+          }), 
+          { status: 400, headers: { 'Content-Type': 'application/json' } }
         );
       }
       

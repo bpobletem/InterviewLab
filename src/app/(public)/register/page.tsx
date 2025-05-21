@@ -117,11 +117,16 @@ export default function RegisterPage() {
       })
 
       const result = await res.json()
+      console.log('Respuesta del servidor:', result) // Depuración
 
       if (!res.ok) {
-        // Verificar si el error es por correo duplicado
+        // Verificar si el error es por correo duplicado o dominio no permitido
+        console.log('Código de error:', result.code) // Depuración adicional
+        
         if (result.code === 'P2002' || result.message?.includes('email') || result.message?.toLowerCase().includes('correo')) {
           setError('Este correo electrónico ya está registrado. Por favor utiliza otro.')
+        } else if (result.code === 'DOMAIN_ERROR' || result.message?.includes('dominio no permitido')) {
+          setError('El dominio de tu correo electrónico no está permitido para la institución seleccionada.')
         } else {
           setError(result.message || 'Error al registrar usuario')
         }
