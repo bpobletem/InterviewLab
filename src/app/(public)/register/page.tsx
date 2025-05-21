@@ -119,7 +119,12 @@ export default function RegisterPage() {
       const result = await res.json()
 
       if (!res.ok) {
-        setError(result.message || 'Error al registrar usuario')
+        // Verificar si el error es por correo duplicado
+        if (result.code === 'P2002' || result.message?.includes('email') || result.message?.toLowerCase().includes('correo')) {
+          setError('Este correo electrónico ya está registrado. Por favor utiliza otro.')
+        } else {
+          setError(result.message || 'Error al registrar usuario')
+        }
         return
       }
 

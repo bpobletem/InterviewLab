@@ -43,8 +43,31 @@ export async function POST(req: NextRequest) {
     return new Response(JSON.stringify({ user: safeUser }), { status: 201 });
   } catch (error) {
     console.error('Error saving user:', error);
+    
+    // Verificar si es un error de correo duplicado
+    if (error instanceof Error) {
+      if (error.message.includes('correo electrónico ya está registrado') || 
+          error.message.toLowerCase().includes('email') || 
+          error.message.toLowerCase().includes('correo')) {
+        return NextResponse.json(
+          { 
+            message: 'Este correo electrónico ya está registrado. Por favor utiliza otro.',
+            code: 'P2002' 
+          },
+          { status: 409 }
+        );
+      }
+      
+      // Devolver el mensaje de error específico
+      return NextResponse.json(
+        { message: error.message || 'Error al registrar usuario' },
+        { status: 400 }
+      );
+    }
+    
+    // Error genérico
     return NextResponse.json(
-      { error: 'Failed to save user' },
+      { message: 'Error al registrar usuario' },
       { status: 500 }
     );
   }
