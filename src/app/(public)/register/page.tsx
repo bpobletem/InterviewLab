@@ -273,7 +273,7 @@ export default function RegisterPage() {
             </div>
             <div className="ml-3 text-sm">
               <label htmlFor="terms" className="text-gray-600">
-                Acepto los <a href="/terms" className="text-gray-800 underline hover:cursor-pointer">términos y condiciones</a> de privacidad
+                Acepto los <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-gray-800 underline hover:cursor-pointer">términos y condiciones</a> de privacidad
               </label>
             </div>
           </div>
