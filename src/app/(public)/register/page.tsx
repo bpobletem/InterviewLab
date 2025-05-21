@@ -8,6 +8,8 @@ export default function RegisterPage() {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [passwordError, setPasswordError] = useState('')
   const [name, setName] = useState('')
   const [birthdate, setBirthdate] = useState('')
   const [birthdateError, setBirthdateError] = useState('')
@@ -62,6 +64,20 @@ export default function RegisterPage() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Resetear mensajes de error
+    setError(null)
+    setPasswordError('')
+
+    if (password.length < 5) {
+      setPasswordError('La contraseña debe tener al menos 5 caracteres')
+      return
+    }
+
+    if (password !== confirmPassword) {
+      setPasswordError('Las contraseñas no coinciden')
+      return
+    }
 
     if (!selectedCareer) {
       setError('Por favor selecciona una carrera.')
@@ -144,7 +160,27 @@ export default function RegisterPage() {
             <input
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value)
+                setPasswordError('')
+              }}
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+              minLength={5}
+            />
+            {passwordError && (
+              <p className="text-sm text-red-500 mt-1">{passwordError}</p>
+            )}
+          </div>
+          <div>
+            <label className="text-sm block mb-1">Confirmar Contraseña</label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value)
+                setPasswordError('')
+              }}
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
             />
