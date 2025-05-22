@@ -1,170 +1,160 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
-import { EvaluationCriterion, CriterionResult, ConversationDetails } from '@/types/types';
+import { useEffect, useState, useCallback } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+
+// Interfaz para el resultado de la entrevista esperado del nuevo endpoint
+interface InterviewResultFromAPI {
+  id: string; // ID del registro de feedback
+  interview_id: string;
+  claridadNota?: number;
+  claridadRazon?: string;
+  ejemplosNota?: number;
+  ejemplosRazon?: string;
+  interesNota?: number;
+  interesRazon?: string;
+  profesionalismoNota?: number;
+  profesionalismoRazon?: string;
+  tecnicaNota?: number;
+  tecnicaRazon?: string;
+  resultadoNota?: number; // Puntuación general (ej. 75 para 75%)
+  resultadoRazon?: string; // Feedback general
+  createdAt: string; // Mantener como string
+  updatedAt: string; // Mantener como string
+}
+
+// Interfaz para los datos de evaluación procesados para la UI
+interface ProcessedEvaluationCriterion {
+  criterion: string;
+  score: number;
+  feedback: string;
+  isApproved: boolean; // Campo para indicar si está aprobado (score >= 6)
+}
 
 // Mapa de palabras sin acento a palabras con acento
 const accentMap: Record<string, string> = {
   'interes': 'interés',
   'tecnica': 'técnica',
+  'claridad': 'claridad',
+  'ejemplos': 'ejemplos',
+  'profesionalismo': 'profesionalismo',
 };
+
+const POLLING_INTERVAL = 5000; // 5 segundos para reintentar
+const APPROVAL_THRESHOLD_SCORE = 6; // Puntuación mínima para considerar un criterio como aprobado
+const OVERALL_GOOD_MATCH_PERCENTAGE = 60; // Porcentaje para considerar un buen match general
+
+// Lista de claves base de criterios para iterar
+const CRITERIA_KEYS = ['tecnica', 'interes', 'claridad', 'ejemplos', 'profesionalismo'];
 
 export default function FeedbackPage() {
   const params = useParams();
-  const id = params?.id;
-  const [evaluationResults, setEvaluationResults] = useState<EvaluationCriterion[] | null>(null);
+  const router = useRouter();
+  const id = params?.id as string; // Este 'id' es el interview_id para la API
+
+  const [interviewResult, setInterviewResult] = useState<InterviewResultFromAPI | null>(null);
+  const [evaluationResults, setEvaluationResults] = useState<ProcessedEvaluationCriterion[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [approvedCriteria, setApprovedCriteria] = useState(0);
-  const [hasUnknownResults, setHasUnknownResults] = useState(false);
+  const [isResultPending, setIsResultPending] = useState(false);
+  const [approvedCriteriaCount, setApprovedCriteriaCount] = useState(0);
+  const [pollingTimeoutId, setPollingTimeoutId] = useState<NodeJS.Timeout | null>(null);
+
+  const normalizeCriterionName = useCallback((criterionKey: string): string => {
+    const lowerCriterion = criterionKey.toLowerCase();
+    // Primero, intenta obtener el nombre base (ej. 'tecnica' de 'tecnicaNota')
+    let baseName = lowerCriterion;
+    if (baseName.endsWith('nota')) {
+      baseName = baseName.substring(0, baseName.length - 4);
+    } else if (baseName.endsWith('razon')) {
+      baseName = baseName.substring(0, baseName.length - 5);
+    }
+    
+    const normalized = accentMap[baseName] || baseName;
+    // Capitalizar la primera letra
+    return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+  }, []);
+
+  const processInterviewData = useCallback((data: InterviewResultFromAPI) => {
+    let finalEvaluationResults: ProcessedEvaluationCriterion[] = [];
+    let currentApprovedCriteria = 0;
+
+    CRITERIA_KEYS.forEach(key => {
+      const score = data[`${key}Nota` as keyof InterviewResultFromAPI] as number | undefined;
+      const rationale = data[`${key}Razon` as keyof InterviewResultFromAPI] as string | undefined;
+
+      if (typeof score === 'number' && typeof rationale === 'string') {
+        const isApproved = score >= APPROVAL_THRESHOLD_SCORE;
+        if (isApproved) {
+          currentApprovedCriteria++;
+        }
+        finalEvaluationResults.push({
+          criterion: normalizeCriterionName(key),
+          score: score,
+          feedback: rationale,
+          isApproved: isApproved,
+        });
+      }
+    });
+    
+    setEvaluationResults(finalEvaluationResults);
+    setApprovedCriteriaCount(currentApprovedCriteria);
+    setInterviewResult(data); // Guardamos el resultado completo de la API
+    setIsResultPending(false);
+    setLoading(false);
+  }, [normalizeCriterionName]);
+
+  const fetchInterviewResult = useCallback(async (interviewId: string) => {
+    if (pollingTimeoutId) clearTimeout(pollingTimeoutId);
+    try {
+      setLoading(true);
+      setError(null);
+      setIsResultPending(false);
+
+      const response = await fetch(`/api/interview-result/${interviewId}`);
+
+      if (response.status === 202) {
+        setIsResultPending(true);
+        setLoading(false);
+        const timeoutId = setTimeout(() => fetchInterviewResult(interviewId), POLLING_INTERVAL);
+        setPollingTimeoutId(timeoutId);
+        return;
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        let errorMessage = `Error ${response.status}: ${errorData.error || response.statusText || 'Error al obtener el feedback.'}`;
+        if (response.status === 404) {
+          errorMessage = 'Feedback no encontrado para esta entrevista.';
+        }
+        throw new Error(errorMessage);
+      }
+
+      const data: InterviewResultFromAPI = await response.json();
+      processInterviewData(data);
+
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Ocurrió un error desconocido al cargar el feedback.');
+      setLoading(false);
+      setIsResultPending(false);
+    }
+  }, [processInterviewData, pollingTimeoutId]);
 
   useEffect(() => {
     if (id) {
-      const fetchConversationData = async () => {
-        try {
-          setLoading(true);
-          const response = await fetch(`/api/conversation/${id}`);
-          if (!response.ok) {
-            if (response.status === 404) {
-              throw new Error('Conversación no encontrada.');
-            } else if (response.status === 400) {
-              throw new Error('El formato del ID de conversación es inválido.');
-            } else if (response.status === 401) {
-              throw new Error('Debes iniciar sesión para ver este feedback.');
-            } else if (response.status === 403) {
-              throw new Error('No tienes permiso para acceder a este feedback.');
-            }
-            throw new Error('Error al obtener los datos de la conversación.');
-          }
-          const details: ConversationDetails = await response.json();
-
-          // Intentar diferentes estructuras posibles para encontrar los resultados de evaluación
-          let results = null;
-
-          console.log(details);
-
-          // Estructura 1: details.data.analysis.evaluation_criteria_results
-          if (details?.data?.analysis?.evaluation_criteria_results) {
-            results = details.data.analysis.evaluation_criteria_results;
-          }
-
-          // Función para normalizar criterios con acentos
-          const normalizeCriterion = (criterion: string): string => {
-            // Convertir a minúsculas para comparación
-            const lowerCriterion = criterion.toLowerCase();
-            // Verificar si existe en el mapa de acentos
-            const normalized = accentMap[lowerCriterion] || criterion;
-
-            // Preservar la capitalización original (primera letra mayúscula si el original la tenía)
-            if (criterion.length > 0 && criterion[0] === criterion[0].toUpperCase()) {
-              return normalized.charAt(0).toUpperCase() + normalized.slice(1);
-            }
-
-            return normalized;
-          };
-
-          // Convertir los resultados a un formato uniforme si es un objeto en lugar de un array
-          if (results && !Array.isArray(results)) {
-            const formattedResults: EvaluationCriterion[] = Object.entries(results).map(([key, value]) => {
-              // Normalizar el criterio para añadir acentos si es necesario
-              const normalizedKey = normalizeCriterion(key);
-
-              if (typeof value === 'object' && value !== null && 'result' in value && 'rationale' in value) {
-                // Es un objeto CriterionResult
-                const criterionResult = value as CriterionResult;
-                return {
-                  criterion: normalizedKey,
-                  feedback: criterionResult.rationale,
-                  result: criterionResult.result // Añadir el resultado para usarlo en la UI
-                };
-              } else {
-                // Formato desconocido, intentar adaptarlo
-                return {
-                  criterion: normalizedKey,
-                  feedback: String(value)
-                };
-              }
-            });
-            setEvaluationResults(formattedResults);
-          } else if (results && Array.isArray(results)) {
-            // Normalizar los criterios en el array también
-            const normalizedResults = results.map(item => ({
-              ...item,
-              criterion: normalizeCriterion(item.criterion)
-            }));
-            setEvaluationResults(normalizedResults);
-          } else {
-            setEvaluationResults([]); // No results found, but not an error
-          }
-
-          // Filtrar resultados desconocidos y contar criterios aprobados
-          if (Array.isArray(results)) {
-            // Verificar si hay resultados desconocidos
-            const hasUnknown = results.some(item => item.result === 'unknown');
-            setHasUnknownResults(hasUnknown);
-            
-            // Filtrar resultados con estado conocido (success o failure)
-            const filteredResults = results.filter(item => item.result === 'success' || item.result === 'failure');
-            const approved = results.filter(item => item.result === 'success').length;
-            setEvaluationResults(filteredResults);
-            setApprovedCriteria(approved);
-          } else if (results && typeof results === 'object') {
-            // Verificar si hay resultados desconocidos
-            const hasUnknown = Object.values(results).some(
-              value => typeof value === 'object' && value !== null && 'result' in value && value.result === 'unknown'
-            );
-            setHasUnknownResults(hasUnknown);
-            
-            // Filtrar resultados con estado conocido (success o failure)
-            const filteredResults = Object.entries(results)
-              .filter(([, value]) =>
-                typeof value === 'object' && 
-                value !== null && 
-                'result' in value && 
-                (value.result === 'success' || value.result === 'failure')
-              )
-              .map(([key, value]) => {
-                const normalizedKey = normalizeCriterion(key);
-                const criterionResult = value as CriterionResult;
-                return {
-                  criterion: normalizedKey,
-                  feedback: criterionResult.rationale,
-                  result: criterionResult.result
-                };
-              });
-            
-            const approved = Object.values(results).filter(
-              value => typeof value === 'object' && value !== null && 'result' in value && value.result === 'success'
-            ).length;
-            
-            setEvaluationResults(filteredResults);
-            setApprovedCriteria(approved);
-          }
-        } catch (err: unknown) {
-          setError(err instanceof Error ? err.message : 'Ocurrió un error desconocido.');
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      fetchConversationData();
+      fetchInterviewResult(id);
     }
-  }, [id]);
+    return () => {
+      if (pollingTimeoutId) clearTimeout(pollingTimeoutId);
+    };
+  }, [id, fetchInterviewResult]);
 
-  // Función para obtener el color de fondo según el resultado
-  const getBackgroundColor = (item: EvaluationCriterion) => {
-    if (item.result === 'success') {
-      return 'bg-green-50';
-    } else if (item.result === 'failure') {
-      return 'bg-red-50';
-    }
-    return 'bg-white';
+  const getBackgroundColor = (item: ProcessedEvaluationCriterion) => {
+    return item.isApproved ? 'bg-green-50' : 'bg-red-50';
   };
 
-  // Función para obtener el icono según el resultado
-  const getResultIcon = (item: EvaluationCriterion) => {
-    if (item.result === 'success') {
+  const getResultIcon = (item: ProcessedEvaluationCriterion) => {
+    if (item.isApproved) {
       return (
         <div className="flex items-center justify-center w-10 h-10 rounded-full bg-green-100 text-green-600">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -172,41 +162,50 @@ export default function FeedbackPage() {
           </svg>
         </div>
       );
-    } else if (item.result === 'failure') {
-      return (
-        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-red-100 text-red-600">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </div>
-      );
     }
     return (
-      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 text-gray-600">
+      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-red-100 text-red-600">
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
         </svg>
       </div>
     );
   };
 
-  if (loading) {
+  if (loading && !isResultPending) {
     return (
-      <main className="flex items-center justify-center px-4 font-sans">
-        <div className="max-w-5xl w-full py-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-center text-gray-800 mb-10">
-            Feedback de la Entrevista
+      <main className="flex flex-col items-center justify-center px-4 font-sans">
+        <div className="max-w-5xl w-full py-8 text-center">
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-6">
+            Cargando Feedback de la Entrevista...
           </h1>
-
-          <div className="bg-white rounded-xl p-8 text-center shadow-sm">
-            <div className="flex justify-center mb-4">
-              <svg className="animate-spin h-8 w-8 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-            </div>
-            <p className="text-gray-800 font-medium">Cargando feedback...</p>
+          <div className="flex justify-center items-center mb-6">
+            <svg className="animate-spin h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
           </div>
+          <p className="text-gray-600">Estamos recuperando los detalles de tu entrevista.</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (isResultPending) {
+    return (
+      <main className="flex flex-col items-center justify-center px-4 font-sans">
+        <div className="max-w-5xl w-full py-8 text-center">
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-6">
+            Procesando Feedback...
+          </h1>
+          <div className="flex justify-center items-center mb-6">
+            <svg className="animate-spin h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </div>
+          <p className="text-gray-600 mb-2">El feedback de tu entrevista aún se está generando.</p>
+          <p className="text-gray-500 text-sm">Esto puede tardar unos momentos. La página se actualizará automáticamente.</p>
         </div>
       </main>
     );
@@ -214,179 +213,141 @@ export default function FeedbackPage() {
 
   if (error) {
     return (
-      <main className="flex items-center justify-center px-4 font-sans">
-        <div className="max-w-5xl w-full py-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-center text-gray-800 mb-10">
-            Feedback de la Entrevista
-          </h1>
-
-          <div className="bg-white rounded-xl p-8 text-center shadow-sm">
-            <div className="flex justify-center mb-4">
-              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-red-100 text-red-600">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-            </div>
-            <h2 className="text-xl font-semibold mb-2 text-gray-800">Error</h2>
-            <p className="text-red-600">{error}</p>
+      <main className="flex flex-col items-center justify-center px-4 font-sans">
+        <div className="max-w-5xl w-full py-8 text-center bg-white/90 p-8 rounded-lg shadow-sm">
+          <div className="flex justify-center items-center mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
           </div>
-        </div>
-      </main>
-    );
-  }
-
-  // Función para renderizar estrellas basadas en criterios aprobados
-  const renderStars = (count: number) => {
-    const totalStars = 5;
-    return (
-      <div className="flex justify-center space-x-1 mb-4">
-        {[...Array(totalStars)].map((_, i) => (
-          <svg
-            key={i}
-            className={`w-8 h-8 ${i < count ? 'text-yellow-400' : 'text-gray-300'}`}
-            fill="currentColor"
-            viewBox="0 0 20 20"
-            xmlns="http://www.w3.org/2000/svg"
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-700 mb-4">
+            Error al Cargar el Feedback
+          </h1>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <button
+            onClick={() => router.push('/')} // Redirige a la página de inicio o a donde sea apropiado
+            className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors duration-150 hover:cursor-pointer"
           >
-            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.8-2.034c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-          </svg>
-        ))}
-      </div>
-    );
-  };
-
-  // Función para obtener mensaje basado en la cantidad de criterios aprobados
-  const getFeedbackMessage = (count: number) => {
-    if (count === 0) {
-      return "Hay áreas importantes que necesitas mejorar. ¡No te desanimes! Revisa los comentarios y sigue practicando.";
-    } else if (count === 1) {
-      return "Has mostrado potencial en un área. Trabaja en los demás aspectos siguiendo las recomendaciones.";
-    } else if (count === 2) {
-      return "Vas por buen camino. Has aprobado algunos criterios, pero aún hay espacio para mejorar.";
-    } else if (count === 3) {
-      return "¡Buen trabajo! Has aprobado más de la mitad de los criterios. Sigue mejorando en las áreas señaladas.";
-    } else if (count === 4) {
-      return "¡Excelente desempeño! Estás muy cerca de la excelencia. Un poco más de práctica y estarás listo.";
-    } else {
-      return "¡Felicitaciones! Has aprobado todos los criterios. Tu entrevista fue excepcional.";
-    }
-  };
-
-  // Función para obtener el color del mensaje según la cantidad de criterios aprobados
-  const getFeedbackMessageColor = (count: number) => {
-    if (count <= 1) return "text-red-600";
-    if (count <= 3) return "text-yellow-600";
-    return "text-green-600";
-  };
-
-  if (!evaluationResults || evaluationResults.length === 0) {
-    // Si no hay resultados, mostrar un mensaje
-    return (
-      <main className="flex items-center justify-center px-4 font-sans">
-        <div className="max-w-5xl w-full py-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-center text-gray-800 mb-10">
-            Feedback de la Entrevista
-          </h1>
-
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-            <div className="p-8 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-gray-800">Resultados de Evaluación</h2>
-              <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                Sin resultados
-              </div>
-            </div>
-            <div className="p-8 text-center">
-              <div className="flex justify-center mb-4">
-                <div className="flex items-center justify-center w-12 h-12 rounded-full bg-yellow-100 text-yellow-600">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                  </svg>
-                </div>
-              </div>
-              <h2 className="text-xl font-semibold mb-2 text-gray-800">No pudimos evaluar tus respuestas correctamente.</h2>
-              <p className="text-gray-700 mx-auto">Te recomendamos realizar otra entrevista utilizando respuestas más extensas para obtener un análisis más preciso de tus habilidades.</p>
-            </div>
-          </div>
+            Volver al Inicio
+          </button>
         </div>
       </main>
     );
   }
+
+  if (!interviewResult || !evaluationResults) { // Simplificado, ya que evaluationResults puede ser []
+    return (
+      <main className="flex flex-col items-center justify-center px-4 font-sans">
+        <div className="max-w-5xl w-full py-8 text-center">
+           <div className="flex justify-center items-center mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-6">
+            Feedback No Disponible
+          </h1>
+          <p className="text-gray-600 mb-6">No se encontraron resultados de evaluación para esta entrevista o aún no se han procesado.</p>
+          <button
+            onClick={() => router.push('/')} // Redirige a la página de inicio
+            className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors duration-150"
+          >
+            Volver al Inicio
+          </button>
+        </div>
+      </main>
+    );
+  }
+
+  const totalCriteria = evaluationResults.length;
+  // Usar resultadoNota directamente si está disponible, sino calcularlo.
+  const overallScorePercentage = typeof interviewResult.resultadoNota === 'number' 
+    ? interviewResult.resultadoNota 
+    : (totalCriteria > 0 ? (approvedCriteriaCount / totalCriteria) * 100 : 0);
 
   return (
-    <main className="flex items-center justify-center px-4 font-sans my-10">
-      <div className="max-w-5xl w-full py-8">
-        <h1 className="text-3xl sm:text-4xl font-bold text-center text-gray-800 mb-10">
-          Feedback de la Entrevista
+    <main className="px-4 py-8 font-sans">
+      <div className="max-w-7xl mx-auto bg-white/90 p-6 sm:p-10 rounded-xl shadow-sm border border-gray-200">
+        <button
+          onClick={() => router.back()} // Botón para volver a la página anterior
+          className="mb-8 flex items-center text-blue-600 hover:text-blue-800 transition-colors duration-150 font-medium hover:cursor-pointer"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Volver
+        </button>
+
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-center text-gray-800 mb-8">
+          Resultado de tu Entrevista
         </h1>
 
-        {/* Estrellas y mensaje de feedback */}
-        <div className="bg-white rounded-xl shadow-sm mb-8">
-          <div className="px-8 pt-8">
-            <h2 className="text-xl font-bold text-center text-gray-800">Desempeño General</h2>
+        {/* Resumen General */} 
+        <div className="mb-12 p-6 bg-gray-50 rounded-lg border border-gray-200">
+          <h2 className="text-2xl font-semibold text-gray-700 mb-4">Resumen General</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <p className="text-gray-600 mb-1">Criterios Evaluados:</p>
+              <p className="text-3xl font-bold text-blue-600">{totalCriteria}</p>
+            </div>
+            <div>
+              <p className="text-gray-600 mb-1">Criterios Superados: {APPROVAL_THRESHOLD_SCORE}</p>
+              <p className="text-3xl font-bold text-green-600">{approvedCriteriaCount}</p>
+            </div>
           </div>
-          <div className="p-8 text-center">
-            {renderStars(approvedCriteria)}
-            <p className={`text-lg font-medium ${getFeedbackMessageColor(approvedCriteria)}`}>
-              {getFeedbackMessage(approvedCriteria)}
-            </p>
-            <p className="text-sm text-gray-500 mt-2">
-              Has aprobado {approvedCriteria} de 5 criterios de evaluación
+          <div className="mt-6">
+            <p className="text-gray-600 mb-2">Puntuación General de Coincidencia:</p>
+            <div className="w-full bg-gray-200 rounded-full h-6">
+              <div
+                className={`h-6 rounded-full ${overallScorePercentage >= OVERALL_GOOD_MATCH_PERCENTAGE ? 'bg-green-500' : 'bg-red-500'} transition-all duration-500 ease-out`}
+                style={{ width: `${Math.max(overallScorePercentage, 5)}%` }} // Asegura un mínimo de ancho para visibilidad
+              ></div>
+            </div>
+            <p className={`text-right text-2xl font-bold mt-2 ${overallScorePercentage >= OVERALL_GOOD_MATCH_PERCENTAGE ? 'text-green-600' : 'text-red-600'}`}>
+              {overallScorePercentage.toFixed(0)}%
             </p>
           </div>
+           {interviewResult.resultadoRazon && (
+            <div className="mt-6 pt-4 border-t border-gray-200">
+                <h3 className="text-xl font-semibold text-gray-700 mb-2">Comentarios Generales del Entrevistador:</h3>
+                <p className="text-gray-600 whitespace-pre-wrap">{interviewResult.resultadoRazon}</p>
+            </div>
+          )}
         </div>
 
-        {/* Mensaje de recomendación si hay resultados desconocidos */}
-        {hasUnknownResults && (
-          <div className="bg-yellow-50 rounded-xl p-8 mb-8 shadow-sm">
-            <div className="flex items-start">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-yellow-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-yellow-800">Recomendación</h3>
-                <div className="mt-2 text-sm text-yellow-800">
-                  <p className="">
-                    Algunos criterios no pudieron ser evaluados completamente. Te recomendamos realizar otra entrevista utilizando respuestas más extensas para obtener un análisis más preciso de tus habilidades.
+        {/* Resultados Detallados por Criterio */} 
+        <div className="space-y-8">
+          <h2 className="text-2xl font-semibold text-gray-700 mb-8 pb-4">Desglose por Criterio</h2>
+          {evaluationResults.length > 0 ? evaluationResults.map((item, index) => (
+            <div
+              key={index}
+              className={`p-6 rounded-lg ${getBackgroundColor(item)} transition-all duration-300 shadow-sm`}
+            >
+              <div className="flex items-start sm:items-center space-x-4">
+                <div className="flex-shrink-0">
+                  {getResultIcon(item)}
+                </div>
+                <div className="flex-1">
+                  <h3 className={`text-xl font-semibold mb-1 ${item.isApproved ? 'text-gray-800' : 'text-red-800'}`}>
+                    {item.criterion}
+                  </h3>
+                  <p className={`text-sm ${item.isApproved ? 'text-gray-700' : 'text-red-700'} font-medium mb-2`}>
+                    Puntuación: {item.score} / 10 - {item.isApproved ? 'Superado' : 'No Superado'}
+                  </p>
+                  <p className={`text-gray-700 ${item.isApproved ? 'text-opacity-90' : 'text-opacity-90'}`}>
+                    {item.feedback}
                   </p>
                 </div>
               </div>
             </div>
-          </div>
-        )}
-
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-          <div className="p-8 flex items-center justify-between">
-            <h2 className="text-xl font-bold text-gray-800">Resultados de Evaluación</h2>
-            <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-              {evaluationResults.length} criterios evaluados
+          )) : (
+            <div className="text-center py-10">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <p className="text-xl text-gray-500">No hay criterios de evaluación detallados para mostrar.</p>
             </div>
-          </div>
-
-          <div className="p-8">
-            <div className="space-y-8">
-              {evaluationResults.map((item, index) => (
-                <div key={index} className={`rounded-xl p-6 ${getBackgroundColor(item)}`}>
-                  <div className="flex items-start">
-                    {getResultIcon(item)}
-                    <div className="ml-4 flex-1">
-                      <div className="flex justify-between items-center mb-2">
-                        <h2 className="text-lg font-medium text-gray-800">{item.criterion.charAt(0).toUpperCase() + item.criterion.slice(1)}</h2>
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${item.result === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                          {item.result === 'success' ? 'Aprobado' : 'Necesita mejorar'}
-                        </span>
-                      </div>
-                      <div className="mt-2">
-                        <p className="text-gray-700">{item.feedback}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </main>
