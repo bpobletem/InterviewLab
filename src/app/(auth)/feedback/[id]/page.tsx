@@ -14,11 +14,11 @@ const accentMap: Record<string, string> = {
   'profesionalismo': 'profesionalismo',
 };
 
-const POLLING_INTERVAL = 5000; // 5 segundos para reintentar
-const APPROVAL_THRESHOLD_SCORE = 6; // Puntuación mínima para considerar un criterio como aprobado
+const POLLING_INTERVAL = 3000; // 2 segundos para reintentar
+const APPROVAL_THRESHOLD_SCORE = 5; // Puntuación mínima para considerar un criterio como aprobado
 
 // Nuevos umbrales para la puntuación general
-const OVERALL_SCORE_THRESHOLD_YELLOW = 40;
+const OVERALL_SCORE_THRESHOLD_YELLOW = 50;
 const OVERALL_SCORE_THRESHOLD_GREEN = 70;
 
 // Lista de claves base de criterios para iterar
@@ -46,7 +46,7 @@ export default function FeedbackPage() {
     } else if (baseName.endsWith('razon')) {
       baseName = baseName.substring(0, baseName.length - 5);
     }
-    
+
     const normalized = accentMap[baseName] || baseName;
     // Capitalizar la primera letra
     return normalized.charAt(0).toUpperCase() + normalized.slice(1);
@@ -62,7 +62,7 @@ export default function FeedbackPage() {
 
       if (typeof score === 'number' && typeof rationale === 'string') {
         const isApproved = score >= APPROVAL_THRESHOLD_SCORE;
-        if (isApproved) {
+        if (isApproved && score > 0) { // Solo contar como aprobado si fue evaluado
           currentApprovedCriteria++;
         }
         finalEvaluationResults.push({
@@ -70,10 +70,11 @@ export default function FeedbackPage() {
           score: score,
           feedback: rationale,
           isApproved: isApproved,
+          isEvaluated: score > 0, // Marcar como evaluado si la nota es mayor a 0
         });
       }
     });
-    
+
     setEvaluationResults(finalEvaluationResults);
     setApprovedCriteriaCount(currentApprovedCriteria);
     setInterviewResult(data); // Guardamos el resultado completo de la API
@@ -124,32 +125,32 @@ export default function FeedbackPage() {
     return () => {
       if (pollingTimeoutId) clearTimeout(pollingTimeoutId);
     };
-  }, [id, fetchInterviewResult]);
+  }, [id, fetchInterviewResult, pollingTimeoutId]);
 
   const getBackgroundColor = (item: ProcessedEvaluationCriterion) => {
-    if (item.score === 0) {
+    if (!item.isEvaluated) { // score === 0
       return 'bg-gray-100'; // No evaluado
     }
-    if (item.score < 4) {
+    if (item.score <= 4) {
       return 'bg-red-50'; // Rojo
     }
-    if (item.score >= 4 && item.score <= APPROVAL_THRESHOLD_SCORE) { // 4, 5, 6
-      return 'bg-yellow-50'; // Amarillo
+    if (item.score >= APPROVAL_THRESHOLD_SCORE) {
+        return 'bg-green-50'; // Verde
     }
-    return 'bg-green-50'; // Verde
+    return 'bg-red-50'; // No aprobado pero evaluado (ej. 4 si el umbral es 5)
   };
 
   const getResultIcon = (item: ProcessedEvaluationCriterion) => {
-    if (item.score === 0) {
+    if (!item.isEvaluated) { // score === 0
       return (
         <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-200 text-gray-600">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.79 4 4s-1.79 4-4 4S8 12.21 8 10c0-.3.028-.592.08-.872M9 15h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
       );
     }
-    if (item.isApproved) { // score >= 6
+    if (item.isApproved) { // score >= 5
       return (
         <div className="flex items-center justify-center w-10 h-10 rounded-full bg-green-100 text-green-600">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -200,7 +201,7 @@ export default function FeedbackPage() {
             </svg>
           </div>
           <p className="text-gray-600 mb-2">El feedback de tu entrevista aún se está generando.</p>
-          <p className="text-gray-500 text-sm">Esto puede tardar unos momentos. La página se actualizará automáticamente.</p>
+          <p className="text-gray-500 text-sm">Esto puede tardar unos segundos. La página se actualizará automáticamente.</p>
         </div>
       </main>
     );
@@ -230,13 +231,13 @@ export default function FeedbackPage() {
     );
   }
 
-  if (!interviewResult || !evaluationResults) { // Simplificado, ya que evaluationResults puede ser []
+  if (!interviewResult || !evaluationResults) {
     return (
       <main className="flex flex-col items-center justify-center px-4 font-sans">
         <div className="max-w-5xl w-full py-8 text-center">
-           <div className="flex justify-center items-center mb-6">
+          <div className="flex justify-center items-center mb-6">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-6">
@@ -256,8 +257,8 @@ export default function FeedbackPage() {
 
   const totalCriteria = evaluationResults.length;
   // Usar resultadoNota directamente si está disponible, sino calcularlo.
-  const overallScorePercentage = typeof interviewResult.resultadoNota === 'number' 
-    ? interviewResult.resultadoNota 
+  const overallScorePercentage = typeof interviewResult.resultadoNota === 'number'
+    ? interviewResult.resultadoNota
     : (totalCriteria > 0 ? (approvedCriteriaCount / totalCriteria) * 100 : 0);
 
   return (
@@ -277,7 +278,7 @@ export default function FeedbackPage() {
           Resultado de tu Entrevista
         </h1>
 
-        {/* Resumen General */} 
+        {/* Resumen General */}
         <div className="mb-12 p-6 bg-gray-50 rounded-lg border border-gray-200">
           <h2 className="text-2xl font-semibold text-gray-700 mb-4">Resumen General</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -310,18 +311,26 @@ export default function FeedbackPage() {
               {overallScorePercentage.toFixed(0)}%
             </p>
           </div>
-           {interviewResult.resultadoRazon && (
+          {interviewResult.resultadoRazon && (
             <div className="mt-6 pt-4 border-t border-gray-200">
-                <h3 className="text-xl font-semibold text-gray-700 mb-2">Comentarios Generales del Entrevistador:</h3>
-                <p className="text-gray-600 whitespace-pre-wrap">{interviewResult.resultadoRazon}</p>
+              <h3 className="text-xl font-semibold text-gray-700 mb-2">Comentarios Generales del Entrevistador:</h3>
+              <p className="text-gray-600 whitespace-pre-wrap">{interviewResult.resultadoRazon}</p>
             </div>
           )}
         </div>
 
-        {/* Resultados Detallados por Criterio */} 
+        {/* Resultados Detallados por Criterio */}
         <div className="space-y-8">
-          <h2 className="text-2xl font-semibold text-gray-700 mb-8 pb-4">Desglose por Criterio</h2>
-          {evaluationResults.length > 0 ? evaluationResults.map((item, index) => (
+          <h2 className="text-2xl font-semibold text-gray-700 mb-4 pb-4">Análisis detallado</h2>
+          {evaluationResults && evaluationResults.length > 0 && evaluationResults.every(item => !item.isEvaluated) ? (
+            <div className="text-center py-10">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <p className="text-xl text-gray-500 mb-4">Ningún criterio de evaluación pudo ser procesado para esta entrevista.</p>
+              <p className="text-gray-600">Por favor, intenta realizar otra entrevista para obtener un feedback completo.</p>
+            </div>
+          ) : evaluationResults && evaluationResults.length > 0 ? evaluationResults.map((item, index) => (
             <div
               key={index}
               className={`p-6 rounded-lg ${getBackgroundColor(item)} transition-all duration-300 shadow-sm`}
@@ -331,11 +340,11 @@ export default function FeedbackPage() {
                   {getResultIcon(item)}
                 </div>
                 <div className="flex-1">
-                  <h3 className={`text-xl font-semibold mb-1 ${item.score < 4 && item.score !== 0 ? 'text-red-800' : 'text-gray-800'}`}>
+                  <h3 className={`text-xl font-semibold mb-1 text-gray-800`}>
                     {item.criterion}
                   </h3>
-                  <p className={`text-sm ${item.score < 4 && item.score !== 0 ? 'text-red-700' : 'text-gray-700'} font-medium mb-2`}>
-                    Puntuación: {item.score} / 10 - {item.score === 0 ? 'No Evaluado' : item.isApproved ? 'Superado' : 'No Superado'}
+                  <p className={`text-sm text-gray-700 font-medium mb-2`}>
+                    Puntuación: {item.score} / 10 - {!item.isEvaluated ? 'No Evaluado' : item.isApproved ? 'Superado' : 'No Superado'}
                   </p>
                   <p className={`text-gray-700 text-opacity-90`}>
                     {item.feedback}
@@ -346,9 +355,9 @@ export default function FeedbackPage() {
           )) : (
             <div className="text-center py-10">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              <p className="text-xl text-gray-500">No hay criterios de evaluación detallados para mostrar.</p>
+              <p className="text-xl text-gray-500">No hay criterios de evaluación detallados para mostrar o aún no se han procesado.</p>
             </div>
           )}
         </div>
