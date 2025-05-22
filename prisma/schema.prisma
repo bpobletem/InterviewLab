@@ -3,14 +3,14 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Area {
-  id        BigInt      @id @default(autoincrement())
-  name      String
-  careers   Career[]
+  id      BigInt   @id @default(autoincrement())
+  name    String
+  careers Career[]
 
   @@map("area")
 }
@@ -19,7 +19,6 @@ model InstitutionEmailDomain {
   id             BigInt      @id @default(autoincrement())
   institution_id BigInt
   email_domain   String
-
   institution    Institution @relation(fields: [institution_id], references: [id])
 
   @@unique([institution_id, email_domain])
@@ -27,76 +26,97 @@ model InstitutionEmailDomain {
 }
 
 model Institution {
-  id            BigInt   @id @default(autoincrement())
+  id            BigInt                   @id @default(autoincrement())
   name          String
   email         String
   phone         String
   is_active     Boolean
-  created_at    DateTime @default(now())
-  users         User[]
+  created_at    DateTime                 @default(now())
   careers       Career[]
   email_domains InstitutionEmailDomain[]
+  users         User[]
 
-  @@map("institution")
   @@index([email])
+  @@map("institution")
 }
 
 model Career {
   id             BigInt      @id @default(autoincrement())
-  name           String
-  institution_id BigInt
   area_id        BigInt
-  institution    Institution @relation(fields: [institution_id], references: [id])
+  institution_id BigInt
+  name           String
   area           Area        @relation(fields: [area_id], references: [id])
+  institution    Institution @relation(fields: [institution_id], references: [id])
   users          User[]
 
-  @@map("career")
   @@index([institution_id])
   @@index([area_id])
+  @@map("career")
 }
 
 model User {
-  id             String       @id @db.Uuid
-  authId         String       @unique
+  id             String      @id @db.Uuid
   name           String
-  email          String       @unique
-  birthday       DateTime     @db.Date
-  gender         String       @default("Masculino")
+  email          String      @unique
+  birthday       DateTime    @db.Date
   institution_id BigInt
   career_id      BigInt
-  institution    Institution  @relation(fields: [institution_id], references: [id])
-  career         Career       @relation(fields: [career_id], references: [id])
+  authId         String      @unique
+  gender         String      @default("Masculino")
   interviews     Interview[]
+  career         Career      @relation(fields: [career_id], references: [id])
+  institution    Institution @relation(fields: [institution_id], references: [id])
 
-  @@map("user")
   @@index([institution_id])
   @@index([career_id])
+  @@map("user")
 }
 
-
-
 model Interview {
-  id              String    @id @default(uuid()) @db.Uuid
-  user_id         String    @db.Uuid
+  id              String              @id @default(uuid()) @db.Uuid
+  user_id         String              @db.Uuid
   title           String
-  job_description String    @db.Text
-  resume          String    @db.Text
-  created_at      DateTime  @default(now())
-  
-  user            User      @relation(fields: [user_id], references: [id])
-  conversation    Conversation?
+  job_description String
+  created_at      DateTime            @default(now())
+  resume          String
+  user            User                @relation(fields: [user_id], references: [id])
 
-  @@map("interview")
+  conversation    Conversation?
+  result          InterviewResult?
+
   @@index([user_id])
+  @@map("interview")
 }
 
 model Conversation {
   id           String    @id
+  details      Json?
   interview_id String    @unique @db.Uuid
-  details      Json?      @db.JsonB
-
   interview    Interview @relation(fields: [interview_id], references: [id])
 
-  @@map("conversation")
   @@index([interview_id])
+  @@map("conversation")
+}
+
+model InterviewResult {
+  id                   String    @id @default(uuid()) @db.Uuid
+  interview_id         String    @db.Uuid @unique
+  claridadNota         Int
+  claridadRazon        String
+  profesionalismoNota  Int
+  profesionalismoRazon String
+  tecnicaNota          Int
+  tecnicaRazon         String
+  interesNota          Int
+  interesRazon         String
+  ejemplosNota         Int
+  ejemplosRazon        String
+  resultadoNota        Int
+  resultadoRazon       String
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  interview            Interview? @relation(fields: [interview_id], references: [id])
+
+  @@index([interview_id])
+  @@map("interview_result")
 }

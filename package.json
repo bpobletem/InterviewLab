@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@11labs/react": "^0.1.3",
+    "@google/genai": "^1.0.0",
     "@prisma/client": "^6.5.0",
     "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/ssr": "^0.6.1",
