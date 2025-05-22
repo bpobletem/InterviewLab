@@ -291,7 +291,7 @@ export default function FeedbackPage() {
               <p className="text-3xl font-bold text-blue-600">{totalCriteria}</p>
             </div>
             <div>
-              <p className="text-gray-600 mb-1">Criterios Superados: {APPROVAL_THRESHOLD_SCORE}</p>
+              <p className="text-gray-600 mb-1">Criterios Superados:</p>
               <p className="text-3xl font-bold text-green-600">{approvedCriteriaCount}</p>
             </div>
           </div>

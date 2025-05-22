@@ -4,9 +4,9 @@ import { createClient } from '@/utils/supabase/server';
 
 export async function GET(
   request: NextRequest, // Cambiado de Request a NextRequest para compatibilidad con Supabase auth
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ interviewId: string }> }
 ) {
-  const interviewId = (await params).id;
+  const interviewId = (await params).interviewId;
 
   if (!interviewId) {
     return NextResponse.json({ error: 'Interview ID is required' }, { status: 400 });
