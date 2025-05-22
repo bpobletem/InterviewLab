@@ -42,7 +42,10 @@ const accentMap: Record<string, string> = {
 
 const POLLING_INTERVAL = 5000; // 5 segundos para reintentar
 const APPROVAL_THRESHOLD_SCORE = 6; // Puntuación mínima para considerar un criterio como aprobado
-const OVERALL_GOOD_MATCH_PERCENTAGE = 60; // Porcentaje para considerar un buen match general
+
+// Nuevos umbrales para la puntuación general
+const OVERALL_SCORE_THRESHOLD_YELLOW = 40;
+const OVERALL_SCORE_THRESHOLD_GREEN = 70;
 
 // Lista de claves base de criterios para iterar
 const CRITERIA_KEYS = ['tecnica', 'interes', 'claridad', 'ejemplos', 'profesionalismo'];
@@ -50,7 +53,7 @@ const CRITERIA_KEYS = ['tecnica', 'interes', 'claridad', 'ejemplos', 'profesiona
 export default function FeedbackPage() {
   const params = useParams();
   const router = useRouter();
-  const id = params?.id as string; // Este 'id' es el interview_id para la API
+  const id = params?.id as string;
 
   const [interviewResult, setInterviewResult] = useState<InterviewResultFromAPI | null>(null);
   const [evaluationResults, setEvaluationResults] = useState<ProcessedEvaluationCriterion[] | null>(null);
@@ -76,7 +79,7 @@ export default function FeedbackPage() {
   }, []);
 
   const processInterviewData = useCallback((data: InterviewResultFromAPI) => {
-    let finalEvaluationResults: ProcessedEvaluationCriterion[] = [];
+    const finalEvaluationResults: ProcessedEvaluationCriterion[] = [];
     let currentApprovedCriteria = 0;
 
     CRITERIA_KEYS.forEach(key => {
@@ -150,11 +153,29 @@ export default function FeedbackPage() {
   }, [id, fetchInterviewResult]);
 
   const getBackgroundColor = (item: ProcessedEvaluationCriterion) => {
-    return item.isApproved ? 'bg-green-50' : 'bg-red-50';
+    if (item.score === 0) {
+      return 'bg-gray-100'; // No evaluado
+    }
+    if (item.score < 4) {
+      return 'bg-red-50'; // Rojo
+    }
+    if (item.score >= 4 && item.score <= APPROVAL_THRESHOLD_SCORE) { // 4, 5, 6
+      return 'bg-yellow-50'; // Amarillo
+    }
+    return 'bg-green-50'; // Verde
   };
 
   const getResultIcon = (item: ProcessedEvaluationCriterion) => {
-    if (item.isApproved) {
+    if (item.score === 0) {
+      return (
+        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-200 text-gray-600">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.79 4 4s-1.79 4-4 4S8 12.21 8 10c0-.3.028-.592.08-.872M9 15h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+      );
+    }
+    if (item.isApproved) { // score >= 6
       return (
         <div className="flex items-center justify-center w-10 h-10 rounded-full bg-green-100 text-green-600">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -299,11 +320,11 @@ export default function FeedbackPage() {
             <p className="text-gray-600 mb-2">Puntuación General de Coincidencia:</p>
             <div className="w-full bg-gray-200 rounded-full h-6">
               <div
-                className={`h-6 rounded-full ${overallScorePercentage >= OVERALL_GOOD_MATCH_PERCENTAGE ? 'bg-green-500' : 'bg-red-500'} transition-all duration-500 ease-out`}
+                className={`h-6 rounded-full ${overallScorePercentage >= OVERALL_SCORE_THRESHOLD_GREEN ? 'bg-green-500' : overallScorePercentage >= OVERALL_SCORE_THRESHOLD_YELLOW ? 'bg-yellow-500' : 'bg-red-500'} transition-all duration-500 ease-out`}
                 style={{ width: `${Math.max(overallScorePercentage, 5)}%` }} // Asegura un mínimo de ancho para visibilidad
               ></div>
             </div>
-            <p className={`text-right text-2xl font-bold mt-2 ${overallScorePercentage >= OVERALL_GOOD_MATCH_PERCENTAGE ? 'text-green-600' : 'text-red-600'}`}>
+            <p className={`text-right text-2xl font-bold mt-2 ${overallScorePercentage >= OVERALL_SCORE_THRESHOLD_GREEN ? 'text-green-600' : overallScorePercentage >= OVERALL_SCORE_THRESHOLD_YELLOW ? 'text-yellow-600' : 'text-red-600'}`}>
               {overallScorePercentage.toFixed(0)}%
             </p>
           </div>
@@ -328,13 +349,13 @@ export default function FeedbackPage() {
                   {getResultIcon(item)}
                 </div>
                 <div className="flex-1">
-                  <h3 className={`text-xl font-semibold mb-1 ${item.isApproved ? 'text-gray-800' : 'text-red-800'}`}>
+                  <h3 className={`text-xl font-semibold mb-1 ${item.score < 4 && item.score !== 0 ? 'text-red-800' : 'text-gray-800'}`}>
                     {item.criterion}
                   </h3>
-                  <p className={`text-sm ${item.isApproved ? 'text-gray-700' : 'text-red-700'} font-medium mb-2`}>
-                    Puntuación: {item.score} / 10 - {item.isApproved ? 'Superado' : 'No Superado'}
+                  <p className={`text-sm ${item.score < 4 && item.score !== 0 ? 'text-red-700' : 'text-gray-700'} font-medium mb-2`}>
+                    Puntuación: {item.score} / 10 - {item.score === 0 ? 'No Evaluado' : item.isApproved ? 'Superado' : 'No Superado'}
                   </p>
-                  <p className={`text-gray-700 ${item.isApproved ? 'text-opacity-90' : 'text-opacity-90'}`}>
+                  <p className={`text-gray-700 text-opacity-90`}>
                     {item.feedback}
                   </p>
                 </div>
