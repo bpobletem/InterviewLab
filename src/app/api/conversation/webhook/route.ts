@@ -82,16 +82,13 @@ export async function POST(request: Request) {
 
     // Triggerear un llamado a la API de Gemini para pedirle que procese la conversacion y devuelva un feedback para mostrar al usuario.
     const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY });
-    console.log(body.data.transcript);
     async function main(): Promise<string> {
-      // ---- START: New formatting logic ----
+      // Formateams la transcripcion para que sea legible por Gemini
       const formattedTranscript = body.data.transcript.map((entry: { role: string, message?: string, text?: string, content?: string }) => {
         const speakerLabel = entry.role === 'user' ? 'Usuario' : 'Agente';
-        // Prioritize 'message', then 'text', then 'content'. Default to empty string if none exist.
-        const messageContent = entry.message ?? entry.text ?? entry.content ?? ""; 
+        const messageContent = entry.message ?? ""; 
         return `${speakerLabel}: ${messageContent}`;
-      }).join('\n\n'); // Use double newline for better separation
-      // ---- END: New formatting logic ----
+      }).join('\n\n'); 
 
       const res = await ai.models.generateContent({
         model: "gemini-2.0-flash-lite",
@@ -252,9 +249,6 @@ export async function POST(request: Request) {
         resultadoNota: geminiData.resultado.nota,
       }
     });
-
-    // Cuando devuelva el feedback debemos hacer un redirect a otra pagina que lo muestre.
-
 
     return NextResponse.json(
       { message: "Conversation updated successfully" },
