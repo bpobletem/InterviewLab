@@ -279,7 +279,8 @@ export default function FeedbackPage() {
         </h1>
 
         {/* Resumen General */}
-        <div className="mb-12 p-6 bg-gray-50 rounded-lg border border-gray-200">
+        {evaluationResults && evaluationResults.some(item => item.isEvaluated) && (
+          <div className="mb-12 p-6 bg-gray-50 rounded-lg border border-gray-200">
           <h2 className="text-2xl font-semibold text-gray-700 mb-4">Resumen General</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -318,10 +319,13 @@ export default function FeedbackPage() {
             </div>
           )}
         </div>
+        )}
 
         {/* Resultados Detallados por Criterio */}
         <div className="space-y-8">
-          <h2 className="text-2xl font-semibold text-gray-700 mb-4 pb-4">Análisis detallado</h2>
+          {evaluationResults && evaluationResults.some(item => item.isEvaluated) && (
+            <h2 className="text-2xl font-semibold text-gray-700 mb-4 pb-4">Análisis detallado</h2>
+          )}
           {evaluationResults && evaluationResults.length > 0 && evaluationResults.every(item => !item.isEvaluated) ? (
             <div className="text-center py-10">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
