@@ -48,7 +48,7 @@ export async function validateInstitutionEmail(
     if (!isValidDomain) {
       return {
         isValid: false,
-        error: `Dominio inválido`,
+        error: `Error en correo electrónico, dominio no permitido`,
       };
     }
 

@@ -8,6 +8,8 @@ export default function RegisterPage() {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [passwordError, setPasswordError] = useState('')
   const [name, setName] = useState('')
   const [birthdate, setBirthdate] = useState('')
   const [birthdateError, setBirthdateError] = useState('')
@@ -62,6 +64,20 @@ export default function RegisterPage() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Resetear mensajes de error
+    setError(null)
+    setPasswordError('')
+
+    if (password.length < 5) {
+      setPasswordError('La contraseña debe tener al menos 5 caracteres')
+      return
+    }
+
+    if (password !== confirmPassword) {
+      setPasswordError('Las contraseñas no coinciden')
+      return
+    }
 
     if (!selectedCareer) {
       setError('Por favor selecciona una carrera.')
@@ -101,9 +117,19 @@ export default function RegisterPage() {
       })
 
       const result = await res.json()
+      console.log('Respuesta del servidor:', result) // Depuración
 
       if (!res.ok) {
-        setError(result.message || 'Error al registrar usuario')
+        // Verificar si el error es por correo duplicado o dominio no permitido
+        console.log('Código de error:', result.code) // Depuración adicional
+        
+        if (result.code === 'P2002' || result.message?.includes('email') || result.message?.toLowerCase().includes('correo')) {
+          setError('Este correo electrónico ya está registrado. Por favor utiliza otro.')
+        } else if (result.code === 'DOMAIN_ERROR' || result.message?.includes('dominio no permitido')) {
+          setError('El dominio de tu correo electrónico no está permitido para la institución seleccionada.')
+        } else {
+          setError(result.message || 'Error al registrar usuario')
+        }
         return
       }
 
@@ -144,7 +170,27 @@ export default function RegisterPage() {
             <input
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value)
+                setPasswordError('')
+              }}
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+              minLength={5}
+            />
+            {passwordError && (
+              <p className="text-sm text-red-500 mt-1">{passwordError}</p>
+            )}
+          </div>
+          <div>
+            <label className="text-sm block mb-1">Confirmar Contraseña</label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value)
+                setPasswordError('')
+              }}
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
             />
@@ -210,9 +256,9 @@ export default function RegisterPage() {
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
             >
+              <option value="Ninguno">Ninguno</option>
               <option value="Masculino">Masculino</option>
               <option value="Femenino">Femenino</option>
-              <option value="Ninguno">Ninguno</option>
             </select>
           </div>
           <div className="flex items-start">
@@ -227,7 +273,7 @@ export default function RegisterPage() {
             </div>
             <div className="ml-3 text-sm">
               <label htmlFor="terms" className="text-gray-600">
-                Acepto los <a href="/terms" className="text-gray-800 underline hover:cursor-pointer">términos y condiciones</a> de privacidad
+                Acepto los <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-gray-800 underline hover:cursor-pointer">términos y condiciones</a> de privacidad
               </label>
             </div>
           </div>
