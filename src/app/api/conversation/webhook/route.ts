@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { GoogleGenAI, Type } from "@google/genai";
+import { GeminiFeedbackResponse } from "@/types/types";
+
 
 // Endpoint que recibe webhook de elevenlabs
 // Se encarga de guardar la conversacion en la base de datos
@@ -81,12 +83,13 @@ export async function POST(request: Request) {
     // Triggerear un llamado a la API de Gemini para pedirle que procese la conversacion y devuelva un feedback para mostrar al usuario.
     const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY });
 
-    async function main() {
+    async function main(): Promise<string> {
       const res = await ai.models.generateContent({
         model: "gemini-2.0-flash-lite",
         contents: `
         Esta es la transcripción de una simulación de entrevista de trabajo. Tu tarea es analizar exclusivamente las respuestas del usuario (NO las del agente).
-          Debes evaluar los siguientes criterios, asignando una nota del 1 al 10 a cada uno, junto con una breve justificación. Si no hay información suficiente para evaluar un criterio, asigna 0 como nota y da una razón clara del por qué no se pudo evaluar.
+          Debes evaluar los siguientes criterios, asignando una nota del 1 al 10 (donde 1 es lo peor y 10 lo mejor) a cada uno, junto con una breve justificación. Si no hay información suficiente para evaluar un criterio, asigna 0 como nota y da una razón clara del por qué no se pudo evaluar.
+          Ademas, debes sugerir como podria mejorar sus respuestas con ejemplos claros para cada criterio para mejorar su rendimiento.
           Criterios:
           1. **Claridad**: Evalúa si el usuario se expresa de manera comprensible, ordenada y coherente. ¿Sus respuestas son fáciles de entender?
           2. **Profesionalismo**: Evalúa si el usuario utiliza un lenguaje adecuado, respetuoso y profesional. ¿Se comunica de forma apropiada para un contexto laboral?
@@ -180,11 +183,32 @@ export async function POST(request: Request) {
           },
         }
       });
-      console.log("Respuesta de Gemini:", res.text);
+      if (res.text === undefined) {
+        throw new Error("La respuesta de la API de Gemini no contiene texto.");
+      }
+      return res.text;
     }
-    await main();
-
+    const geminiResponseString = await main();
+    const geminiData: GeminiFeedbackResponse = JSON.parse(geminiResponseString);
+    
     // Guardar en la base de datos el feedback
+    await prisma.interviewResult.create({
+      data: {
+        interview_id: conversation.interview_id,
+        claridadRazon: geminiData.criterios.claridad.razon,
+        claridadNota: geminiData.criterios.claridad.nota,
+        profesionalismoRazon: geminiData.criterios.profesionalismo.razon,
+        profesionalismoNota: geminiData.criterios.profesionalismo.nota,
+        tecnicaRazon: geminiData.criterios.tecnica.razon,
+        tecnicaNota: geminiData.criterios.tecnica.nota,
+        interesRazon: geminiData.criterios.interes.razon,
+        interesNota: geminiData.criterios.interes.nota,
+        ejemplosRazon: geminiData.criterios.ejemplos.razon,
+        ejemplosNota: geminiData.criterios.ejemplos.nota,
+        resultadoRazon: geminiData.resultado.razon,
+        resultadoNota: geminiData.resultado.nota,
+      }
+    });
 
     // Cuando devuelva el feedback debemos hacer un redirect a otra pagina que lo muestre.
 

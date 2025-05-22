@@ -54,3 +54,22 @@ export interface Interview {
   resume: string;
   user_id: string;
 }
+
+export interface GeminiCriterion {
+  nota: number;
+  razon: string;
+}
+
+export interface GeminiFeedbackResponse {
+  criterios: {
+    tecnica: GeminiCriterion;
+    interes: GeminiCriterion;
+    claridad: GeminiCriterion;
+    ejemplos: GeminiCriterion;
+    profesionalismo: GeminiCriterion;
+  };
+  resultado: {
+    nota: number;
+    razon: string;
+  };
+}
