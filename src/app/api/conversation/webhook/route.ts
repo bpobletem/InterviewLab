@@ -85,7 +85,7 @@ export async function POST(request: Request) {
     async function main(): Promise<string> {
       // Formateams la transcripcion para que sea legible por Gemini
       const formattedTranscript = body.data.transcript.map((entry: { role: string, message?: string, text?: string, content?: string }) => {
-        const speakerLabel = entry.role === 'user' ? 'Usuario' : 'Agente';
+        const speakerLabel = entry.role === 'user' ? 'Candidato' : 'Agente';
         const messageContent = entry.message ?? ""; 
         return `${speakerLabel}: ${messageContent}`;
       }).join('\n\n'); 
@@ -94,36 +94,41 @@ export async function POST(request: Request) {
         model: "gemini-2.0-flash-lite",
         contents: `
         Rol: Eres un evaluador de entrevistas experto.
-        Tarea: Analiza la siguiente transcripción de una entrevista de trabajo. Enfócate EXCLUSIVAMENTE en las respuestas proporcionadas por el "Usuario". NO evalúes las intervenciones del "Agente".
+        Tarea: Analiza la siguiente transcripción de una entrevista de trabajo. Enfócate EXCLUSIVAMENTE en las respuestas proporcionadas por el "Candidato" y refierete a el como "candidato" en todo momento. NO evalúes las intervenciones del "Agente".
 
         Transcripción:
         ---
         ${formattedTranscript}
         ---
 
-        Instrucciones de Evaluación para el Usuario:
-        Debes evaluar los siguientes criterios para el Usuario, asignando una nota del 1 al 10 (donde 1 es lo peor y 10 lo mejor) a cada uno, junto con una breve justificación (razon).
-        Si no hay información suficiente en las respuestas del Usuario para evaluar un criterio específico, asigna 0 como nota y explica claramente por qué no se pudo evaluar (ej. "El usuario no proporcionó ejemplos concretos").
-        Adicionalmente, para cada criterio, sugiere cómo el Usuario podría mejorar sus respuestas, incluyendo ejemplos claros si es posible.
+        Instrucciones de Evaluación para el Candidato:
+        Debes evaluar los siguientes criterios para el Candidato, asignando una nota del 1 al 10 (donde 1 es lo peor y 10 lo mejor y con 6 se "aprueba") a cada uno, junto con una breve justificación (razon).
+        Si no hay información suficiente en las respuestas del Candidato para evaluar un criterio específico, asigna 0 como nota y explica claramente por qué no se pudo evaluar (ej. "El Candidato no proporcionó ejemplos concretos").
+        Adicionalmente, para cada criterio, sugiere cómo el Candidato podría mejorar sus respuestas, incluyendo ejemplos claros si es posible.
 
-        Criterios a Evaluar (solo para el Usuario):
-        1.  **Claridad**: ¿El Usuario se expresa de manera comprensible, ordenada y coherente? ¿Sus respuestas son fáciles de entender?
-        2.  **Profesionalismo**: ¿El Usuario utiliza un lenguaje adecuado, respetuoso y profesional en sus respuestas?
-        3.  **Técnica**: ¿El Usuario demuestra conocimientos técnicos relevantes para el puesto en sus respuestas? (ej. herramientas, procesos, metodologías).
-        4.  **Interés**: ¿El Usuario muestra motivación por el cargo o la empresa a través de sus respuestas? ¿Hace preguntas pertinentes (si aplica y se ve en su turno)? ¿Transmite entusiasmo?
-        5.  **Ejemplos**: ¿El Usuario entrega ejemplos concretos en sus respuestas que respalden sus habilidades, experiencias o conocimientos?
+        Criterios a Evaluar (solo para el Candidato):
+        1.  **Claridad**: ¿El Candidato se expresa de manera comprensible, ordenada y coherente? ¿Sus respuestas son fáciles de entender?
+        2.  **Profesionalismo**: ¿El Candidato utiliza un lenguaje adecuado, respetuoso y profesional en sus respuestas?
+        3.  **Técnica**: ¿El Candidato demuestra conocimientos técnicos relevantes para el puesto en sus respuestas? (ej. herramientas, procesos, metodologías).
+        4.  **Interés**: ¿El Candidato muestra motivación por el cargo o la empresa a través de sus respuestas? ¿Hace preguntas pertinentes (si aplica y se ve en su turno)? ¿Transmite entusiasmo?
+        5.  **Ejemplos**: ¿El Candidato entrega ejemplos concretos en sus respuestas que respalden sus habilidades, experiencias o conocimientos?
 
         Contexto Adicional (CV del Candidato y Descripción del Puesto):
         ---
         ${body.data.conversation_initiation_client_data.conversation_config_override.agent.prompt.prompt}
         ---
 
-        Evaluación de Compatibilidad (Match):
-        Basándote en las respuestas del Usuario en la transcripción y el "Contexto Adicional" proporcionado arriba (CV y descripción del puesto), realiza una evaluación de compatibilidad ("match").
-        Evalúa qué tan bien se ajusta el candidato a los requisitos del puesto, según lo demostrado por el Usuario en la entrevista.
-        El resultado de esta evaluación de compatibilidad debe ser un número del 1 al 100, representando el porcentaje de ajuste.
+        Resultado - Evaluación de Compatibilidad (Match):
+        Basándote en las respuestas del Candidato en la transcripción y el "Contexto Adicional" proporcionado arriba (CV y descripción del puesto), realiza una evaluación de compatibilidad ("match").
+        Evalúa qué tan bien se ajusta el candidato a los requisitos del puesto, según lo demostrado por el candidato en la entrevista. Describe un resumen general de su desempeño y por que seria un buen o mal candidato.
+        El resultado de esta evaluación de compatibilidad debe ser un número del 1 al 100, representando el porcentaje de ajuste. Para que te hagas un idea sobre el porcentaje:
+        - 1 a 30: "Muy Desaprobado": El candidato no se ajusta al puesto y necesita mejorar significativamente.
+        - 31 a 50: "Desaprobado": El candidato se ajusta parcialmente al puesto, pero puede mejorar.
+        - 51 a 70: "Aprobado": El candidato se ajusta al puesto y tiene buenas respuestas.
+        - 71 a 90: "Muy Aprobado": El candidato se ajusta muy bien al puesto y tiene excelentes respuestas.
+        - 91 a 100: "Excelente": El candidato se ajusta perfectamente al puesto y tiene respuestas excepcionales.
         Si la descripción del puesto en el contexto adicional no es clara o está ausente, indícalo en la razón de la evaluación de compatibilidad y asigna 0 como nota de match.
-        Ten en cuenta que tanto el CV como la descripción del trabajo pueden contener errores o estar incompletos porque son campos rellenados por el usuario; analiza esta información críticamente al realizar la evaluación de compatibilidad.
+        Ten en cuenta que tanto el CV como la descripción del trabajo pueden contener errores o estar incompletos porque son campos rellenados por el candidato; analiza esta información críticamente al realizar la evaluación de compatibilidad.
 
         Formato de Respuesta Esperado: JSON (sigue el schema proporcionado). Cada item debe ir en su correspondiente item del schema. No olvides ninguno.
         `,
