@@ -73,3 +73,30 @@ export interface GeminiFeedbackResponse {
     razon: string;
   };
 }
+
+export interface InterviewResultFromAPI {
+  id: string; // ID del registro de feedback
+  interview_id: string;
+  claridadNota?: number;
+  claridadRazon?: string;
+  ejemplosNota?: number;
+  ejemplosRazon?: string;
+  interesNota?: number;
+  interesRazon?: string;
+  profesionalismoNota?: number;
+  profesionalismoRazon?: string;
+  tecnicaNota?: number;
+  tecnicaRazon?: string;
+  resultadoNota?: number; // Puntuación general (ej. 75 para 75%)
+  resultadoRazon?: string; // Feedback general
+  createdAt: string; // Mantener como string
+  updatedAt: string; // Mantener como string
+}
+
+export interface ProcessedEvaluationCriterion {
+  criterion: string;
+  score: number;
+  feedback: string;
+  isApproved: boolean;
+  isEvaluated: boolean;
+}

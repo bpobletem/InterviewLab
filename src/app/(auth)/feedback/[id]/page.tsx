@@ -2,34 +2,8 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-
-// Interfaz para el resultado de la entrevista esperado del nuevo endpoint
-interface InterviewResultFromAPI {
-  id: string; // ID del registro de feedback
-  interview_id: string;
-  claridadNota?: number;
-  claridadRazon?: string;
-  ejemplosNota?: number;
-  ejemplosRazon?: string;
-  interesNota?: number;
-  interesRazon?: string;
-  profesionalismoNota?: number;
-  profesionalismoRazon?: string;
-  tecnicaNota?: number;
-  tecnicaRazon?: string;
-  resultadoNota?: number; // Puntuación general (ej. 75 para 75%)
-  resultadoRazon?: string; // Feedback general
-  createdAt: string; // Mantener como string
-  updatedAt: string; // Mantener como string
-}
-
-// Interfaz para los datos de evaluación procesados para la UI
-interface ProcessedEvaluationCriterion {
-  criterion: string;
-  score: number;
-  feedback: string;
-  isApproved: boolean; // Campo para indicar si está aprobado (score >= 6)
-}
+import Tooltip from '@/components/Tooltip'; // Importar el componente Tooltip
+import { InterviewResultFromAPI, ProcessedEvaluationCriterion } from '@/types/types';
 
 // Mapa de palabras sin acento a palabras con acento
 const accentMap: Record<string, string> = {
