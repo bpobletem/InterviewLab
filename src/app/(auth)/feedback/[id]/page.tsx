@@ -291,7 +291,15 @@ export default function FeedbackPage() {
             </div>
           </div>
           <div className="mt-6">
-            <p className="text-gray-600 mb-2">Puntuación General de Coincidencia:</p>
+            <div className="flex items-center mb-2">
+              <p className="text-gray-600 mr-2">Puntuación General de Coincidencia:</p>
+              <Tooltip text="Este porcentaje evalúa tus respuestas en comparación con tu CV y la descripción del puesto de trabajo para determinar qué tan buen candidato eres para el puesto.">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </Tooltip>
+            </div>
+            
             <div className="w-full bg-gray-200 rounded-full h-6">
               <div
                 className={`h-6 rounded-full ${overallScorePercentage >= OVERALL_SCORE_THRESHOLD_GREEN ? 'bg-green-500' : overallScorePercentage >= OVERALL_SCORE_THRESHOLD_YELLOW ? 'bg-yellow-500' : 'bg-red-500'} transition-all duration-500 ease-out`}
