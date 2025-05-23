@@ -1,18 +1,25 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-// Define la estructura para los datos de salida
-interface InterviewPerformanceMetric {
+// Define la estructura para los resultados de cada criterio
+interface CriterionResultOutput {
+  name: string;
+  score: number;
+}
+
+// Define la estructura para la evaluación completa de una entrevista
+interface InterviewEvaluation {
   interview_id: string;
   user_id: string;
   institution_id: number;
   career_id: number;
   area_id: number;
-  criteria_name: string;
-  criterionScore: number;
   gender: string;
   age: number;
   extracted_at: Date;
+  criteriaResults: CriterionResultOutput[]; // Arreglo de objetos { name, score }
+  // También podrías considerar:
+  // criteriaScores: Record<string, number>; // Objeto { 'Claridad': 8, 'Profesionalismo': 9 }
 }
 
 const PREDEFINED_CRITERIA_NORMALIZED: Record<string, string> = {
@@ -25,12 +32,8 @@ const PREDEFINED_CRITERIA_NORMALIZED: Record<string, string> = {
 
 const USER_CRITERIA_KEYS = Object.keys(PREDEFINED_CRITERIA_NORMALIZED);
 
-// Define un tipo para las claves de las propiedades de puntuación en InterviewResult
-// Estas son las propiedades que esperas que existan en el objeto 'result'
 type ScorePropertyKeys = 'claridadNota' | 'profesionalismoNota' | 'tecnicaNota' | 'interesNota' | 'ejemplosNota';
 
-// Mapeo entre las claves de los criterios y las propiedades de 'interviewResult'
-// Asegura que los valores del mapeo sean del tipo ScorePropertyKeys
 const CRITERIA_SCORE_MAP: Record<string, ScorePropertyKeys> = {
     claridad: 'claridadNota',
     profesionalismo: 'profesionalismoNota',
@@ -41,8 +44,6 @@ const CRITERIA_SCORE_MAP: Record<string, ScorePropertyKeys> = {
 
 export async function GET() {
   try {
-    // Prisma infiere automáticamente el tipo de 'interviewResults'
-    // basándose en el modelo 'interviewResult' y las relaciones 'include'.
     const interviewResults = await prisma.interviewResult.findMany({
       include: {
         interview: {
@@ -62,51 +63,60 @@ export async function GET() {
       },
     });
 
-    const performanceMetrics: InterviewPerformanceMetric[] = [];
+    // Cambiamos el tipo del arreglo de salida
+    const allInterviewEvaluations: InterviewEvaluation[] = [];
     const now = new Date();
 
     for (const result of interviewResults) {
-      // Verificar que todos los datos necesarios para las métricas base estén presentes.
       if (!result.interview?.user?.career?.area || !result.interview?.user?.institution) {
         console.warn(`Skipping interviewResult ${result.id} due to missing associated user, career, area, or institution data.`);
         continue;
       }
 
       const user = result.interview.user;
-
-      // Calcular la edad, asumiendo que user.birthday siempre es una fecha válida.
       const birthDate = user.birthday;
       const ageInMilliseconds = now.getTime() - new Date(birthDate).getTime();
       const ageInYears = Math.floor(ageInMilliseconds / (1000 * 60 * 60 * 24 * 365.25));
 
+      // Array para almacenar los resultados de los criterios de ESTA entrevista
+      const criteriaResultsForThisInterview: CriterionResultOutput[] = [];
+      // Opcional: objeto para los scores por nombre (si prefieres un acceso directo)
+      // const criteriaScoresForThisInterview: Record<string, number> = {};
+
       for (const criterionKey of USER_CRITERIA_KEYS) {
         const criterionDisplayName = PREDEFINED_CRITERIA_NORMALIZED[criterionKey];
-
         const scoreKey = CRITERIA_SCORE_MAP[criterionKey];
-        // TypeScript ahora sabe que 'scoreKey' es una de las claves válidas
-        // ('claridadNota', etc.) en 'result'. El tipo inferido para 'criterionScore'
-        // será `number | null` porque las columnas Int? de Prisma se mapean a `number | null`.
         const criterionScore = result[scoreKey];
 
-        // Cambiar la comprobación de 'undefined' a 'null'
         if (criterionScore !== null) {
-          performanceMetrics.push({
-            interview_id: result.interview_id,
-            user_id: user.id,
-            institution_id: Number(user.institution_id),
-            career_id: Number(user.career_id),
-            area_id: Number(user.career.area.id),
-            criteria_name: criterionDisplayName,
-            criterionScore: criterionScore,
-            gender: user.gender,
-            age: ageInYears,
-            extracted_at: now,
+          criteriaResultsForThisInterview.push({
+            name: criterionDisplayName,
+            score: criterionScore,
           });
+          // Opcional:
+          // criteriaScoresForThisInterview[criterionDisplayName] = criterionScore;
         }
+      }
+
+      // SOLO si hay al menos un criterio evaluado para esta entrevista
+      if (criteriaResultsForThisInterview.length > 0) {
+        allInterviewEvaluations.push({
+          interview_id: result.interview_id,
+          user_id: user.id,
+          institution_id: Number(user.institution_id),
+          career_id: Number(user.career_id),
+          area_id: Number(user.career.area.id),
+          gender: user.gender,
+          age: ageInYears,
+          extracted_at: now,
+          criteriaResults: criteriaResultsForThisInterview,
+          // Opcional:
+          // criteriaScores: criteriaScoresForThisInterview,
+        });
       }
     }
 
-    return NextResponse.json(performanceMetrics, { status: 200 });
+    return NextResponse.json(allInterviewEvaluations, { status: 200 });
   } catch (error) {
     console.error('Error fetching interview performance metrics:', error);
     return NextResponse.json(
