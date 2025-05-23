@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 // Define la estructura para los resultados de cada criterio
@@ -42,7 +43,27 @@ const CRITERIA_SCORE_MAP: Record<string, ScorePropertyKeys> = {
     ejemplos: 'ejemplosNota'
 };
 
-export async function GET() {
+// Función para validar la API key
+const validateApiKey = (request: NextRequest): boolean => {
+  const apiKey = request.headers.get('0Ditl1QQZGEi4e3kKJU54UiS4S0zUeDuq57wuEILFeKH4dkWzMMhh8Qt6XbSKTn9tkxD1MHo3Oq9ObzifV5icjkKY6qND98qc83smTMwhH3yL8q5bdwTF0LEkLiBiEYi');
+  const validApiKey = process.env.API_KEY;
+  
+  if (!apiKey || !validApiKey) {
+    return false;
+  }
+  
+  return apiKey === validApiKey;
+};
+
+export async function GET(request: NextRequest) {
+  // Verificar la API key
+  if (!validateApiKey(request)) {
+    return NextResponse.json(
+      { error: 'Unauthorized: Invalid or missing API key' },
+      { status: 401 }
+    );
+  }
+  
   try {
     const interviewResults = await prisma.interviewResult.findMany({
       include: {
