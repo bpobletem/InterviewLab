@@ -45,7 +45,8 @@ const CRITERIA_SCORE_MAP: Record<string, ScorePropertyKeys> = {
 
 // Función para validar la API key
 const validateApiKey = (request: NextRequest): boolean => {
-  const apiKey = request.headers.get('0Ditl1QQZGEi4e3kKJU54UiS4S0zUeDuq57wuEILFeKH4dkWzMMhh8Qt6XbSKTn9tkxD1MHo3Oq9ObzifV5icjkKY6qND98qc83smTMwhH3yL8q5bdwTF0LEkLiBiEYi');
+  // Obtener la API key del header 'x-api-key'
+  const apiKey = request.headers.get('x-api-key');
   const validApiKey = process.env.API_KEY;
   
   if (!apiKey || !validApiKey) {
