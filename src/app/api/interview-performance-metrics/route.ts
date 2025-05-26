@@ -14,7 +14,9 @@ interface InterviewEvaluation {
   user_id: string;
   institution_id: number;
   career_id: number;
+  career_name: string;
   area_id: number;
+  area_name: string;
   gender: string;
   age: number;
   extracted_at: Date;
@@ -127,7 +129,9 @@ export async function GET(request: NextRequest) {
           user_id: user.id,
           institution_id: Number(user.institution_id),
           career_id: Number(user.career_id),
+          career_name: user.career.name || '',
           area_id: Number(user.career.area.id),
+          area_name: user.career.area.name || '',
           gender: user.gender,
           age: ageInYears,
           extracted_at: now,
