@@ -19,6 +19,7 @@ interface InterviewEvaluation {
   area_name: string;
   gender: string;
   age: number;
+  interview_date: Date; // Fecha en que se realizó la entrevista
   extracted_at: Date;
   criteriaResults: CriterionResultOutput[]; // Arreglo de objetos { name, score }
   // También podrías considerar:
@@ -134,6 +135,7 @@ export async function GET(request: NextRequest) {
           area_name: user.career.area.name || '',
           gender: user.gender,
           age: ageInYears,
+          interview_date: result.interview.created_at || new Date(), // Fecha de la entrevista
           extracted_at: now,
           criteriaResults: criteriaResultsForThisInterview,
           // Opcional:
