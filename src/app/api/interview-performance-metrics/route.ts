@@ -12,6 +12,7 @@ interface CriterionResultOutput {
 interface InterviewEvaluation {
   interview_id: string;
   user_id: string;
+  email: string; // Email del usuario
   institution_id: number;
   career_id: number;
   career_name: string;
@@ -128,6 +129,7 @@ export async function GET(request: NextRequest) {
         allInterviewEvaluations.push({
           interview_id: result.interview_id,
           user_id: user.id,
+          email: user.email || '', // Email del usuario
           institution_id: Number(user.institution_id),
           career_id: Number(user.career_id),
           career_name: user.career.name || '',
