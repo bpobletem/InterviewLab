@@ -82,7 +82,7 @@ export function ResumeForm({ onComplete }: ResumeFormProps) {
 
         <div className="mb-8">
           <label htmlFor="title" className="block text-gray-800 font-medium mb-2">
-            Título de la entrevista <span className="text-gray-800 font-bold">*</span>
+            Puesto de trabajo <span className="text-gray-800 font-bold">*</span>
           </label>
           <input
             type="text"
