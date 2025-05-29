@@ -5,38 +5,29 @@ import Link from 'next/link';
 import { FaUser, FaCalendarAlt, FaUniversity, FaGraduationCap, FaHistory } from 'react-icons/fa';
 import { Interview, PaginatedResponse } from '@/types/types';
 import StatisticsSection from '@/components/StatisticsSection';
+import { useAuth } from '@/context/AuthContext';
 
-interface UserProfile {
-  id: string;
-  name: string;
-  email: string;
-  gender: string;
-  birthday: string;
-  institution_id: number;
-  institution_name: string;
-  career_name: string;
-  career_id: number;
-  authId: string;
-}
+// La interfaz UserProfile ahora se importa desde AuthContext
 
 export default function ProfilePage() {
-  // Estado para almacenar los datos del perfil y entrevistas
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  // Usar el contexto de autenticación para obtener los datos del perfil
+  const { userProfile, loadingProfile, profileError, fetchUserProfile } = useAuth();
+  
+  // Estado para almacenar las entrevistas
   const [interviews, setInterviews] = useState<Interview[]>([]);
-
+  
   // Estado para la paginación
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalInterviews, setTotalInterviews] = useState(0);
-  const interviewsPerPage = 6; // Cambiar al numeor que ocuparemos en producción
+  const interviewsPerPage = 6; // Cambiar al número que ocuparemos en producción
 
   // Tracking para evitar doble carga
   const initialLoadComplete = useRef(false);
-
-  // Cargar datos del perfil y entrevistas desde la API
-  const [isLoadingProfile, setIsLoadingProfile] = useState(false);
+  
+  // Estado para cargar entrevistas
   const [isLoadingInterviews, setIsLoadingInterviews] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(profileError);
 
   // Función para cargar entrevistas del usuario con paginación
   const fetchInterviews = useCallback(async (userId: string, page: number) => {
@@ -63,43 +54,32 @@ export default function ProfilePage() {
     }
   }, [interviewsPerPage]);
 
-  // Cargar datos del perfil y las entrevistas iniciales
+  // Actualizar el error si cambia en el contexto
   useEffect(() => {
-    const fetchProfileData = async () => {
-      setIsLoadingProfile(true);
-      setError(null);
-      try {
-        // Obtener datos del perfil
-        const profileResponse = await fetch('/api/profile');
-        if (!profileResponse.ok) {
-          throw new Error('Error al cargar el perfil');
-        }
-        const profileData = await profileResponse.json();
-        setProfile(profileData);
+    if (profileError) {
+      setError(profileError);
+    }
+  }, [profileError]);
 
-        // Cargar entrevistas iniciales
-        if (profileData && profileData.id) {
-          await fetchInterviews(profileData.id, 1);
-          initialLoadComplete.current = true;
-        }
-      } catch (err) {
-        console.error('Error al cargar datos del perfil:', err);
-        setError(err instanceof Error ? err.message : 'Error desconocido');
-      } finally {
-        setIsLoadingProfile(false);
+  // Cargar entrevistas iniciales cuando el perfil esté disponible
+  useEffect(() => {
+    const loadInitialInterviews = async () => {
+      if (userProfile?.id && !initialLoadComplete.current) {
+        await fetchInterviews(userProfile.id, 1);
+        initialLoadComplete.current = true;
       }
     };
 
-    fetchProfileData();
-  }, [fetchInterviews]); // Añadiendo fetchInterviews como dependencia
+    loadInitialInterviews();
+  }, [userProfile, fetchInterviews]);
 
   // Efecto separado para manejar cambios de página después de la carga inicial
   useEffect(() => {
     // Solo actualizar entrevistas cuando cambia la página DESPUÉS de la carga inicial
-    if (profile?.id && initialLoadComplete.current && currentPage > 0) {
-      fetchInterviews(profile.id, currentPage);
+    if (userProfile?.id && initialLoadComplete.current && currentPage > 0) {
+      fetchInterviews(userProfile.id, currentPage);
     }
-  }, [currentPage, profile?.id, fetchInterviews]);
+  }, [currentPage, userProfile?.id, fetchInterviews]);
 
   // Función para formatear la fecha
   const formatDate = (dateString: string) => {
@@ -126,7 +106,7 @@ export default function ProfilePage() {
     }
   };
 
-  const isLoading = isLoadingProfile;
+  const isLoading = loadingProfile;
 
   return (
     <main className="flex flex-col items-center py-10 px-4">
@@ -167,8 +147,8 @@ export default function ProfilePage() {
                     <FaUser className="text-6xl text-gray-300" />
                   </div>
                 </div>
-                <h2 className="text-2xl font-bold text-gray-800 mt-4 text-center">{profile?.name || 'Usuario'}</h2>
-                <p className="text-gray-600 text-center">{profile?.email || ''}</p>
+                <h2 className="text-2xl font-bold text-gray-800 mt-4 text-center">{userProfile?.name || 'Usuario'}</h2>
+              <p className="text-gray-600 text-center">{userProfile?.email || ''}</p>
               </div>
 
               {/* Información principal */}
@@ -181,7 +161,7 @@ export default function ProfilePage() {
                     </div>
                     <div>
                       <h3 className="text-sm font-medium text-gray-500">Género</h3>
-                      <p className="text-gray-800 font-medium">{profile?.gender || '-'}</p>
+                      <p className="text-gray-800 font-medium">{userProfile?.gender || '-'}</p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg transition-all duration-300 hover:bg-gray-100">
@@ -190,7 +170,7 @@ export default function ProfilePage() {
                     </div>
                     <div>
                       <h3 className="text-sm font-medium text-gray-500">Fecha de nacimiento</h3>
-                      <p className="text-gray-800 font-medium">{profile?.birthday ? formatDate(profile.birthday) : '-'}</p>
+                      <p className="text-gray-800 font-medium">{userProfile?.birthday ? formatDate(userProfile.birthday) : '-'}</p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg transition-all duration-300 hover:bg-gray-100">
@@ -199,7 +179,7 @@ export default function ProfilePage() {
                     </div>
                     <div>
                       <h3 className="text-sm font-medium text-gray-500">Institución</h3>
-                      <p className="text-gray-800 font-medium">{profile?.institution_name || profile?.institution_id || '-'}</p>
+                      <p className="text-gray-800 font-medium">{userProfile?.institution_name || userProfile?.institution_id || '-'}</p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg transition-all duration-300 hover:bg-gray-100">
@@ -208,7 +188,7 @@ export default function ProfilePage() {
                     </div>
                     <div>
                       <h3 className="text-sm font-medium text-gray-500">Carrera</h3>
-                      <p className="text-gray-800 font-medium">{profile?.career_name || profile?.career_id || '-'}</p>
+                      <p className="text-gray-800 font-medium">{userProfile?.career_name || userProfile?.career_id || '-'}</p>
                     </div>
                   </div>
                 </div>
@@ -217,9 +197,9 @@ export default function ProfilePage() {
           </div>
 
           {/* Sección de estadísticas */}
-          {profile && !isLoading && !error && (
+          {userProfile && !isLoading && !error && (
             <div className="mb-8">
-              <StatisticsSection userId={profile.id} />
+              <StatisticsSection userId={userProfile.id} />
             </div>
           )}
 
