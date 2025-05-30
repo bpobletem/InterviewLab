@@ -11,7 +11,7 @@ import { useAuth } from '@/context/AuthContext';
 
 export default function ProfilePage() {
   // Usar el contexto de autenticación para obtener los datos del perfil
-  const { userProfile, loadingProfile, profileError, fetchUserProfile } = useAuth();
+  const { userProfile, loadingProfile, profileError } = useAuth();
   
   // Estado para almacenar las entrevistas
   const [interviews, setInterviews] = useState<Interview[]>([]);

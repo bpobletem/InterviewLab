@@ -81,8 +81,7 @@ export default function StatisticsSection({ userId }: StatisticsSectionProps) {
           try {
             const resultResponse = await fetch(`/api/interview-result/${interview.id}`);
             if (resultResponse.status === 202) {
-              // Resultado pendiente
-              return null;
+              return null; // Resultado pendiente
             }
             if (!resultResponse.ok) {
               return null;
@@ -105,7 +104,6 @@ export default function StatisticsSection({ userId }: StatisticsSectionProps) {
           return;
         }
         
-        // Procesar datos para gráficos
         processDataForCharts(results);
       } catch (err) {
         console.error('Error al cargar datos de estadísticas:', err);
@@ -123,7 +121,7 @@ export default function StatisticsSection({ userId }: StatisticsSectionProps) {
   }, [userId, isExpanded, dataLoaded]);
   
   const processDataForCharts = (results: (InterviewResultFromAPI & { interviewDate: string })[]) => {
-    // 1. Calcular promedios por criterio
+    // Calcular promedios por criterio
     const criteriaKeys = ['tecnica', 'interes', 'claridad', 'ejemplos', 'profesionalismo'];
     const criteriaScores: Record<string, number[]> = {};
     const resultadoScores: number[] = [];
@@ -132,7 +130,6 @@ export default function StatisticsSection({ userId }: StatisticsSectionProps) {
       criteriaScores[key] = [];
     });
     
-    // Recopilar todas las puntuaciones
     results.forEach(result => {
       criteriaKeys.forEach(key => {
         const scoreKey = `${key}Nota` as keyof typeof result;
@@ -147,7 +144,6 @@ export default function StatisticsSection({ userId }: StatisticsSectionProps) {
       }
     });
     
-    // Calcular promedios
     const avgScores: AverageScore[] = criteriaKeys.map(key => {
       const scores = criteriaScores[key];
       const avg = scores.length > 0 
@@ -160,11 +156,9 @@ export default function StatisticsSection({ userId }: StatisticsSectionProps) {
       };
     });
     
-    // No añadimos el promedio general al gráfico de barras, solo lo usamos para el gráfico de evolución
-    
     setAverageScores(avgScores);
     
-    // 2. Calcular evolución de puntuación general a lo largo del tiempo
+    // Calcular evolución de puntuación general a lo largo del tiempo
     const sortedResults = [...results].sort((a, b) => {
       return new Date(a.interviewDate).getTime() - new Date(b.interviewDate).getTime();
     });
@@ -173,12 +167,12 @@ export default function StatisticsSection({ userId }: StatisticsSectionProps) {
       .filter(result => typeof result.resultadoNota === 'number' && result.resultadoNota > 0)
       .map(result => ({
         date: new Date(result.interviewDate).toLocaleDateString('es-ES'),
-        score: result.resultadoNota
+        score: result.resultadoNota as number // Aseguramos que sea number después del filtro
       }));
     
     setOverallScoreOverTime(overallScores);
     
-    // 3. Calcular evolución de puntuaciones por criterio a lo largo del tiempo
+    // Calcular evolución de puntuaciones por criterio a lo largo del tiempo
     const criteriaOverTime = sortedResults.map(result => {
       const entry: CriterionScoreOverTime = {
         date: new Date(result.interviewDate).toLocaleDateString('es-ES')
@@ -198,12 +192,11 @@ export default function StatisticsSection({ userId }: StatisticsSectionProps) {
     setCriteriaScoresOverTime(criteriaOverTime);
   };
 
-  // Función para alternar la expansión de la sección
   const toggleExpand = () => {
     setIsExpanded(!isExpanded);
   };
   
-  // Contenido condicional basado en el estado de carga y datos
+  // Renderiza el contenido según el estado (cargando, error, sin datos o gráficos)
   const renderContent = () => {
     if (!isExpanded) {
       return null;
@@ -243,7 +236,7 @@ export default function StatisticsSection({ userId }: StatisticsSectionProps) {
     
     return (
       <div className="mt-6 space-y-10">
-        {/* Gráfico de barras para promedios por criterio */}
+        {/* Gráfico de barras: muestra el promedio de cada criterio de evaluación */}
         <div>
           <h3 className="text-xl font-semibold text-gray-700 mb-4">Puntuación Promedio por Criterio</h3>
           <div className="h-80 w-full">
@@ -263,7 +256,7 @@ export default function StatisticsSection({ userId }: StatisticsSectionProps) {
           </div>
         </div>
         
-        {/* Gráfico de línea para evolución de puntuación general */}
+        {/* Gráfico de área: muestra la evolución de la puntuación general en el tiempo */}
         {overallScoreOverTime.length > 1 && (
           <div>
             <h3 className="text-xl font-semibold text-gray-700 mb-4">Evolución de Puntuación General</h3>
@@ -285,7 +278,7 @@ export default function StatisticsSection({ userId }: StatisticsSectionProps) {
           </div>
         )}
         
-        {/* Gráfico de línea para evolución de puntuaciones por criterio */}
+        {/* Gráfico de líneas: muestra la evolución de cada criterio a lo largo del tiempo */}
         {criteriaScoresOverTime.length > 1 && (
           <div>
             <h3 className="text-xl font-semibold text-gray-700 mb-4">Evolución por Criterio</h3>
@@ -322,7 +315,7 @@ export default function StatisticsSection({ userId }: StatisticsSectionProps) {
 
   return (
     <div className="bg-white/90 rounded-lg shadow-sm border border-gray-100 hover:shadow-lg overflow-hidden">
-      {/* Cabecera colapsable con botón de expansión */}
+      {/* Cabecera con botón para expandir/colapsar la sección */}
       <button 
         onClick={toggleExpand}
         className="w-full px-8 py-6 flex items-center justify-between text-left focus:outline-none group"
@@ -340,10 +333,10 @@ export default function StatisticsSection({ userId }: StatisticsSectionProps) {
         </div>
       </button>
       
-      {/* Línea divisoria animada */}
+      {/* Indicador visual de sección expandida */}
       <div className={`h-0.5 bg-gradient-to-r from-blue-500 to-purple-600 ${isExpanded ? 'scale-x-100' : 'scale-x-0'}`}></div>
       
-      {/* Contenido colapsable */}
+      {/* Contenedor de gráficos con animación */}
       <div 
         id="statistics-content"
         className={`overflow-hidden ${isExpanded ? 'max-h-[2000px] opacity-100 p-8' : 'max-h-0 opacity-0 p-0'}`}
