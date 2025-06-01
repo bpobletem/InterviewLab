@@ -4,11 +4,28 @@ import { createContext, useContext, useState, useEffect, ReactNode, useMemo, use
 import { User } from '@supabase/supabase-js';
 import { createClient } from '@/utils/supabase/client';
 
+interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  gender: string;
+  birthday: string;
+  institution_id: number;
+  institution_name: string;
+  career_name: string;
+  career_id: number;
+  authId: string;
+}
+
 interface AuthContextType {
   user: User | null;
   isAdmin: boolean;
   institutionId: string | null;
   isLoading: boolean;
+  userProfile: UserProfile | null;
+  loadingProfile: boolean;
+  profileError: string | null;
+  fetchUserProfile: () => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -20,6 +37,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [institutionId, setInstitutionId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [loadingProfile, setLoadingProfile] = useState(false);
+  const [profileError, setProfileError] = useState<string | null>(null);
   const supabase = useMemo(() => createClient(), []);
 
   const fetchUserAndAdminStatus = useCallback(async () => {
@@ -122,14 +142,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [supabase]);
 
+  // Función para cargar los datos del perfil del usuario
+  const fetchUserProfile = useCallback(async () => {
+    if (!user) {
+      setUserProfile(null);
+      return;
+    }
+    
+    setLoadingProfile(true);
+    setProfileError(null);
+    
+    try {
+      const profileResponse = await fetch('/api/profile');
+      if (!profileResponse.ok) {
+        throw new Error('Error al cargar el perfil');
+      }
+      const profileData = await profileResponse.json();
+      setUserProfile(profileData);
+    } catch (err) {
+      console.error('[AuthContext] Error al cargar datos del perfil:', err);
+      setProfileError(err instanceof Error ? err.message : 'Error desconocido');
+    } finally {
+      setLoadingProfile(false);
+    }
+  }, [user]);
+
+  // Cargar el perfil cuando el usuario inicia sesión
+  useEffect(() => {
+    if (user && !userProfile && !loadingProfile) {
+      fetchUserProfile();
+    }
+  }, [user, userProfile, loadingProfile, fetchUserProfile]);
+
   // Memoize context value to prevent unnecessary re-renders
   const contextValue = useMemo(() => ({
     user,
     isAdmin,
     institutionId,
     isLoading,
+    userProfile,
+    loadingProfile,
+    profileError,
+    fetchUserProfile,
     logout
-  }), [user, isAdmin, institutionId, isLoading, logout]);
+  }), [user, isAdmin, institutionId, isLoading, userProfile, loadingProfile, profileError, fetchUserProfile, logout]);
+
 
   return (
     <AuthContext.Provider value={contextValue}>
