@@ -35,13 +35,14 @@ const criteriaNames: Record<string, string> = {
   'profesionalismo': 'Profesionalismo',
 };
 
+// Colores basados en la paleta del proyecto (gradientes from-blue-500 via-violet-600 to-pink-600)
 const criteriaColors: Record<string, string> = {
-  'tecnica': '#8884d8',
-  'interes': '#82ca9d',
-  'claridad': '#ffc658',
-  'ejemplos': '#ff8042',
-  'profesionalismo': '#0088fe',
-  'resultado': '#ff0000',
+  'tecnica': '#3b82f6',      // blue-500
+  'interes': '#7ccf00',      // lime-500
+  'claridad': '#a855f7',     // purple-500
+  'ejemplos': '#FFC107',     // amber-500
+  'profesionalismo': '#ec4899', // pink-500
+  'resultado': '#6366f1',    // indigo-500
 };
 
 export default function StatisticsSection({ userId }: StatisticsSectionProps) {
@@ -62,8 +63,8 @@ export default function StatisticsSection({ userId }: StatisticsSectionProps) {
       setDataLoaded(false);
       
       try {
-        // Obtener todas las entrevistas del usuario
-        const interviewsResponse = await fetch(`/api/users/${userId}/interview?limit=100`);
+        // Obtener las entrevistas del usuario para estadísticas
+        const interviewsResponse = await fetch(`/api/users/${userId}/interview?type=stats`);
         if (!interviewsResponse.ok) {
           throw new Error('Error al cargar las entrevistas');
         }
@@ -250,7 +251,7 @@ export default function StatisticsSection({ userId }: StatisticsSectionProps) {
                 <YAxis domain={[0, 10]} />
                 <RechartsTooltip />
                 <Legend />
-                <Bar dataKey="score" fill="#8884d8" name="Puntuación" isAnimationActive={false} />
+                <Bar dataKey="score" fill="#3b82f6" name="Puntuación" isAnimationActive={false} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -271,7 +272,7 @@ export default function StatisticsSection({ userId }: StatisticsSectionProps) {
                   <YAxis domain={[0, 100]} />
                   <RechartsTooltip />
                   <Legend />
-                  <Area type="monotone" dataKey="score" stroke="#ff0000" fill="#ff000033" name="Puntuación General" isAnimationActive={false} />
+                  <Area type="monotone" dataKey="score" stroke="#6366f1" fill="rgba(99, 102, 241, 0.2)" name="Puntuación General" isAnimationActive={false} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -334,7 +335,7 @@ export default function StatisticsSection({ userId }: StatisticsSectionProps) {
       </button>
       
       {/* Indicador visual de sección expandida */}
-      <div className={`h-0.5 bg-gradient-to-r from-blue-500 to-purple-600 ${isExpanded ? 'scale-x-100' : 'scale-x-0'}`}></div>
+      <div className={`h-0.5 bg-gradient-to-r from-blue-500 via-violet-600 to-pink-600 ${isExpanded ? 'scale-x-100' : 'scale-x-0'}`}></div>
       
       {/* Contenedor de gráficos con animación */}
       <div 

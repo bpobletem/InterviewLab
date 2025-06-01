@@ -20,7 +20,7 @@ export default function ProfilePage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalInterviews, setTotalInterviews] = useState(0);
-  const interviewsPerPage = 6; // Cambiar al número que ocuparemos en producción
+  const interviewsPerPage = 6;
 
   // Tracking para evitar doble carga
   const initialLoadComplete = useRef(false);
@@ -110,10 +110,6 @@ export default function ProfilePage() {
 
   return (
     <main className="flex flex-col items-center py-10 px-4">
-      <h1 className="text-3xl sm:text-4xl font-bold text-center text-gray-800 mb-12">
-        Perfil de Usuario
-      </h1>
-
       {isLoading ? (
         <div className="w-full max-w-7xl flex justify-center items-center py-20">
           <div className="flex flex-col items-center">
