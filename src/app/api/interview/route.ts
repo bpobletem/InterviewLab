@@ -24,19 +24,19 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
     // Obtener usuario
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { user } } = await supabase.auth.getUser();
 
-    if (!session) {
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userAuthId = session.user.id;
-    const user = await prisma.user.findUnique({
+    const userAuthId = user.id;
+    const userDB = await prisma.user.findUnique({
       where: { authId: userAuthId },
       select: { id: true }
     });
 
-    if (!user) { 
+    if (!userDB) { 
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
     // Guardar en la base de datos
     const interview = await prisma.interview.create({
       data: {
-        user_id: user.id,
+        user_id: userDB.id,
         title: title,
         resume: resumeText,
         job_description: text,
