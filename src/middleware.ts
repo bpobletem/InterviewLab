@@ -4,7 +4,7 @@ import { createServerClient } from '@supabase/ssr'
 
 export async function middleware(request: NextRequest) {
   // Lista de rutas públicas que no requieren autenticación
-  const publicRoutes = ['/', '/login', '/register', '/auth/confirm', '/auth/reset-password', '/auth/callback', '/admin/login', '/terms', '/privacy'];
+  const publicRoutes = ['/', '/login', '/register', '/auth/confirm', '/auth/reset-password', '/auth/callback', '/admin/login', '/terms', '/privacy', '/recuperar-password', '/reset-password', '/reset-password/confirma'];
 
   // Comprobar si la URL actual es una ruta pública
   const isPublicRoute = publicRoutes.some(route =>
