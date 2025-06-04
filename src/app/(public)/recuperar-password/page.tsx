@@ -4,44 +4,34 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 
-export default function Login() {
+export default function RecuperarPassword() {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  const [messageType, setMessageType] = useState<'success' | 'error'>('success');
   const [loading, setLoading] = useState(false);
   const supabase = createClient();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    setMessage(null);
     setLoading(true);
 
     try {
-      const res = await fetch('/api/auth/unified-login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/confirm?next=/reset-password/confirma`,
       });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || 'Error al iniciar sesión');
-        return;
-      }
-
-      if (data.session) {
-        await supabase.auth.setSession({
-          access_token: data.session.access_token,
-          refresh_token: data.session.refresh_token
-        });
-        window.location.href = data.redirectPath;
+      if (error) {
+        setMessage(error.message);
+        setMessageType('error');
       } else {
-        setError('Error al iniciar sesión: No se recibió una sesión válida');
+        setMessage('Se ha enviado un enlace de recuperación a tu correo electrónico.');
+        setMessageType('success');
       }
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'An error occurred during login';
-      setError(errorMessage);
+      const errorMessage = error instanceof Error ? error.message : 'Ocurrió un error al enviar el correo de recuperación';
+      setMessage(errorMessage);
+      setMessageType('error');
     } finally {
       setLoading(false);
     }
@@ -51,9 +41,12 @@ export default function Login() {
     <main className="flex items-center justify-center text-gray-600">
       <div className="w-full max-w-md md:max-w-lg p-8 bg-white border border-gray-200 rounded-xl shadow-sm">
         <h1 className="text-xl font-semibold text-center mb-2">
-          Inicia sesión en <span className="font-bold">Interview<span className='italic'>Lab</span></span>
+          Recuperar contraseña en <span className="font-bold">Interview<span className='italic'>Lab</span></span>
         </h1>
-        <form className="mt-8 space-y-8" onSubmit={handleLogin}>
+        <p className="text-sm text-center text-gray-500 mt-2 mb-6">
+          Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.
+        </p>
+        <form className="mt-8 space-y-8" onSubmit={handlePasswordReset}>
           <div className="space-y-4 rounded-md">
             <div>
               <label htmlFor="email" className="block text-sm font-medium mb-4">
@@ -70,24 +63,14 @@ export default function Login() {
                 className="block w-full rounded-md border border-foreground/20 px-3 py-2 shadow-sm focus:border-foreground/50 focus:outline-none focus:ring-1 focus:ring-foreground/50"
               />
             </div>
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium mb-4">
-                Contraseña
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="block w-full rounded-md border border-foreground/20 px-3 py-2 shadow-sm focus:border-foreground/50 focus:outline-none focus:ring-1 focus:ring-foreground/50"
-              />
-            </div>
           </div>
 
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {message && (
+            <p className={`text-sm ${messageType === 'error' ? 'text-red-500' : 'text-gray-600'}`}>
+              {message}
+            </p>
+          )}
+          
           <div className="flex justify-center items-center">
             <button
               type="submit"
@@ -116,28 +99,20 @@ export default function Login() {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     ></path>
                   </svg>
-                  Cargando...
+                  Enviando...
                 </span>
               ) : (
-                'Ingresar'
+                'Enviar enlace de recuperación'
               )}
             </button>
           </div>
         </form>
-        <div className="mt-6 space-y-2">
-          <p className="text-xs text-center text-gray-500">
-            ¿No tienes cuenta?{' '}
-            <Link href="/register" className="text-gray-800 underline">
-              Regístrate
-            </Link>
-          </p>
-          <p className="text-xs text-center text-gray-500">
-            ¿Olvidaste tu contraseña?{' '}
-            <Link href="/recuperar-password" className="text-gray-800 underline">
-              Recuperar contraseña
-            </Link>
-          </p>
-        </div>
+        <p className="text-xs text-center text-gray-500 mt-6">
+          ¿Recordaste tu contraseña?{' '}
+          <Link href="/login" className="text-gray-800 underline">
+            Iniciar sesión
+          </Link>
+        </p>
       </div>
     </main>
   );
