@@ -54,9 +54,9 @@ export default function ResetPasswordConfirm() {
         setMessage('Tu contraseña ha sido actualizada correctamente.');
         setMessageType('success');
         
-        // Esperar 2 segundos y luego redirigir al login
+        // Esperar 2 segundos y luego redirigir al home
         setTimeout(() => {
-          router.push('/login');
+          router.push('/home');
         }, 2000);
       }
     } catch (error: unknown) {
@@ -111,7 +111,7 @@ export default function ResetPasswordConfirm() {
 
           {passwordError && <p className="text-red-500 text-sm">{passwordError}</p>}
           {message && (
-            <p className={`text-sm ${messageType === 'error' ? 'text-red-500' : 'text-green-500'}`}>
+            <p className={`text-sm ${messageType === 'error' ? 'text-red-500' : 'text-gray-600'}`}>
               {message}
             </p>
           )}

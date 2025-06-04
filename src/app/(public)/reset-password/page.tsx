@@ -111,7 +111,7 @@ export default function ResetPassword() {
 
           {passwordError && <p className="text-red-500 text-sm">{passwordError}</p>}
           {message && (
-            <p className={`text-sm ${messageType === 'error' ? 'text-red-500' : 'text-green-500'}`}>
+            <p className={`text-sm ${messageType === 'error' ? 'text-red-500' : 'text-gray-600'}`}>
               {message}
             </p>
           )}

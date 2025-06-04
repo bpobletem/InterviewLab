@@ -66,7 +66,7 @@ export default function RecuperarPassword() {
           </div>
 
           {message && (
-            <p className={`text-sm ${messageType === 'error' ? 'text-red-500' : 'text-green-500'}`}>
+            <p className={`text-sm ${messageType === 'error' ? 'text-red-500' : 'text-gray-600'}`}>
               {message}
             </p>
           )}
