@@ -91,7 +91,7 @@ export async function POST(request: Request) {
       }).join('\n\n'); 
 
       const res = await ai.models.generateContent({
-        model: "gemini-2.0-flash-lite",
+        model: "gemini-1.5-flash",
         contents: `
         Rol: Eres un evaluador de entrevistas experto.
         Tarea: Analiza la siguiente transcripción de una entrevista de trabajo. Enfócate EXCLUSIVAMENTE en las respuestas proporcionadas por el "Candidato" y refierete a el como "candidato" en todo momento. NO evalúes las intervenciones del "Agente".
@@ -131,7 +131,7 @@ export async function POST(request: Request) {
         Si la descripción del puesto en el contexto adicional no es clara o está ausente, indícalo en la razón de la evaluación de compatibilidad y asigna 0 como nota de match.
         Ten en cuenta que tanto el CV como la descripción del trabajo pueden contener errores o estar incompletos porque son campos rellenados por el candidato; analiza esta información críticamente al realizar la evaluación de compatibilidad.
 
-        Formato de Respuesta Esperado: JSON (sigue el schema proporcionado). Cada item debe ir en su correspondiente item del schema. No olvides ninguno.
+        Formato de Respuesta Esperado: JSON (sigue el schema proporcionado). Cada item debe ir en su correspondiente item del schema. No olvides ninguno. SIEMPRE debes incluir una razón para cada nota, incluso si es 10. Si no puedes evaluar un criterio, asigna 0 como nota y explica por qué no se pudo evaluar PERO NUNCA olvides el formato JSON.
         `,
         config: {
           responseMimeType: "application/json",
