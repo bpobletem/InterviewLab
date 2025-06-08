@@ -119,7 +119,7 @@ export function Conversation({ resume, jobDescription, interviewId, onBack }: Co
 
   // Update isFinished
   useEffect(() => {
-    if (conversation.status === 'disconnecting' || conversation.status === 'disconnected') {
+    if (conversation.status === 'disconnecting') {
       setIsFinished(true);
     }
   }, [conversation.status]);
