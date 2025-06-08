@@ -102,9 +102,10 @@ export async function POST(request: Request) {
         ---
 
         Instrucciones de Evaluación para el Candidato:
-        Debes evaluar los siguientes criterios para el Candidato, asignando una nota del 1 al 10 (donde 1 es lo peor y 10 lo mejor y con 6 se "aprueba") a cada uno, junto con una breve justificación (razon).
+        Debes evaluar los siguientes criterios para el Candidato, asignando una nota del 1 al 10 (donde 1 es lo peor y 10 lo mejor y con 6 se "aprueba") a cada uno, junto con una breve justificación (razon). 
+        10 es una respuesta excepcional que no necesita mejora, con menos de esa nota debes proporcionar si o si una razón de por qué no se le asignó la nota máxima.
+        Adicionalmente, para cada criterio, sugiere cómo el Candidato podría mejorar sus respuestas, incluyendo ejemplos claros siempre y cuando tenga una nota menor a 10.
         Si no hay información suficiente en las respuestas del Candidato para evaluar un criterio específico, asigna 0 como nota y explica claramente por qué no se pudo evaluar (ej. "El Candidato no proporcionó ejemplos concretos").
-        Adicionalmente, para cada criterio, sugiere cómo el Candidato podría mejorar sus respuestas, incluyendo ejemplos claros si es posible.
 
         Criterios a Evaluar (solo para el Candidato):
         1.  **Claridad**: ¿El Candidato se expresa de manera comprensible, ordenada y coherente? ¿Sus respuestas son fáciles de entender?
