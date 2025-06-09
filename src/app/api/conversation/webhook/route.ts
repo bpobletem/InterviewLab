@@ -80,43 +80,53 @@ export async function POST(request: Request) {
       },
     });
 
+    const interview = await prisma.interview.findUnique({
+      where: { id: conversation.interview_id },
+      select: {
+        resume: true,
+        job_description: true,
+      }
+    });
+
     // Triggerear un llamado a la API de Gemini para pedirle que procese la conversacion y devuelva un feedback para mostrar al usuario.
     const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY });
     async function main(): Promise<string> {
       // Formateams la transcripcion para que sea legible por Gemini
       const formattedTranscript = body.data.transcript.map((entry: { role: string, message?: string, text?: string, content?: string }) => {
         const speakerLabel = entry.role === 'user' ? 'Candidato' : 'Agente';
-        const messageContent = entry.message ?? ""; 
+        const messageContent = entry.message ?? "";
         return `${speakerLabel}: ${messageContent}`;
-      }).join('\n\n'); 
+      }).join('\n\n');
 
       const res = await ai.models.generateContent({
-        model: "gemini-1.5-flash",
+        model: "gemini-2.0-flash-lite",
         contents: `
         Rol: Eres un evaluador de entrevistas experto.
         Tarea: Analiza la siguiente transcripción de una entrevista de trabajo. Enfócate EXCLUSIVAMENTE en las respuestas proporcionadas por el "Candidato" y refierete a el como "candidato" en todo momento. NO evalúes las intervenciones del "Agente".
 
-        Transcripción:
-        ---
-        ${formattedTranscript}
-        ---
-
+        
         Instrucciones de Evaluación para el Candidato:
         Debes evaluar los siguientes criterios para el Candidato, asignando una nota del 1 al 10 (donde 1 es lo peor y 10 lo mejor y con 6 se "aprueba") a cada uno, junto con una breve justificación (razon). 
         10 es una respuesta excepcional que no necesita mejora, con menos de esa nota debes proporcionar si o si una razón de por qué no se le asignó la nota máxima.
         Adicionalmente, para cada criterio, sugiere cómo el Candidato podría mejorar sus respuestas, incluyendo ejemplos claros siempre y cuando tenga una nota menor a 10.
         Si no hay información suficiente en las respuestas del Candidato para evaluar un criterio específico, asigna 0 como nota y explica claramente por qué no se pudo evaluar (ej. "El Candidato no proporcionó ejemplos concretos").
-
+        
         Criterios a Evaluar (solo para el Candidato):
         1.  **Claridad**: ¿El Candidato se expresa de manera comprensible, ordenada y coherente? ¿Sus respuestas son fáciles de entender?
         2.  **Profesionalismo**: ¿El Candidato utiliza un lenguaje adecuado, respetuoso y profesional en sus respuestas?
         3.  **Técnica**: ¿El Candidato demuestra conocimientos técnicos relevantes para el puesto en sus respuestas? (ej. herramientas, procesos, metodologías).
         4.  **Interés**: ¿El Candidato muestra motivación por el cargo o la empresa a través de sus respuestas? ¿Hace preguntas pertinentes (si aplica y se ve en su turno)? ¿Transmite entusiasmo?
         5.  **Ejemplos**: ¿El Candidato entrega ejemplos concretos en sus respuestas que respalden sus habilidades, experiencias o conocimientos?
-
-        Contexto Adicional (CV del Candidato y Descripción del Puesto):
+        
+        Transcripción:
         ---
-        ${body.data.conversation_initiation_client_data.conversation_config_override.agent.prompt.prompt}
+        ${formattedTranscript}
+        ---
+
+        Contexto Adicional (Si no hay información relevante, indícalo):
+        ---
+        CV: ${interview?.resume}
+        Descripción del Puesto: ${interview?.job_description}
         ---
 
         Resultado - Evaluación de Compatibilidad (Match):
@@ -131,7 +141,7 @@ export async function POST(request: Request) {
         Si la descripción del puesto en el contexto adicional no es clara o está ausente, indícalo en la razón de la evaluación de compatibilidad y asigna 0 como nota de match.
         Ten en cuenta que tanto el CV como la descripción del trabajo pueden contener errores o estar incompletos porque son campos rellenados por el candidato; analiza esta información críticamente al realizar la evaluación de compatibilidad.
 
-        Formato de Respuesta Esperado: JSON (sigue el schema proporcionado). Cada item debe ir en su correspondiente item del schema. No olvides ninguno. SIEMPRE debes incluir una razón para cada nota, incluso si es 10. Si no puedes evaluar un criterio, asigna 0 como nota y explica por qué no se pudo evaluar PERO NUNCA olvides el formato JSON.
+        Formato de Respuesta Esperado: JSON (sigue el schema proporcionado). Cada item debe ir en su correspondiente item del schema. No olvides ninguno. SIEMPRE debes incluir una razón y una propuesta de mejora para cada nota, incluso si es 10. Si no puedes evaluar un criterio, asigna 0 como nota y explica por qué no se pudo evaluar PERO NUNCA olvides el formato JSON.
         `,
         config: {
           responseMimeType: "application/json",
@@ -221,7 +231,7 @@ export async function POST(request: Request) {
     }
     const geminiResponseString = await main();
     const geminiData: GeminiFeedbackResponse = JSON.parse(geminiResponseString);
-    
+
     // Guardar en la base de datos el feedback (actualizar si ya existe)
     await prisma.interviewResult.upsert({
       where: { interview_id: conversation.interview_id },
