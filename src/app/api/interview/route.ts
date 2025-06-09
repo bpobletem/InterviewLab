@@ -53,6 +53,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (title.length < 3 || title.length > 50) {
+      return NextResponse.json(
+        { error: 'El título debe ser válido' },
+        { status: 400 }
+      );
+    }
+
+    if (text.length < 10 || text.length > 4500) {
+      return NextResponse.json(
+        { error: 'La descripción del trabajo debe ser válida' },
+        { status: 400 }
+      );
+    }
+
     // Validar tipo de archivo
     if (file.type !== 'application/pdf') {
       return NextResponse.json(
