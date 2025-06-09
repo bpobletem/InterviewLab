@@ -1,60 +1,30 @@
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenAI, Type } from "@google/genai";
-import { GeminiFeedbackResponse } from "@/types/types";
+import crypto from "crypto";
+import { GeminiFeedbackResponse, PartialFeedbackResponse } from "@/types/types";
+import { defaultCriterion, defaultResult } from "@/types/vars";
 
 
 // Endpoint que recibe webhook de elevenlabs
 // Se encarga de guardar la conversacion en la base de datos
 // Datos como resumen, transcripcion, etc.
 
-export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 204,
-    headers: {
-      'Access-Control-Allow-Origin': '*', // O el origen específico que hará las solicitudes
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      'Access-Control-Max-Age': '86400' // 24 horas
-    }
-  });
-}
-
-export async function POST(request: Request) {
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization'
-  };
+export async function POST(request: NextRequest) {
+  const secret = process.env.NEXT_PUBLIC_WEBHOOK_SECRET;
+  const { event, error } = await constructWebhookEvent(request, secret);
+  if (error) {
+    return NextResponse.json({ error: error }, { status: 401 });
+  }
 
   try {
-    // Parsear el cuerpo de la solicitud
-    const body = await request.json();
-
-    // Verificar el tipo de evento
-    if (body.type !== "post_call_transcription") {
-      console.log(`Tipo de evento no soportado: ${body.type}`);
-      return NextResponse.json(
-        { message: "Evento recibido pero no procesado" },
-        { status: 200, headers }
-      );
-    }
-
-    // Verificar que existan los datos
-    if (!body.data) {
-      return NextResponse.json(
-        { error: "Formato incorrecto, se esperaba campo 'data'" },
-        { status: 400, headers }
-      );
-    }
-
     // Obtener el ID de conversación de los datos
-    const conversationId = body.data.conversation_id;
+    const conversationId = event.data.conversation_id;
 
     if (!conversationId) {
       return NextResponse.json(
         { error: "Se necesita conversation ID" },
-        { status: 400, headers }
+        { status: 400 }
       );
     }
 
@@ -67,7 +37,7 @@ export async function POST(request: Request) {
       console.log(`Conversación no encontrada con ID: ${conversationId}`);
       return NextResponse.json(
         { error: "Conversación no encontrada" },
-        { status: 404, headers }
+        { status: 404 }
       );
     }
 
@@ -76,7 +46,7 @@ export async function POST(request: Request) {
     await prisma.conversation.update({
       where: { id: conversationId },
       data: {
-        details: body
+        details: event.data
       },
     });
 
@@ -92,7 +62,7 @@ export async function POST(request: Request) {
     const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY });
     async function main(): Promise<string> {
       // Formateams la transcripcion para que sea legible por Gemini
-      const formattedTranscript = body.data.transcript.map((entry: { role: string, message?: string, text?: string, content?: string }) => {
+      const formattedTranscript = event.data.transcript.map((entry: { role: string, message?: string, text?: string, content?: string }) => {
         const speakerLabel = entry.role === 'user' ? 'Candidato' : 'Agente';
         const messageContent = entry.message ?? "";
         return `${speakerLabel}: ${messageContent}`;
@@ -226,11 +196,19 @@ export async function POST(request: Request) {
       if (res.text === undefined) {
         throw new Error("La respuesta de la API de Gemini no contiene texto.");
       }
-      console.log(res.text);
       return res.text;
     }
     const geminiResponseString = await main();
-    const geminiData: GeminiFeedbackResponse = JSON.parse(geminiResponseString);
+    let partialData = {};
+
+    try {
+        partialData = JSON.parse(geminiResponseString);
+    } catch (error) {
+        console.error("Error al parsear el JSON de Gemini:", error, "Contenido:", geminiResponseString);
+    }
+
+    // Usamos la función para asegurar que el objeto esté completo
+    const geminiData = fillIncompleteFeedback(partialData);
 
     // Guardar en la base de datos el feedback (actualizar si ya existe)
     await prisma.interviewResult.upsert({
@@ -268,14 +246,73 @@ export async function POST(request: Request) {
 
     return NextResponse.json(
       { message: "Conversation updated successfully" },
-      { status: 200, headers }
+      { status: 200 }
     );
 
   } catch (error) {
     console.error("Error processing webhook:", error);
     return NextResponse.json(
       { error: "Failed to process webhook" },
-      { status: 500, headers }
+      { status: 500 }
     );
   }
+}
+
+const constructWebhookEvent = async (req: NextRequest, secret?: string) => {
+  const body = await req.text();
+  const allHeaders: { [key: string]: string } = {};
+  req.headers.forEach((value, key) => {
+    allHeaders[key] = value;
+  });
+  const signature_header = req.headers.get("ElevenLabs-Signature");
+  if (!signature_header) {
+    console.error("Missing signature header");
+    return { event: null, error: "Missing signature header" };
+  }
+  const headers = signature_header.split(",");
+  const timestamp = headers.find((e) => e.startsWith("t="))?.substring(2);
+  const signature = headers.find((e) => e.startsWith("v0="));
+  if (!timestamp || !signature) {
+    return { event: null, error: "Invalid signature format" };
+  }
+  // Validate timestamp
+  const reqTimestamp = Number(timestamp) * 1000;
+  const tolerance = Date.now() - 30 * 60 * 1000;
+  if (reqTimestamp < tolerance) {
+    return { event: null, error: "Request expired" };
+  }
+  // Validate hash
+  const message = `${timestamp}.${body}`;
+  if (!secret) {
+    return { event: null, error: "Webhook secret not configured" };
+  }
+  const digest =
+    "v0=" + crypto.createHmac("sha256", secret).update(message).digest("hex");
+  console.log({ digest, signature });
+  if (signature !== digest) {
+    return { event: null, error: "Invalid signature" };
+  }
+  const event = JSON.parse(body);
+  return { event, error: null };
+};
+
+function fillIncompleteFeedback(partialResponse: PartialFeedbackResponse | null | undefined): GeminiFeedbackResponse {
+  const data = partialResponse || {};
+
+  // Rellena cada criterio asegurando que tenga 'nota' y 'razon'
+  const filledCriterios = {
+    claridad: { ...defaultCriterion, ...data.criterios?.claridad },
+    profesionalismo: { ...defaultCriterion, ...data.criterios?.profesionalismo },
+    tecnica: { ...defaultCriterion, ...data.criterios?.tecnica },
+    interes: { ...defaultCriterion, ...data.criterios?.interes },
+    ejemplos: { ...defaultCriterion, ...data.criterios?.ejemplos },
+  };
+
+  // Rellena el resultado final
+  const filledResultado = { ...defaultResult, ...data.resultado };
+
+  return {
+    criterios: filledCriterios,
+    resultado: filledResultado,
+  };
 }

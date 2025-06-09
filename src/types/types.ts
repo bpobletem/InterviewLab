@@ -100,3 +100,14 @@ export interface ProcessedEvaluationCriterion {
   isApproved: boolean;
   isEvaluated: boolean;
 }
+
+export type PartialFeedbackResponse = {
+  criterios?: {
+    claridad?: { nota?: number; razon?: string };
+    profesionalismo?: { nota?: number; razon?: string };
+    tecnica?: { nota?: number; razon?: string };
+    interes?: { nota?: number; razon?: string };
+    ejemplos?: { nota?: number; razon?: string };
+  };
+  resultado?: { nota?: number; razon?: string };
+};
