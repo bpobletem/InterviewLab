@@ -34,7 +34,6 @@ export async function POST(request: NextRequest) {
     });
 
     if (!conversation) {
-      console.log(`Conversación no encontrada con ID: ${conversationId}`);
       return NextResponse.json(
         { error: "Conversación no encontrada" },
         { status: 404 }
@@ -72,47 +71,53 @@ export async function POST(request: NextRequest) {
         model: "gemini-2.0-flash-lite",
         contents: `
         Rol: Eres un evaluador de entrevistas experto.
-        Tarea: Analiza la siguiente transcripción de una entrevista de trabajo. Enfócate EXCLUSIVAMENTE en las respuestas proporcionadas por el "Candidato" y refierete a el como "candidato" en todo momento. NO evalúes las intervenciones del "Agente".
+        Tarea: Analiza la siguiente transcripción de una entrevista de trabajo. Enfócate EXCLUSIVAMENTE en las respuestas del "Candidato" y refiérete a él como "Candidato" en todo momento. NO evalúes las intervenciones del "Agente".
 
-        
         Instrucciones de Evaluación para el Candidato:
-        Debes evaluar los siguientes criterios para el Candidato, asignando una nota del 1 al 10 (donde 1 es lo peor y 10 lo mejor y con 6 se "aprueba") a cada uno, junto con una breve justificación (razon). 
-        10 es una respuesta excepcional que no necesita mejora, con menos de esa nota debes proporcionar si o si una razón de por qué no se le asignó la nota máxima.
-        Adicionalmente, para cada criterio, sugiere cómo el Candidato podría mejorar sus respuestas, incluyendo ejemplos claros siempre y cuando tenga una nota menor a 10.
-        Si no hay información suficiente en las respuestas del Candidato para evaluar un criterio específico, asigna 0 como nota y explica claramente por qué no se pudo evaluar (ej. "El Candidato no proporcionó ejemplos concretos").
-        
-        Criterios a Evaluar (solo para el Candidato):
-        1.  **Claridad**: ¿El Candidato se expresa de manera comprensible, ordenada y coherente? ¿Sus respuestas son fáciles de entender?
-        2.  **Profesionalismo**: ¿El Candidato utiliza un lenguaje adecuado, respetuoso y profesional en sus respuestas?
-        3.  **Técnica**: ¿El Candidato demuestra conocimientos técnicos relevantes para el puesto en sus respuestas? (ej. herramientas, procesos, metodologías).
-        4.  **Interés**: ¿El Candidato muestra motivación por el cargo o la empresa a través de sus respuestas? ¿Hace preguntas pertinentes (si aplica y se ve en su turno)? ¿Transmite entusiasmo?
-        5.  **Ejemplos**: ¿El Candidato entrega ejemplos concretos en sus respuestas que respalden sus habilidades, experiencias o conocimientos?
-        
+        Evalúa cada criterio asignando una nota del 1 al 10 (1=peor, 10=mejor; 6=aprobado).
+        Para notas menores a 10, DEBES justificar brevemente la razón y ofrecer una sugerencia de mejora clara y concisa con un ejemplo práctico.
+        Si la nota es 10, la justificación debe explicar por qué es excepcional.
+        Si no hay información suficiente para evaluar un criterio, asigna 0 y explica por qué.
+        Sé breve y conciso en cada justificación y sugerencia.
+
+        Criterios a Evaluar:
+        1.  **Claridad**: ¿Las respuestas del Candidato son comprensibles, ordenadas y coherentes?
+        2.  **Profesionalismo**: ¿El Candidato usa lenguaje adecuado, respetuoso y profesional?
+        3.  **Técnica**: ¿El Candidato demuestra conocimientos técnicos relevantes para el puesto (herramientas, procesos, metodologías)?
+        4.  **Interés**: ¿El Candidato muestra motivación por el cargo/empresa? ¿Transmite entusiasmo?
+        5.  **Ejemplos**: ¿El Candidato proporciona ejemplos concretos que respalden sus habilidades/experiencias?
+
         Transcripción:
         ---
         ${formattedTranscript}
         ---
 
-        Contexto Adicional (Si no hay información relevante, indícalo):
+        Contexto Adicional:
         ---
         CV: ${interview?.resume}
         Descripción del Puesto: ${interview?.job_description}
         ---
 
         Resultado - Evaluación de Compatibilidad (Match):
-        Basándote en las respuestas del Candidato en la transcripción y el "Contexto Adicional" proporcionado arriba (CV y descripción del puesto), realiza una evaluación de compatibilidad ("match").
-        Evalúa qué tan bien se ajusta el candidato a los requisitos del puesto, según lo demostrado por el candidato en la entrevista. Describe un resumen general de su desempeño y por que seria un buen o mal candidato.
-        El resultado de esta evaluación de compatibilidad debe ser un número del 1 al 100, representando el porcentaje de ajuste. Para que te hagas un idea sobre el porcentaje:
-        - 1 a 30: "Muy Desaprobado": El candidato no se ajusta al puesto y necesita mejorar significativamente.
-        - 31 a 50: "Desaprobado": El candidato se ajusta parcialmente al puesto, pero puede mejorar.
-        - 51 a 70: "Aprobado": El candidato se ajusta al puesto y tiene buenas respuestas.
-        - 71 a 90: "Muy Aprobado": El candidato se ajusta muy bien al puesto y tiene excelentes respuestas.
-        - 91 a 100: "Excelente": El candidato se ajusta perfectamente al puesto y tiene respuestas excepcionales.
-        Si la descripción del puesto en el contexto adicional no es clara o está ausente, indícalo en la razón de la evaluación de compatibilidad y asigna 0 como nota de match.
-        Ten en cuenta que tanto el CV como la descripción del trabajo pueden contener errores o estar incompletos porque son campos rellenados por el candidato; analiza esta información críticamente al realizar la evaluación de compatibilidad.
+        Basado en las respuestas del Candidato, el CV y la Descripción del Puesto, evalúa el porcentaje de ajuste al puesto.
+        Describe un resumen general del desempeño del Candidato y por qué sería un buen o mal candidato.
+        Asigna un porcentaje del 1 al 100, usando la siguiente escala:
+        - 1-30: Muy Desaprobado (no se ajusta, necesita mejorar significativamente)
+        - 31-50: Desaprobado (ajuste parcial, puede mejorar)
+        - 51-70: Aprobado (se ajusta, buenas respuestas)
+        - 71-90: Muy Aprobado (se ajusta muy bien, excelentes respuestas)
+        - 91-100: Excelente (ajuste perfecto, respuestas excepcionales)
+        Si la descripción del puesto es poco clara o ausente, asigna 0% de match y explica la razón.
+        Analiza críticamente CV y descripción del puesto, ya que pueden contener errores.
 
-        Formato de Respuesta Esperado: JSON (sigue el schema proporcionado). Cada item debe ir en su correspondiente item del schema. No olvides ninguno. SIEMPRE debes incluir una razón y una propuesta de mejora para cada nota, incluso si es 10. Si no puedes evaluar un criterio, asigna 0 como nota y explica por qué no se pudo evaluar PERO NUNCA olvides el formato JSON.
-        `,
+        Formato de Respuesta Esperado: JSON (sigue el schema proporcionado). Cada item debe ir en su correspondiente item del schema. No olvides ninguno. SIEMPRE incluye una razón y una propuesta de mejora para cada nota, *a menos que la nota sea 10 (en cuyo caso solo la razón) o 0 (en cuyo caso solo la razón)*. **Si la nota es 10, solo la razón.** **Si la nota es 0, solo la razón.**
+        
+        Aqui tienes un ejemplo de respuesta para un criterio:
+        **
+        "ejemplos": {
+        "nota": 7,
+        "razon": "El candidato menciona herramientas como Git y Cloudflare Workers, pero no ofrece ejemplos concretos de su aplicación o los resultados obtenidos. Por ejemplo, falta cómo aplicó Git en un proyecto específico o cómo resolvió desafíos con Cloudflare Workers. Esto dificulta evaluar su capacidad real de aplicación.", Para mejorar, el candidato debería usar la técnica STAR (Situación, Tarea, Acción, Resultado) para dar ejemplos. Por ejemplo, al hablar de Git: 'En el proyecto X, utilicé Git para gestionar ramas y resolver un conflicto crítico, lo que nos permitió lanzar la función Y a tiempo'. Siempre que sea posible, debe cuantificar sus logros (ej. 'reduje el tiempo de carga en un 20%')."
+        **`,
         config: {
           responseMimeType: "application/json",
           responseSchema: {
@@ -202,9 +207,9 @@ export async function POST(request: NextRequest) {
     let partialData = {};
 
     try {
-        partialData = JSON.parse(geminiResponseString);
+      partialData = JSON.parse(geminiResponseString);
     } catch (error) {
-        console.error("Error al parsear el JSON de Gemini:", error, "Contenido:", geminiResponseString);
+      console.error("Error al parsear el JSON de Gemini:", error, "Contenido:", geminiResponseString);
     }
 
     // Usamos la función para asegurar que el objeto esté completo
@@ -288,7 +293,6 @@ const constructWebhookEvent = async (req: NextRequest, secret?: string) => {
   }
   const digest =
     "v0=" + crypto.createHmac("sha256", secret).update(message).digest("hex");
-  console.log({ digest, signature });
   if (signature !== digest) {
     return { event: null, error: "Invalid signature" };
   }
