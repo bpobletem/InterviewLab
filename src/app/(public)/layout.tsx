@@ -1,5 +1,4 @@
 import Navbar from "@/components/navbar";
-import Footer from "@/components/Footer";
 
 export default function PublicLayout({
   children,
@@ -9,10 +8,9 @@ export default function PublicLayout({
   return (
     <>
       <Navbar />
-      <div className="flex-grow overflow-y-auto content-center justify-center py-4 w-full">
+      <div className="flex-grow overflow-y-auto content-center justify-center py-4 min-h-screen w-full">
         {children}
       </div>
-      <Footer />
     </>
   );
 }
