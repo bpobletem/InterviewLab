@@ -110,7 +110,7 @@ export function ResumeForm({ onComplete }: ResumeFormProps) {
           </div>
         </div>
 
-        <div className="text-right">
+        <div className="flex flex-col items-end">
           <button
             type="submit"
             disabled={isLoading || !isFormComplete}
@@ -128,8 +128,8 @@ export function ResumeForm({ onComplete }: ResumeFormProps) {
           </button>
 
           {message && (
-            <div className={`p-2 rounded-md text-sm ${message.includes('Error') ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-green-50 text-green-600 border border-green-200'}`}>
-              {message}
+            <div className={`p-2 mt-4 rounded-md text-sm text-center flex items-center content-center ${message.includes('Error') ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-green-50 text-green-600 border border-green-200'}`}>
+              <p>{message}</p>
             </div>
           )}
         </div>

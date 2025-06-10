@@ -48,12 +48,24 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       );
     }
 
+    // Obtener IDs de entrevistas que tienen resultados
+    const interviewsWithResults = await prisma.interviewResult.findMany({
+      select: { interview_id: true }
+    }).then(results => results.map(r => r.interview_id));
+    
+    // Contar y obtener solo entrevistas que tienen resultados
     const [totalCount, interviews] = await Promise.all([
       prisma.interview.count({
-        where: { user_id: requestedId }
+        where: { 
+          user_id: requestedId,
+          id: { in: interviewsWithResults }
+        }
       }),
       prisma.interview.findMany({
-        where: { user_id: requestedId },
+        where: { 
+          user_id: requestedId,
+          id: { in: interviewsWithResults }
+        },
         orderBy: { created_at: 'desc' },
         skip,
         take: actualLimit
