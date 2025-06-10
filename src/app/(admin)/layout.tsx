@@ -11,7 +11,7 @@ export default function AdminLayout({
   return (
     <>
       <Navbar />
-      <div className="flex-grow overflow-y-auto content-center justify-center py-4">
+      <div className="flex-grow overflow-y-auto content-center justify-center py-4 min-h-screen">
         {children}
       </div>
     </>

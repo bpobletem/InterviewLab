@@ -152,12 +152,6 @@ export default function ResetPasswordConfirm() {
             </button>
           </div>
         </form>
-        <p className="text-xs text-center text-gray-500 mt-6">
-          ¿Recordaste tu contraseña?{' '}
-          <Link href="/login" className="text-gray-800 underline">
-            Iniciar sesión
-          </Link>
-        </p>
       </div>
     </main>
   );
