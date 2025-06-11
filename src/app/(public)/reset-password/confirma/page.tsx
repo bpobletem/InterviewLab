@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 
 export default function ResetPasswordConfirm() {
@@ -152,12 +151,6 @@ export default function ResetPasswordConfirm() {
             </button>
           </div>
         </form>
-        <p className="text-xs text-center text-gray-500 mt-6">
-          ¿Recordaste tu contraseña?{' '}
-          <Link href="/login" className="text-gray-800 underline">
-            Iniciar sesión
-          </Link>
-        </p>
       </div>
     </main>
   );
