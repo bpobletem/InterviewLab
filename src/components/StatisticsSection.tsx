@@ -310,6 +310,11 @@ export default function StatisticsSection({ userId }: StatisticsSectionProps) {
             </div>
           </div>
         )}
+        
+        {/* Mensaje informativo sobre las estadísticas */}
+        <div className="text-center mt-4">
+          <p className="text-sm text-gray-500 italic">Las estadísticas mostradas corresponden a tus últimas 10 entrevistas.</p>
+        </div>
       </div>
     );
   };
