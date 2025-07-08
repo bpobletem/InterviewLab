@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
       }).join('\n\n');
 
       const res = await ai.models.generateContent({
-        model: "gemini-2.0-flash-lite",
+        model: "gemini-2.5-flash",
         contents: `
         Rol: Eres un evaluador de entrevistas experto.
         Tarea: Analiza la siguiente transcripción de una entrevista de trabajo. Enfócate EXCLUSIVAMENTE en las respuestas del "Candidato" y refiérete a él como "Candidato" en todo momento. NO evalúes las intervenciones del "Agente".
