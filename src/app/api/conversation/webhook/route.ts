@@ -86,6 +86,7 @@ export async function POST(request: NextRequest) {
         3.  **Técnica**: ¿El Candidato demuestra conocimientos técnicos relevantes para el puesto (herramientas, procesos, metodologías)?
         4.  **Interés**: ¿El Candidato muestra motivación por el cargo/empresa? ¿Transmite entusiasmo?
         5.  **Ejemplos**: ¿El Candidato proporciona ejemplos concretos que respalden sus habilidades/experiencias?
+        Nota: Recuerda evaluar absolutamente todos los criterios, incluso si la transcipción es breve o incompleta. Debe haber muy poca información para no poder evaluar un criterio.
 
         Transcripción:
         ---
